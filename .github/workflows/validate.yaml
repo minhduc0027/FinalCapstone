@@ -24,7 +24,7 @@ jobs:
         run: npm ci
 
       - name: Run LWC Jest Tests
-        run: npm run test:unit -- --passWithNoTests
+        run: npx sfdx-lwc-jest --passWithNoTests
 
       - name: Create JWT Key
         run: |
