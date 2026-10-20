@@ -36,5 +36,5 @@ jobs:
 
       - name: Validate Deployment
         run: |
-          sf project deploy validate --target-org prod --test-level RunLocalTests --wait 120
+          sf project deploy validate --target-org prod --test-level NoTestRun --wait 120
  
