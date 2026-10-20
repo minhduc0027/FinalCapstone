@@ -1,0 +1,91 @@
+name: Deploy Production
+
+on:
+
+  push:
+
+    branches:
+
+      - main
+
+jobs:
+
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    environment: production
+
+    steps:
+
+      - name: Checkout Source
+
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+
+        uses: actions/setup-node@v4
+
+        with:
+
+          node-version: 22
+
+      - name: Install Salesforce CLI
+
+        run: |
+
+          npm install -g @salesforce/cli@latest
+
+          sf --version
+
+      - name: Create JWT Key
+
+        run: |
+
+          cat << 'EOF' > server.key
+
+          ${{ secrets.SF_JWT_KEY }}
+
+          EOF
+
+      - name: Authenticate Salesforce
+
+        run: |
+
+          sf org login jwt \
+
+            --client-id "${{ secrets.SF_CLIENT_ID }}" \
+
+            --jwt-key-file server.key \
+
+            --username "${{ secrets.SF_USERNAME }}" \
+
+            --instance-url "${{ secrets.SF_INSTANCE_URL }}" \
+
+            --alias prod
+
+      - name: Verify Connection
+
+        run: |
+
+          sf org display --target-org prod
+
+      - name: Deploy Metadata
+
+        run: |
+
+          sf project deploy start \
+
+            --target-org prod \
+
+            --test-level RunLocalTests \
+
+            --wait 120
+
+      - name: Cleanup
+
+        if: always()
+
+        run: rm -f server.key
+
+ 
