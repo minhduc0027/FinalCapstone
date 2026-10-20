@@ -1,5 +1,5 @@
 /**
- * Represents an request to generate a report with specified parameters.
+ * Represents a request to generate a report with specified parameters.
  */
 public class ReportRequest {
   @AuraEnabled
