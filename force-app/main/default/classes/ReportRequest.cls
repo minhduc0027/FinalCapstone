@@ -12,7 +12,8 @@ public class ReportRequest {
   public List<FilterCondition> filters;
 
   /*
-   * Backward compatibility. removable in the future. Use orderByFields instead.
+   * Backward compatibility.
+   * removable in the future. Use orderByFields instead.
    */
   @AuraEnabled
   public String orderBy;
