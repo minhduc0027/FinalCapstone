@@ -1,3 +1,6 @@
+/**
+ * Represents a request to generate a report with specified parameters.
+ */
 public class ReportRequest {
     @AuraEnabled
     public String objectName;
