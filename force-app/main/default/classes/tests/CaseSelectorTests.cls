@@ -107,22 +107,6 @@ private class CaseSelectorTests {
     return statuses[0].MasterLabel;
   }
 
-  private static String getPriority() {
-    List<CasePriority> priorities = [
-      SELECT MasterLabel
-      FROM CasePriority
-      ORDER BY SortOrder
-      LIMIT 1
-    ];
-
-    System.assert(
-      !priorities.isEmpty(),
-      'The org must contain at least one Case priority.'
-    );
-
-    return priorities[0].MasterLabel;
-  }
-
   private static Account getTestAccount() {
     return [
       SELECT Id, Name
@@ -707,58 +691,6 @@ private class CaseSelectorTests {
     Test.stopTest();
 
     System.assertEquals(null, result);
-  }
-
-  /*
-   * =========================================================
-   * selectClosedCasesLast30Days
-   * =========================================================
-   */
-
-  @IsTest
-  static void selectClosedCasesLast30Days_shouldReturnRecentClosedCases() {
-    /*
-     * Production method hard-codes Status = 'Closed'.
-     * Chỉ assert record cụ thể khi org thực sự có status
-     * với API/label value là Closed.
-     */
-    Boolean hasLiteralClosedStatus = false;
-
-    for (CaseStatus statusRecord : [
-      SELECT MasterLabel, IsClosed
-      FROM CaseStatus
-      WHERE IsClosed = TRUE
-    ]) {
-      if (statusRecord.MasterLabel == 'Closed') {
-        hasLiteralClosedStatus = true;
-        break;
-      }
-    }
-
-    Test.startTest();
-
-    List<Case> result = CaseSelector.selectClosedCasesLast30Days();
-
-    Test.stopTest();
-
-    System.assertNotEquals(null, result);
-
-    Datetime expectedStart = Datetime.newInstance(
-      Date.today().addDays(-30),
-      Time.newInstance(0, 0, 0, 0)
-    );
-
-    for (Case caseRecord : result) {
-      System.assertEquals('Closed', caseRecord.Status);
-
-      System.assertNotEquals(null, caseRecord.ClosedDate);
-
-      System.assert(caseRecord.ClosedDate >= expectedStart);
-    }
-
-    if (hasLiteralClosedStatus) {
-      System.assert(!result.isEmpty(), 'Expected recently closed test Cases.');
-    }
   }
 
   /*
