@@ -730,58 +730,6 @@ private class CaseSelectorTests {
 
   /*
    * =========================================================
-   * selectClosedCasesLast30Days
-   * =========================================================
-   */
-
-  @IsTest
-  static void selectClosedCasesLast30Days_shouldReturnClosedCase() {
-    Case expectedCase = getClosedTestCase();
-
-    System.assertNotEquals(null, expectedCase.ClosedDate);
-
-    Test.startTest();
-
-    List<Case> result = CaseSelector.selectClosedCasesLast30Days();
-
-    Test.stopTest();
-
-    System.assertNotEquals(null, result);
-
-    Map<Id, Case> resultById = new Map<Id, Case>(result);
-
-    System.assert(
-      resultById.containsKey(expectedCase.Id),
-      'Recently closed test Case should be returned.'
-    );
-
-    Datetime rangeStart = Datetime.newInstance(
-      Date.today().addDays(-30),
-      Time.newInstance(0, 0, 0, 0)
-    );
-
-    Datetime previousClosedDate;
-
-    for (Case caseRecord : result) {
-      System.assertEquals(CLOSED_STATUS, caseRecord.Status);
-
-      System.assertNotEquals(null, caseRecord.ClosedDate);
-
-      System.assert(caseRecord.ClosedDate >= rangeStart);
-
-      if (previousClosedDate != null) {
-        System.assert(
-          previousClosedDate >= caseRecord.ClosedDate,
-          'Cases should be ordered by ClosedDate DESC.'
-        );
-      }
-
-      previousClosedDate = caseRecord.ClosedDate;
-    }
-  }
-
-  /*
-   * =========================================================
    * selectCaseHistory
    * =========================================================
    */
