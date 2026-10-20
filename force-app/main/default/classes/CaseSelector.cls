@@ -21,12 +21,6 @@ public with sharing class CaseSelector {
     'CreatedBy.Email'
   };
 
-  private static final List<String> ACCOUNT_FIELDS = new List<String>{
-    'Id',
-    'Name',
-    'AccountTier__c'
-  };
-
   private static final List<String> CASE_HISTORY_FIELDS = new List<String>{
     'Id',
     'Field',
@@ -48,28 +42,6 @@ public with sharing class CaseSelector {
     'Id',
     'Status'
   };
-
-  /*
-   * Accounts
-   */
-  public static Map<Id, Account> selectAccountsByIds(Set<Id> accountIds) {
-    if (accountIds == null || accountIds.isEmpty()) {
-      return new Map<Id, Account>();
-    }
-
-    ReportRequest request = createRequest('Account', ACCOUNT_FIELDS);
-
-    request.filters.add(new FilterCondition('Id', 'IN', accountIds));
-
-    request.limitSize = accountIds.size();
-
-    ReportResult result = GenericSelector.selectRecords(
-      request,
-      accountIds.size()
-    );
-
-    return new Map<Id, Account>(toAccountList(result.records));
-  }
 
   /*
    * Single Case
@@ -309,21 +281,6 @@ public with sharing class CaseSelector {
       cases.add((Case) record);
     }
     return cases;
-  }
-
-  /*
-   * Converts List<SObject> returned by GenericSelector
-   * to a strongly typed List<Account>.
-   */
-  private static List<Account> toAccountList(List<SObject> records) {
-    List<Account> accounts = new List<Account>();
-    if (records == null) {
-      return accounts;
-    }
-    for (SObject record : records) {
-      accounts.add((Account) record);
-    }
-    return accounts;
   }
 
   /*

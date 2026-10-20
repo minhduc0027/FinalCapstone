@@ -1,122 +1,43 @@
 @IsTest
 private class CaseSelectorTests {
-  private static final String ACCOUNT_NAME = 'CaseSelector Test Account';
+  private static final String SUBJECT_PREFIX = 'CaseSelectorTest-';
 
-  private static final String SUBJECT_PREFIX = 'CaseSelector Test - ';
+  private static final String OPEN_STATUS = 'New';
+  private static final String CLOSED_STATUS = 'Closed';
+  private static final String PRIORITY = 'Medium';
+  private static final String ORIGIN = 'Web';
 
-  /*
-   * Không hard-code toàn bộ Status/Priority vì các giá trị
-   * có thể được cấu hình khác nhau giữa các org.
-   */
   @TestSetup
   static void setupData() {
-    Account testAccount = new Account(Name = ACCOUNT_NAME);
-    insert testAccount;
-
-    String openStatus = getOpenStatus();
-    String closedStatus = getClosedStatus();
-    String priority = getPriority();
-
     List<Case> casesToInsert = new List<Case>();
 
-    for (Integer index = 1; index <= 4; index++) {
+    for (Integer index = 1; index <= 5; index++) {
       casesToInsert.add(
         new Case(
           Subject = SUBJECT_PREFIX + index,
-          Status = openStatus,
-          Priority = priority,
-          Origin = 'Web',
-          AccountId = testAccount.Id,
-          OwnerId = UserInfo.getUserId()
+          Status = OPEN_STATUS,
+          Priority = PRIORITY,
+          Origin = ORIGIN
         )
       );
     }
 
-    /*
-     * Tạo một Case rồi chuyển sang trạng thái closed.
-     * Khi Case chuyển sang trạng thái đóng, Salesforce
-     * tự thiết lập ClosedDate.
-     */
-    casesToInsert.add(
-      new Case(
-        Subject = SUBJECT_PREFIX + 'Closed',
-        Status = openStatus,
-        Priority = priority,
-        Origin = 'Web',
-        AccountId = testAccount.Id,
-        OwnerId = UserInfo.getUserId()
-      )
-    );
-
     insert casesToInsert;
 
-    Case closedCase = casesToInsert[casesToInsert.size() - 1];
-    closedCase.Status = closedStatus;
-    update closedCase;
-
     /*
-     * Tạo thêm một lần thay đổi Status để CaseHistory
-     * có thể có dữ liệu nếu org bật field history tracking.
-     *
-     * Test không phụ thuộc vào việc tracking đang bật.
+     * Tạo Case đã đóng để test:
+     * - selectClosedCasesLast30Days()
+     * - openOnly
+     * - CaseHistory nếu Status history tracking được bật.
      */
-    if (openStatus != closedStatus) {
-      Case historyCase = casesToInsert[0];
-      historyCase.Status = closedStatus;
-      update historyCase;
-    }
-  }
-
-  /*
-   * =========================================================
-   * Metadata helpers
-   * =========================================================
-   */
-
-  private static String getOpenStatus() {
-    List<CaseStatus> statuses = [
-      SELECT MasterLabel, IsClosed
-      FROM CaseStatus
-      WHERE IsClosed = FALSE
-      ORDER BY SortOrder
-      LIMIT 1
-    ];
-
-    System.assert(
-      !statuses.isEmpty(),
-      'The org must contain at least one open Case status.'
-    );
-
-    return statuses[0].MasterLabel;
-  }
-
-  private static String getClosedStatus() {
-    List<CaseStatus> statuses = [
-      SELECT MasterLabel, IsClosed
-      FROM CaseStatus
-      WHERE IsClosed = TRUE
-      ORDER BY SortOrder
-      LIMIT 1
-    ];
-
-    System.assert(
-      !statuses.isEmpty(),
-      'The org must contain at least one closed Case status.'
-    );
-
-    return statuses[0].MasterLabel;
-  }
-
-  private static Account getTestAccount() {
-    return [
-      SELECT Id, Name
-      FROM Account
-      WHERE Name = :ACCOUNT_NAME
-      LIMIT 1
-    ];
+    Case closedCase = casesToInsert[4];
+    closedCase.Status = CLOSED_STATUS;
+    update closedCase;
   }
 
   private static List<Case> getTestCases() {
+    String subjectPattern = SUBJECT_PREFIX + '%';
+
     return [
       SELECT
         Id,
@@ -124,73 +45,52 @@ private class CaseSelectorTests {
         Subject,
         Status,
         Priority,
-        AccountId,
         OwnerId,
         IsClosed,
+        CreatedById,
         CreatedDate,
         ClosedDate
       FROM Case
-      WHERE Subject LIKE :SUBJECT_PREFIX + '%'
+      WHERE Subject LIKE :subjectPattern
       ORDER BY CreatedDate DESC, Id DESC
     ];
   }
 
-  /*
-   * =========================================================
-   * selectAccountsByIds
-   * =========================================================
-   */
-
-  @IsTest
-  static void selectAccountsByIds_shouldReturnEmptyForNullInput() {
-    Test.startTest();
-
-    Map<Id, Account> result = CaseSelector.selectAccountsByIds(null);
-
-    Test.stopTest();
-
-    System.assertNotEquals(null, result);
-    System.assertEquals(0, result.size());
+  private static Case getOpenTestCase() {
+    return [
+      SELECT
+        Id,
+        CaseNumber,
+        Subject,
+        Status,
+        Priority,
+        OwnerId,
+        IsClosed,
+        CreatedById,
+        CreatedDate
+      FROM Case
+      WHERE Subject LIKE :SUBJECT_PREFIX + '%' AND IsClosed = FALSE
+      LIMIT 1
+    ];
   }
 
-  @IsTest
-  static void selectAccountsByIds_shouldReturnEmptyForEmptySet() {
-    Test.startTest();
-
-    Map<Id, Account> result = CaseSelector.selectAccountsByIds(new Set<Id>());
-
-    Test.stopTest();
-
-    System.assertNotEquals(null, result);
-    System.assertEquals(0, result.size());
-  }
-
-  @IsTest
-  static void selectAccountsByIds_shouldReturnRequestedAccount() {
-    Account testAccount = getTestAccount();
-
-    Test.startTest();
-
-    Map<Id, Account> result = CaseSelector.selectAccountsByIds(
-      new Set<Id>{ testAccount.Id }
-    );
-
-    Test.stopTest();
-
-    System.assertEquals(1, result.size());
-    System.assert(result.containsKey(testAccount.Id));
-
-    Account selectedAccount = result.get(testAccount.Id);
-
-    System.assertEquals(ACCOUNT_NAME, selectedAccount.Name);
-
-    /*
-     * Xác nhận field custom đã được SELECT.
-     * Giá trị có thể null nhưng field phải populated.
-     */
-    System.assert(
-      selectedAccount.getPopulatedFieldsAsMap().containsKey('Name')
-    );
+  private static Case getClosedTestCase() {
+    return [
+      SELECT
+        Id,
+        CaseNumber,
+        Subject,
+        Status,
+        Priority,
+        OwnerId,
+        IsClosed,
+        CreatedById,
+        CreatedDate,
+        ClosedDate
+      FROM Case
+      WHERE Subject LIKE :SUBJECT_PREFIX + '%' AND IsClosed = TRUE
+      LIMIT 1
+    ];
   }
 
   /*
@@ -207,12 +107,12 @@ private class CaseSelectorTests {
 
     Test.stopTest();
 
-    System.assertEquals(null, result);
+    System.assertEquals(null, result, 'Null Case Id should return null.');
   }
 
   @IsTest
-  static void selectById_shouldReturnRequestedCase() {
-    Case expectedCase = getTestCases()[0];
+  static void selectById_shouldReturnCase() {
+    Case expectedCase = getOpenTestCase();
 
     Test.startTest();
 
@@ -221,17 +121,22 @@ private class CaseSelectorTests {
     Test.stopTest();
 
     System.assertNotEquals(null, result);
+
     System.assertEquals(expectedCase.Id, result.Id);
+
     System.assertEquals(expectedCase.Subject, result.Subject);
-    System.assertEquals(expectedCase.AccountId, result.AccountId);
+
+    System.assertEquals(expectedCase.Status, result.Status);
+
+    System.assertEquals(expectedCase.Priority, result.Priority);
+
     System.assertEquals(expectedCase.OwnerId, result.OwnerId);
+
+    System.assertEquals(expectedCase.CreatedById, result.CreatedById);
   }
 
   @IsTest
-  static void selectById_shouldReturnNullWhenRecordDoesNotExist() {
-    /*
-     * Đây là valid Case Id format nhưng không tồn tại.
-     */
+  static void selectById_shouldReturnNullForMissingCase() {
     Id missingCaseId = (Id) '500000000000000AAA';
 
     Test.startTest();
@@ -250,7 +155,7 @@ private class CaseSelectorTests {
    */
 
   @IsTest
-  static void selectByIds_shouldReturnEmptyForNullInput() {
+  static void selectByIds_shouldReturnEmptyForNullSet() {
     Test.startTest();
 
     List<Case> result = CaseSelector.selectByIds(null);
@@ -277,7 +182,11 @@ private class CaseSelectorTests {
   static void selectByIds_shouldReturnRequestedCases() {
     List<Case> testCases = getTestCases();
 
-    Set<Id> requestedIds = new Set<Id>{ testCases[0].Id, testCases[1].Id };
+    Set<Id> requestedIds = new Set<Id>{
+      testCases[0].Id,
+      testCases[1].Id,
+      testCases[2].Id
+    };
 
     Test.startTest();
 
@@ -285,11 +194,11 @@ private class CaseSelectorTests {
 
     Test.stopTest();
 
-    System.assertEquals(2, result.size());
+    System.assertEquals(3, result.size());
 
-    Set<Id> actualIds = new Map<Id, Case>(result).keySet();
+    Map<Id, Case> resultById = new Map<Id, Case>(result);
 
-    System.assertEquals(requestedIds, actualIds);
+    System.assertEquals(requestedIds, resultById.keySet());
   }
 
   /*
@@ -299,33 +208,7 @@ private class CaseSelectorTests {
    */
 
   @IsTest
-  static void selectMapByIds_shouldReturnCasesAsMap() {
-    List<Case> testCases = getTestCases();
-
-    Set<Id> requestedIds = new Set<Id>{
-      testCases[0].Id,
-      testCases[1].Id,
-      testCases[2].Id
-    };
-
-    Test.startTest();
-
-    Map<Id, Case> result = CaseSelector.selectMapByIds(requestedIds);
-
-    Test.stopTest();
-
-    System.assertEquals(3, result.size());
-
-    for (Id caseId : requestedIds) {
-      System.assert(
-        result.containsKey(caseId),
-        'Expected Case was not found: ' + caseId
-      );
-    }
-  }
-
-  @IsTest
-  static void selectMapByIds_shouldReturnEmptyMapForNullInput() {
+  static void selectMapByIds_shouldReturnEmptyForNullSet() {
     Test.startTest();
 
     Map<Id, Case> result = CaseSelector.selectMapByIds(null);
@@ -334,6 +217,27 @@ private class CaseSelectorTests {
 
     System.assertNotEquals(null, result);
     System.assertEquals(0, result.size());
+  }
+
+  @IsTest
+  static void selectMapByIds_shouldReturnMap() {
+    List<Case> testCases = getTestCases();
+
+    Set<Id> requestedIds = new Set<Id>{ testCases[0].Id, testCases[1].Id };
+
+    Test.startTest();
+
+    Map<Id, Case> result = CaseSelector.selectMapByIds(requestedIds);
+
+    Test.stopTest();
+
+    System.assertEquals(2, result.size());
+
+    System.assertEquals(requestedIds, result.keySet());
+
+    for (Id caseId : requestedIds) {
+      System.assertNotEquals(null, result.get(caseId));
+    }
   }
 
   /*
@@ -358,29 +262,112 @@ private class CaseSelectorTests {
 
     Test.stopTest();
 
-    System.assert(result.size() >= 5, 'Expected test Cases to be returned.');
+    System.assert(result.size() >= 5, 'Expected the test Cases.');
 
     assertDescendingOrder(result);
   }
 
   @IsTest
-  static void selectCases_shouldApplyAllFilters() {
-    List<Case> testCases = getTestCases();
+  static void selectCases_shouldApplyStatusFilter() {
+    Test.startTest();
 
-    Case expectedCase;
-
-    for (Case caseRecord : testCases) {
-      if (!caseRecord.IsClosed) {
-        expectedCase = caseRecord;
-        break;
-      }
-    }
-
-    System.assertNotEquals(
+    List<Case> result = CaseSelector.selectCases(
+      '  ' + OPEN_STATUS + '  ',
       null,
-      expectedCase,
-      'Expected at least one open Case.'
+      null,
+      false,
+      20,
+      null,
+      null
     );
+
+    Test.stopTest();
+
+    System.assert(!result.isEmpty());
+
+    for (Case caseRecord : result) {
+      System.assertEquals(OPEN_STATUS, caseRecord.Status);
+    }
+  }
+
+  @IsTest
+  static void selectCases_shouldApplyPriorityFilter() {
+    Test.startTest();
+
+    List<Case> result = CaseSelector.selectCases(
+      null,
+      '  ' + PRIORITY + '  ',
+      null,
+      false,
+      20,
+      null,
+      null
+    );
+
+    Test.stopTest();
+
+    System.assert(!result.isEmpty());
+
+    for (Case caseRecord : result) {
+      System.assertEquals(PRIORITY, caseRecord.Priority);
+    }
+  }
+
+  @IsTest
+  static void selectCases_shouldApplyOwnerFilter() {
+    Case testCase = getOpenTestCase();
+
+    Test.startTest();
+
+    List<Case> result = CaseSelector.selectCases(
+      null,
+      null,
+      testCase.OwnerId,
+      false,
+      20,
+      null,
+      null
+    );
+
+    Test.stopTest();
+
+    System.assert(!result.isEmpty());
+
+    for (Case caseRecord : result) {
+      System.assertEquals(testCase.OwnerId, caseRecord.OwnerId);
+    }
+  }
+
+  @IsTest
+  static void selectCases_shouldApplyOpenOnlyFilter() {
+    Test.startTest();
+
+    List<Case> result = CaseSelector.selectCases(
+      null,
+      null,
+      null,
+      true,
+      20,
+      null,
+      null
+    );
+
+    Test.stopTest();
+
+    System.assert(!result.isEmpty());
+
+    for (Case caseRecord : result) {
+      System.assertNotEquals(
+        CLOSED_STATUS,
+        caseRecord.Status,
+        'Closed Case should not be returned.'
+      );
+    }
+  }
+
+  @IsTest
+  static void selectCases_shouldApplyAllFilters() {
+    Case expectedCase = getOpenTestCase();
 
     Test.startTest();
 
@@ -389,14 +376,14 @@ private class CaseSelectorTests {
       '  ' + expectedCase.Priority + '  ',
       expectedCase.OwnerId,
       true,
-      200,
+      20,
       null,
       null
     );
 
     Test.stopTest();
 
-    System.assert(!result.isEmpty(), 'Expected filtered Cases.');
+    System.assert(!result.isEmpty());
 
     for (Case caseRecord : result) {
       System.assertEquals(expectedCase.Status, caseRecord.Status);
@@ -405,16 +392,15 @@ private class CaseSelectorTests {
 
       System.assertEquals(expectedCase.OwnerId, caseRecord.OwnerId);
 
-      /*
-       * IsClosed không nằm trong BASE_FIELDS,
-       * vì vậy xác minh bằng Status.
-       */
-      System.assertNotEquals(getClosedStatus(), caseRecord.Status);
+      System.assertNotEquals(CLOSED_STATUS, caseRecord.Status);
     }
   }
 
+  /*
+   * pageSize null hoặc < 1 phải được normalize thành 10.
+   */
   @IsTest
-  static void selectCases_shouldUseDefaultPageSize() {
+  static void selectCases_shouldDefaultNullPageSize() {
     Test.startTest();
 
     List<Case> result = CaseSelector.selectCases(
@@ -429,11 +415,11 @@ private class CaseSelectorTests {
 
     Test.stopTest();
 
-    System.assert(result.size() <= 10, 'Null page size should default to 10.');
+    System.assert(result.size() <= 10);
   }
 
   @IsTest
-  static void selectCases_shouldUseDefaultForZeroPageSize() {
+  static void selectCases_shouldDefaultInvalidPageSize() {
     Test.startTest();
 
     List<Case> result = CaseSelector.selectCases(
@@ -448,7 +434,7 @@ private class CaseSelectorTests {
 
     Test.stopTest();
 
-    System.assert(result.size() <= 10, 'Zero page size should default to 10.');
+    System.assert(result.size() <= 10);
   }
 
   @IsTest
@@ -467,11 +453,30 @@ private class CaseSelectorTests {
 
     Test.stopTest();
 
-    System.assert(result.size() <= 200, 'Page size should be capped at 200.');
+    System.assert(result.size() <= 200);
   }
 
   @IsTest
-  static void selectCases_shouldSupportKeysetCursor() {
+  static void selectCases_shouldRespectPageSize() {
+    Test.startTest();
+
+    List<Case> result = CaseSelector.selectCases(
+      null,
+      null,
+      null,
+      false,
+      2,
+      null,
+      null
+    );
+
+    Test.stopTest();
+
+    System.assertEquals(2, result.size());
+  }
+
+  @IsTest
+  static void selectCases_shouldSupportKeysetPagination() {
     List<Case> firstPage = CaseSelector.selectCases(
       null,
       null,
@@ -482,11 +487,7 @@ private class CaseSelectorTests {
       null
     );
 
-    System.assertEquals(
-      2,
-      firstPage.size(),
-      'First page should contain two Cases.'
-    );
+    System.assertEquals(2, firstPage.size());
 
     Case cursorRecord = firstPage[firstPage.size() - 1];
 
@@ -504,9 +505,14 @@ private class CaseSelectorTests {
 
     Test.stopTest();
 
-    System.assertNotEquals(null, secondPage);
+    Set<Id> firstPageIds = new Map<Id, Case>(firstPage).keySet();
 
     for (Case caseRecord : secondPage) {
+      System.assert(
+        !firstPageIds.contains(caseRecord.Id),
+        'Keyset pages must not overlap.'
+      );
+
       Boolean isAfterCursor =
         caseRecord.CreatedDate < cursorRecord.CreatedDate ||
         (caseRecord.CreatedDate == cursorRecord.CreatedDate &&
@@ -514,16 +520,33 @@ private class CaseSelectorTests {
 
       System.assert(
         isAfterCursor,
-        'Second-page record must be after the descending cursor.'
+        'Record is not after the descending cursor.'
       );
     }
 
-    Set<Id> firstPageIds = new Map<Id, Case>(firstPage).keySet();
+    assertDescendingOrder(secondPage);
+  }
 
-    for (Case caseRecord : secondPage) {
+  @IsTest
+  static void selectCases_shouldRejectIncompleteCursor() {
+    Case testCase = getOpenTestCase();
+
+    try {
+      CaseSelector.selectCases(
+        null,
+        null,
+        null,
+        false,
+        10,
+        testCase.CreatedDate,
+        null
+      );
+
+      System.assert(false, 'Expected ConfigReportException.');
+    } catch (ConfigReportException ex) {
       System.assert(
-        !firstPageIds.contains(caseRecord.Id),
-        'Keyset pages must not overlap.'
+        ex.getMessage().contains('record Id must not be null'),
+        ex.getMessage()
       );
     }
   }
@@ -535,7 +558,7 @@ private class CaseSelectorTests {
    */
 
   @IsTest
-  static void selectCasesWithCreator_shouldReturnEmptyForNullInput() {
+  static void selectCasesWithCreator_shouldReturnEmptyForNullSet() {
     Test.startTest();
 
     List<Case> result = CaseSelector.selectCasesWithCreator(null);
@@ -559,13 +582,13 @@ private class CaseSelectorTests {
   }
 
   @IsTest
-  static void selectCasesWithCreator_shouldIncludeCreatorEmail() {
-    Case testCase = getTestCases()[0];
+  static void selectCasesWithCreator_shouldReturnCreatorEmail() {
+    Case expectedCase = getOpenTestCase();
 
     Test.startTest();
 
     List<Case> result = CaseSelector.selectCasesWithCreator(
-      new Set<Id>{ testCase.Id }
+      new Set<Id>{ expectedCase.Id }
     );
 
     Test.stopTest();
@@ -574,11 +597,11 @@ private class CaseSelectorTests {
 
     Case selectedCase = result[0];
 
-    System.assertEquals(testCase.Id, selectedCase.Id);
+    System.assertEquals(expectedCase.Id, selectedCase.Id);
+
+    System.assertEquals(expectedCase.CreatedById, selectedCase.CreatedById);
 
     System.assertNotEquals(null, selectedCase.CreatedBy);
-
-    System.assertEquals(UserInfo.getUserId(), selectedCase.CreatedById);
 
     System.assertNotEquals(null, selectedCase.CreatedBy.Email);
   }
@@ -597,28 +620,19 @@ private class CaseSelectorTests {
 
     Test.stopTest();
 
-    System.assert(result >= 5, 'Expected count to include test Cases.');
+    System.assert(result >= 5);
   }
 
   @IsTest
   static void countCases_shouldApplyAllFilters() {
-    Case openCase;
-
-    for (Case caseRecord : getTestCases()) {
-      if (!caseRecord.IsClosed) {
-        openCase = caseRecord;
-        break;
-      }
-    }
-
-    System.assertNotEquals(null, openCase);
+    Case expectedCase = getOpenTestCase();
 
     Test.startTest();
 
     Integer result = CaseSelector.countCases(
-      '  ' + openCase.Status + '  ',
-      '  ' + openCase.Priority + '  ',
-      openCase.OwnerId,
+      '  ' + expectedCase.Status + '  ',
+      '  ' + expectedCase.Priority + '  ',
+      expectedCase.OwnerId,
       true
     );
 
@@ -628,13 +642,32 @@ private class CaseSelectorTests {
       SELECT COUNT()
       FROM Case
       WHERE
-        Status = :openCase.Status
-        AND Priority = :openCase.Priority
-        AND OwnerId = :openCase.OwnerId
+        Status = :expectedCase.Status
+        AND Priority = :expectedCase.Priority
+        AND OwnerId = :expectedCase.OwnerId
         AND IsClosed = FALSE
     ];
 
     System.assertEquals(expectedCount, result);
+  }
+
+  @IsTest
+  static void countCases_shouldCountClosedCases() {
+    Test.startTest();
+
+    Integer result = CaseSelector.countCases(CLOSED_STATUS, null, null, false);
+
+    Test.stopTest();
+
+    Integer expectedCount = [
+      SELECT COUNT()
+      FROM Case
+      WHERE Status = :CLOSED_STATUS
+    ];
+
+    System.assertEquals(expectedCount, result);
+
+    System.assert(result >= 1);
   }
 
   /*
@@ -655,8 +688,8 @@ private class CaseSelectorTests {
   }
 
   @IsTest
-  static void selectStatusById_shouldReturnOnlyRequiredData() {
-    Case expectedCase = getTestCases()[0];
+  static void selectStatusById_shouldReturnStatus() {
+    Case expectedCase = getOpenTestCase();
 
     Test.startTest();
 
@@ -665,7 +698,9 @@ private class CaseSelectorTests {
     Test.stopTest();
 
     System.assertNotEquals(null, result);
+
     System.assertEquals(expectedCase.Id, result.Id);
+
     System.assertEquals(expectedCase.Status, result.Status);
 
     Map<String, Object> populatedFields = result.getPopulatedFieldsAsMap();
@@ -676,12 +711,12 @@ private class CaseSelectorTests {
 
     System.assert(
       !populatedFields.containsKey('Subject'),
-      'selectStatusById should not query Subject.'
+      'Subject should not be queried.'
     );
   }
 
   @IsTest
-  static void selectStatusById_shouldReturnNullWhenMissing() {
+  static void selectStatusById_shouldReturnNullForMissingCase() {
     Id missingCaseId = (Id) '500000000000000AAA';
 
     Test.startTest();
@@ -695,17 +730,69 @@ private class CaseSelectorTests {
 
   /*
    * =========================================================
+   * selectClosedCasesLast30Days
+   * =========================================================
+   */
+
+  @IsTest
+  static void selectClosedCasesLast30Days_shouldReturnClosedCase() {
+    Case expectedCase = getClosedTestCase();
+
+    System.assertNotEquals(null, expectedCase.ClosedDate);
+
+    Test.startTest();
+
+    List<Case> result = CaseSelector.selectClosedCasesLast30Days();
+
+    Test.stopTest();
+
+    System.assertNotEquals(null, result);
+
+    Map<Id, Case> resultById = new Map<Id, Case>(result);
+
+    System.assert(
+      resultById.containsKey(expectedCase.Id),
+      'Recently closed test Case should be returned.'
+    );
+
+    Datetime rangeStart = Datetime.newInstance(
+      Date.today().addDays(-30),
+      Time.newInstance(0, 0, 0, 0)
+    );
+
+    Datetime previousClosedDate;
+
+    for (Case caseRecord : result) {
+      System.assertEquals(CLOSED_STATUS, caseRecord.Status);
+
+      System.assertNotEquals(null, caseRecord.ClosedDate);
+
+      System.assert(caseRecord.ClosedDate >= rangeStart);
+
+      if (previousClosedDate != null) {
+        System.assert(
+          previousClosedDate >= caseRecord.ClosedDate,
+          'Cases should be ordered by ClosedDate DESC.'
+        );
+      }
+
+      previousClosedDate = caseRecord.ClosedDate;
+    }
+  }
+
+  /*
+   * =========================================================
    * selectCaseHistory
    * =========================================================
    */
 
   @IsTest
-  static void selectCaseHistory_shouldExecuteForCase() {
-    Case testCase = getTestCases()[0];
+  static void selectCaseHistory_shouldReturnHistoryList() {
+    Case closedCase = getClosedTestCase();
 
     Test.startTest();
 
-    List<CaseHistory> result = CaseSelector.selectCaseHistory(testCase.Id);
+    List<CaseHistory> result = CaseSelector.selectCaseHistory(closedCase.Id);
 
     Test.stopTest();
 
@@ -717,13 +804,19 @@ private class CaseSelectorTests {
       if (previousCreatedDate != null) {
         System.assert(
           previousCreatedDate >= historyRecord.CreatedDate,
-          'History must be ordered newest first.'
+          'CaseHistory should be ordered by CreatedDate DESC.'
         );
       }
 
       previousCreatedDate = historyRecord.CreatedDate;
 
+      System.assertNotEquals(null, historyRecord.Id);
+
       System.assertNotEquals(null, historyRecord.CreatedBy);
+
+      System.assertNotEquals(null, historyRecord.CreatedBy.Id);
+
+      System.assertNotEquals(null, historyRecord.CreatedBy.Name);
     }
   }
 
@@ -746,10 +839,6 @@ private class CaseSelectorTests {
    */
 
   private static void assertDescendingOrder(List<Case> records) {
-    if (records.size() < 2) {
-      return;
-    }
-
     for (Integer index = 1; index < records.size(); index++) {
       Case previousRecord = records[index - 1];
 
@@ -762,7 +851,7 @@ private class CaseSelectorTests {
 
       System.assert(
         correctlyOrdered,
-        'Cases must be ordered by CreatedDate DESC, Id DESC.'
+        'Expected CreatedDate DESC, Id DESC ordering.'
       );
     }
   }
