@@ -45,7 +45,6 @@ jobs:
         run: |
           sf project deploy start \
             --target-org prod \
-            # --test-level RunLocalTests \
             --test-level NoTestRun \
             --wait 120
 
