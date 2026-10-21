@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>CaseSelector</members>
+        <members>ConfigReportException</members>
+        <members>DailyLeadProcessor</members>
+        <members>FilterCondition</members>
+        <members>GenericSelector</members>
+        <members>KeysetCursor</members>
+        <members>ReportRequest</members>
+        <members>ReportResult</members>
+        <members>CaseSelectorTests</members>
+        <members>GenericSelectorTests</members>
+        <members>SchemaHelperTests</members>
+        <name>ApexClass</name>
+    </types>
+    <version>67.0</version>
+</Package>
