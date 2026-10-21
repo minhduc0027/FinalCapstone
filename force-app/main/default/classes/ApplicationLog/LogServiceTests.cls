@@ -633,9 +633,9 @@ private class LogServiceTests {
     /*
      * Sink tạo event mới, không được thay đổi LogEntry gốc.
      */
-    System.assertEquals(131073, longEntry.message.length());
+    System.assertEquals(32768, longEntry.message.length());
     System.assertEquals(256, longEntry.source.length());
     System.assertEquals(101, longEntry.operation.length());
-    System.assertEquals(131073, longEntry.stackTrace.length());
+    System.assertEquals(65536, longEntry.stackTrace.length());
   }
 }
