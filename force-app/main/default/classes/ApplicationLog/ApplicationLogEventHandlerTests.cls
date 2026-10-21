@@ -285,7 +285,6 @@ private class ApplicationLogEventHandlerTests {
     List<Application_Log__c> logs = [
       SELECT Event_Key__c, RelatedRecord__c, UserId__c
       FROM Application_Log__c
-      WHERE Message__c IN :messages
     ];
 
     System.assertEquals(
