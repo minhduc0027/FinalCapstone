@@ -100,12 +100,12 @@ private class SmartReturnConfigServiceTests {
   }
 
   @IsTest
-  static void testGetRefundCategoryPolicy_Found() {
+  static void testGetReturnCategoryPolicy_Found() {
     Return_Category_Policy__mdt config = [
       SELECT
         DeveloperName,
         Product_Family__c,
-        Refund_Allowed__c,
+        Return_Allowed__c,
         Return_Window_Days__c,
         Is_Active__c
       FROM Return_Category_Policy__mdt
@@ -124,7 +124,7 @@ private class SmartReturnConfigServiceTests {
   }
 
   @IsTest
-  static void testGetRefundRate_NotFound() {
+  static void testGetReturnCategoryPolicy_NotFound() {
     Test.startTest();
     Return_Category_Policy__mdt policy = SmartReturnConfigService.getReturnCategoryPolicy(
       'NOT_EXIST'
