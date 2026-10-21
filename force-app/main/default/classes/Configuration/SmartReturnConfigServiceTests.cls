@@ -98,4 +98,38 @@ private class SmartReturnConfigServiceTests {
 
     System.assertEquals(config.Refund_Rate__c, rate);
   }
+
+  @IsTest
+  static void testGetReturnCategoryPolicy_Found() {
+    Return_Category_Policy__mdt config = [
+      SELECT
+        DeveloperName,
+        Product_Family__c,
+        Return_Allowed__c,
+        Return_Window_Days__c,
+        Is_Active__c
+      FROM Return_Category_Policy__mdt
+      LIMIT 1
+    ];
+
+    Test.startTest();
+
+    Return_Category_Policy__mdt policy = SmartReturnConfigService.getReturnCategoryPolicy(
+      config.Product_Family__c
+    );
+
+    Test.stopTest();
+
+    System.assertEquals(config, policy);
+  }
+
+  @IsTest
+  static void testGetReturnCategoryPolicy_NotFound() {
+    Test.startTest();
+    Return_Category_Policy__mdt policy = SmartReturnConfigService.getReturnCategoryPolicy(
+      'NOT_EXIST'
+    );
+    Test.stopTest();
+    System.assertEquals(null, policy);
+  }
 }
