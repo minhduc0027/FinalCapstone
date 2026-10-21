@@ -36,7 +36,15 @@ public inherited sharing class StateTransitionService {
 
     Case requestRecord = requests[0];
 
-    StateTransitionValidator.validate(requestRecord.Status, targetStatus);
+    try {
+      StateTransitionValidator.validate(requestRecord.Status, targetStatus);
+    } catch (StateTransitionValidator.StateTransitionException ex) {
+      /*
+       * Giữ abstraction của service:
+       * caller chỉ cần xử lý exception của service.
+       */
+      throw new StateTransitionException(ex.getMessage());
+    }
 
     if (requestRecord.Status == targetStatus) {
       return;
@@ -48,6 +56,10 @@ public inherited sharing class StateTransitionService {
 
     try {
       update requestRecord;
+    } catch (DmlException ex) {
+      throw new StateTransitionException(
+        'Không thể cập nhật trạng thái yêu cầu: ' + ex.getMessage()
+      );
     } finally {
       transitionNotesByCaseId.remove(requestRecord.Id);
     }
@@ -80,7 +92,24 @@ public inherited sharing class StateTransitionService {
 
       if (requestRecord == null) {
         results.add(
-          TransitionResult.failure(caseId, 'Không tìm thấy yêu cầu đổi trả.')
+          new TransitionResult(
+            caseId,
+            false,
+            null,
+            'Không tìm thấy yêu cầu đổi trả.'
+          )
+        );
+        continue;
+      }
+
+      if (request == null) {
+        results.add(
+          new TransitionResult(
+            caseId,
+            false,
+            requestRecord.Status,
+            'Transition request không được để trống.'
+          )
         );
         continue;
       }
@@ -92,17 +121,25 @@ public inherited sharing class StateTransitionService {
         );
 
         if (requestRecord.Status == request.targetStatus) {
-          results.add(TransitionResult.success(caseId, requestRecord.Status));
+          results.add(
+            new TransitionResult(caseId, true, requestRecord.Status, null)
+          );
           continue;
         }
 
         transitionNotesByCaseId.put(caseId, request.note);
 
         requestRecord.Status = request.targetStatus;
-
         casesToUpdate.add(requestRecord);
       } catch (Exception ex) {
-        results.add(TransitionResult.failure(caseId, ex.getMessage()));
+        results.add(
+          new TransitionResult(
+            caseId,
+            false,
+            requestRecord.Status,
+            ex.getMessage()
+          )
+        );
       }
     }
 
@@ -111,17 +148,23 @@ public inherited sharing class StateTransitionService {
 
       for (Integer index = 0; index < saveResults.size(); index++) {
         Case requestRecord = casesToUpdate[index];
-
         Database.SaveResult saveResult = saveResults[index];
 
         if (saveResult.isSuccess()) {
           results.add(
-            TransitionResult.success(requestRecord.Id, requestRecord.Status)
+            new TransitionResult(
+              requestRecord.Id,
+              true,
+              requestRecord.Status,
+              null
+            )
           );
         } else {
           results.add(
-            TransitionResult.failure(
+            new TransitionResult(
               requestRecord.Id,
+              false,
+              requestRecord.Status,
               joinErrors(saveResult.getErrors())
             )
           );
@@ -164,24 +207,16 @@ public inherited sharing class StateTransitionService {
     public String status;
     public String errorMessage;
 
-    public static TransitionResult success(Id caseId, String status) {
-      TransitionResult result = new TransitionResult();
-
-      result.caseId = caseId;
-      result.success = true;
-      result.status = status;
-
-      return result;
-    }
-
-    public static TransitionResult failure(Id caseId, String errorMessage) {
-      TransitionResult result = new TransitionResult();
-
-      result.caseId = caseId;
-      result.success = false;
-      result.errorMessage = errorMessage;
-
-      return result;
+    public TransitionResult(
+      Id caseId,
+      Boolean success,
+      String status,
+      String errorMessage
+    ) {
+      this.caseId = caseId;
+      this.success = success;
+      this.status = status;
+      this.errorMessage = errorMessage;
     }
   }
 
