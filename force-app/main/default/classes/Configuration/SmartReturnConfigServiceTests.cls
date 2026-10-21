@@ -45,7 +45,7 @@ private class SmartReturnConfigServiceTests {
   static void testFeatureEnabled_WhenFeatureExists() {
     Test.startTest();
 
-    Boolean result = SmartReturnConfigService.isFeatureEnabled('AUTO_APPROVAL');
+    Boolean result = SmartReturnConfigService.isFeatureEnabled('Auto_Approval');
 
     Test.stopTest();
 
