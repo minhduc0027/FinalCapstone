@@ -1,6 +1,6 @@
 public with sharing class SchemaHelper {
   @TestVisible
-  private static Integer globalDescribeInvocationCount = 0;
+  private static Integer getTypeObjectsCallCount = 0;
 
   private static Map<String, Schema.SObjectType> objectTypes = new Map<String, Schema.SObjectType>();
   private static Map<String, Set<String>> accessibleFields = new Map<String, Set<String>>();
@@ -109,7 +109,7 @@ public with sharing class SchemaHelper {
     }
 
     try {
-      globalDescribeInvocationCount++;
+      getTypeObjectsCallCount++;
       List<Schema.DescribeSObjectResult> descriptions = Schema.describeSObjects(
         objectNames,
         SObjectDescribeOptions.DEFERRED
@@ -268,14 +268,5 @@ public with sharing class SchemaHelper {
         path +
         '".'
     );
-  }
-
-  @TestVisible
-  private static void resetCache() {
-    objectTypes.clear();
-    accessibleFields.clear();
-    resolvedFields.clear();    
-    normalizedPaths.clear();
-    globalDescribeInvocationCount = 0;
   }
 }
