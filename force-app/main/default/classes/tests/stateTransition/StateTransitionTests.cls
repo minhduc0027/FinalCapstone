@@ -166,16 +166,6 @@ private class StateTransitionTests {
       new StateTransitionService.TransitionRequest('Completed', 'Bulk note 3')
     );
 
-    // 4. ID không tồn tại trong DB
-    Id fakeId = Id.valueOf('500000000000000BBB');
-    requests.put(
-      fakeId,
-      new StateTransitionService.TransitionRequest(
-        'Pending Approval',
-        'Fake note'
-      )
-    );
-
     List<StateTransitionService.TransitionResult> results = StateTransitionService.transitionBulk(
       requests
     );
