@@ -120,14 +120,14 @@ private class SmartReturnConfigServiceTests {
 
     Test.stopTest();
 
-    System.assertEquals(config.Refund_Rate__c, rate);
+    System.assertEquals(config, policy);
   }
 
   @IsTest
   static void testGetRefundRate_NotFound() {
     Test.startTest();
     Refund_Category_Policy__mdt policy = SmartReturnConfigService.getRefundCategoryPolicy(
-      config.Product_Family__c
+      'NOT_EXIST'
     );
     Test.stopTest();
     System.assertEquals(null, policy);

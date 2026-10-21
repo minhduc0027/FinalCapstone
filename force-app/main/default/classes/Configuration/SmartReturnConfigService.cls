@@ -83,17 +83,17 @@ public inherited sharing class SmartReturnConfigService {
   //========================================================================
   // Refund category policy
   //========================================================================
-  public static Refund_Category_Policy__mdt getRefundCategoryPolicy(
+  public static Return_Category_Policy__mdt getReturnCategoryPolicy(
     String productFamily
   ) {
-    List<Refund_Category_Policy__mdt> configs = [
+    List<Return_Category_Policy__mdt> configs = [
       SELECT
         DeveloperName,
         Product_Family__c,
-        Refund_Allowed__c,
+        Return_Allowed__c,
         Return_Window_Days__c,
         Is_Active__c
-      FROM Refund_Category_Policy__mdt
+      FROM Return_Category_Policy__mdt
       WHERE Product_Family__c = :productFamily AND Is_Active__c = TRUE
       LIMIT 1
     ];
