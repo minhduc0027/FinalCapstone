@@ -1,5 +1,5 @@
 @isTest
-private class StateTransitionTest {
+private class StateTransitionTests {
   @testSetup
   static void setupData() {
     List<Case> cases = new List<Case>{
