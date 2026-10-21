@@ -33,7 +33,7 @@ public inherited sharing class SmartReturnConfigService {
   }
 
   public static Integer getGoodsReturnWindowDays() {
-    return Integer.valueOf(getSettings().Goods_Return_Window_Days__c);
+    return Integer.valueOf(getSettings().Goods_Reurn_Window_Days__c);
   }
 
   public static Integer getPayHubMaxTimeoutSecond() {
