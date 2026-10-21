@@ -597,7 +597,7 @@ private class LogServiceTests {
     LogService.LogEntry nullEntry = new LogService.LogEntry(
       LogService.LogLevel.INFO,
       null,
-      null,
+      'Source',
       null,
       null,
       null
