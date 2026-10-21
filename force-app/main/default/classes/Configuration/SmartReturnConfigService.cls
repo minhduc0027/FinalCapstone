@@ -79,4 +79,25 @@ public inherited sharing class SmartReturnConfigService {
 
     return configs.isEmpty() ? 0 : configs[0].Refund_Rate__c;
   }
+
+  //========================================================================
+  // Refund category policy
+  //========================================================================
+  public static Refund_Category_Policy__mdt getRefundCategoryPolicy(
+    String productFamily
+  ) {
+    List<Refund_Category_Policy__mdt> configs = [
+      SELECT
+        DeveloperName,
+        Product_Family__c,
+        Refund_Allowed__c,
+        Return_Window_Days__c,
+        Is_Active__c
+      FROM Refund_Category_Policy__mdt
+      WHERE Product_Family__c = :productFamily AND Is_Active__c = TRUE
+      LIMIT 1
+    ];
+
+    return configs.isEmpty() ? null : configs[0];
+  }
 }
