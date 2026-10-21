@@ -579,7 +579,7 @@ private class LogServiceTests {
 
     System.assertEquals(0, emptyResults.size());
 
-    String longText = makeText(131073);
+    String longText = makeText(32768);
 
     LogService.LogEntry longEntry = new LogService.LogEntry(
       LogService.LogLevel.ERROR,

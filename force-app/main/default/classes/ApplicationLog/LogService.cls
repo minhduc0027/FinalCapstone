@@ -64,13 +64,13 @@ public with sharing class LogService {
         events.add(
           new Application_Log_Event__e(
             Level__c = entry.level.name(),
-            Message__c = truncate(entry.message, 131072),
+            Message__c = truncate(entry.message, 32768),
             Source__c = truncate(entry.source, 255),
             Operation__c = truncate(entry.operation, 100),
             RelatedRecord__c = entry.relatedRecordId,
             Transaction_Id__c = entry.transactionId,
             UserId__c = entry.userId,
-            Stack_Trace__c = truncate(entry.stackTrace, 131072),
+            Stack_Trace__c = truncate(entry.stackTrace, 65536),
             Event_Key__c = entry.eventKey,
             Logged_At__c = entry.loggedAt
           )
