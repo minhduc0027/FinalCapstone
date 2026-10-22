@@ -1,5 +1,7 @@
 @IsTest
 private class ReturnEligibilityServiceTests {
+  private static Integer storeSequence = 0;
+
   private static PricebookEntry createProductAndPricebookEntry(
     String productName,
     String productCode,
@@ -42,7 +44,11 @@ private class ReturnEligibilityServiceTests {
     PricebookEntry pricebookEntry,
     Date deliveryDate
   ) {
-    Store__c store = new Store__c(Store_Code__c = '012345678998765432');
+    storeSequence++;
+
+    Store__c store = new Store__c(
+      Store_Code__c = 'STORE-REQ05-' + String.valueOf(storeSequence)
+    );
     insert store;
 
     Account customer = new Account(Name = 'REQ-05 Test Customer');
@@ -68,21 +74,17 @@ private class ReturnEligibilityServiceTests {
 
     System.debug(
       LoggingLevel.INFO,
-      'TEST DATA' +
+      'TEST REQ-05 | Created OrderItem' +
         ' | storeId=' +
         store.Id +
-        ' | customerId=' +
-        customer.Id +
+        ' | storeCode=' +
+        store.Store_Code__c +
         ' | orderId=' +
         orderRecord.Id +
         ' | orderItemId=' +
         orderItem.Id +
         ' | deliveryDate=' +
-        deliveryDate +
-        ' | quantity=' +
-        orderItem.Quantity +
-        ' | unitPrice=' +
-        orderItem.UnitPrice
+        deliveryDate
     );
 
     return orderItem;
