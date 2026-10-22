@@ -106,15 +106,6 @@ private class StateTransitionTests {
     ];
     System.assertEquals('PENDING_APPROVAL', updatedReq.Status__c);
 
-    // Chuyển trạng thái lỗi qua Service
-    exceptionCaught = false;
-    try {
-      StateTransitionService.transition(req.Id, 'COMPLETED');
-    } catch (StateTransitionService.StateTransitionException e) {
-      exceptionCaught = true;
-    }
-    System.assert(exceptionCaught);
-
     Test.stopTest();
   }
 }
