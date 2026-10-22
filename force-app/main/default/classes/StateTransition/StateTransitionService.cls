@@ -56,6 +56,14 @@ public inherited sharing class StateTransitionService {
 
     try {
       update requestRecord;
+      //Log trace
+      LogService.info(
+        requestRecord,
+        'Status updated from ' + requestRecord.Status + ' to ' + targetStatus,
+        'StateTransitionService',
+        'UPDATE'
+      );
+      LogService.insertLogs();
     } catch (DmlException ex) {
       throw new StateTransitionException(
         'Không thể cập nhật trạng thái yêu cầu: ' + ex.getMessage()
