@@ -15,7 +15,9 @@ public with sharing class ApprovalService {
 
   public static void rejectRequest(String requestId, String reason) {
     if (String.isBlank(reason)) {
-      throw new StateTransitionException('Rejection reason cannot be blank.');
+      throw new StateTransitionService.StateTransitionException(
+        'Rejection reason cannot be blank.'
+      );
     }
     StateTransitionService.transition(requestId, 'REJECTED');
   }
