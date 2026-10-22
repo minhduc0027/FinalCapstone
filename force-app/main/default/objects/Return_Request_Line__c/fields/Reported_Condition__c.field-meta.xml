@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reported_Condition__c</fullName>
+    <label>Reported Condition</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>SEALED</fullName>
+                <default>false</default>
+                <label>SEALED</label>
+            </value>
+            <value>
+                <fullName>OPENED</fullName>
+                <default>false</default>
+                <label>OPENED</label>
+            </value>
+            <value>
+                <fullName>USED</fullName>
+                <default>false</default>
+                <label>USED</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

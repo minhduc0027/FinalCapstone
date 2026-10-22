@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Eligibility_Code__c</fullName>
+    <label>Eligibility Code</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>ELIGIBLE</fullName>
+                <default>false</default>
+                <label>ELIGIBLE</label>
+            </value>
+            <value>
+                <fullName>RETURN_PERIOD_EXPIRED</fullName>
+                <default>false</default>
+                <label>RETURN_PERIOD_EXPIRED</label>
+            </value>
+            <value>
+                <fullName>CATEGORY_NOT_RETURNABLE</fullName>
+                <default>false</default>
+                <label>CATEGORY_NOT_RETURNABLE</label>
+            </value>
+            <value>
+                <fullName>QUANTITY_EXCEEDED</fullName>
+                <default>false</default>
+                <label>QUANTITY_EXCEEDED</label>
+            </value>
+            <value>
+                <fullName>REFUND_RATE_ZERO</fullName>
+                <default>false</default>
+                <label>REFUND_RATE_ZERO</label>
+            </value>
+            <value>
+                <fullName>MISSING_POLICY</fullName>
+                <default>false</default>
+                <label>MISSING_POLICY</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
