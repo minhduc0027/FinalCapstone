@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Source_Channel__c</fullName>
+    <label>Source Channel</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>STORE</fullName>
+                <default>true</default>
+                <label>STORE</label>
+            </value>
+            <value>
+                <fullName>POS</fullName>
+                <default>false</default>
+                <label>POS</label>
+            </value>
+            <value>
+                <fullName>APP</fullName>
+                <default>false</default>
+                <label>APP</label>
+            </value>
+            <value>
+                <fullName>MIGRATION</fullName>
+                <default>false</default>
+                <label>MIGRATION</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
