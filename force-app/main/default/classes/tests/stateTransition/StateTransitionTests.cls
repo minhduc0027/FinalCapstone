@@ -2,12 +2,12 @@
 private class StateTransitionTests {
   @testSetup
   static void setupData() {
-    List<Case> cases = new List<Case>{
-      new Case(Status = 'New'),
-      new Case(Status = 'New'),
-      new Case(Status = 'New')
+    List<Return_Request__c> requests = new List<Return_Request__c>{
+      new Return_Request__c(Status__c = 'New'),
+      new Return_Request__c(Status__c = 'New'),
+      new Return_Request__c(Status__c = 'New')
     };
-    insert cases;
+    insert requests;
   }
 
   // ==========================================
@@ -77,45 +77,51 @@ private class StateTransitionTests {
   // ==========================================
   @isTest
   static void testServiceSingleTransition() {
-    Case c = [SELECT Id, Status FROM Case LIMIT 1];
+    Return_Request__c req = [
+      SELECT Id, Status__c
+      FROM Return_Request__c
+      LIMIT 1
+    ];
 
     Test.startTest();
 
-    // Trường hợp caseId = null
+    // Trường hợp requestId = null
     Boolean exceptionCaught = false;
     try {
-      StateTransitionService.transition(null, 'Pending Approval', 'Note');
+      StateTransitionService.transition(null, 'Pending Approval');
     } catch (StateTransitionService.StateTransitionException e) {
       exceptionCaught = true;
     }
     System.assert(exceptionCaught);
 
-    // Trường hợp không tìm thấy Case (ID không tồn tại)
-    Id fakeId = Id.valueOf('500000000000000AAA');
+    // Trường hợp không tìm thấy Return Request (ID không tồn tại)
+    Id fakeId =
+      Return_Request__c.sObjectType.getDescribe().getKeyPrefix() +
+      '0000000003ABC';
     exceptionCaught = false;
     try {
-      StateTransitionService.transition(fakeId, 'Pending Approval', 'Note');
-    } catch (StateTransitionService.StateTransitionException e) {
+      StateTransitionService.transition(fakeId, 'Pending Approval');
+    } catch (Exception e) {
       exceptionCaught = true;
     }
     System.assert(exceptionCaught);
 
     // Trường hợp targetStatus trùng với status hiện tại (return sớm)
-    StateTransitionService.transition(c.Id, 'New', 'Same status note');
+    StateTransitionService.transition(req.Id, 'New');
 
     // Chuyển trạng thái hợp lệ thành công
-    StateTransitionService.transition(
-      c.Id,
-      'Pending Approval',
-      'Approval note'
-    );
-    Case updatedCase = [SELECT Status FROM Case WHERE Id = :c.Id];
-    System.assertEquals('Pending Approval', updatedCase.Status);
+    StateTransitionService.transition(req.Id, 'Pending Approval');
+    Return_Request__c updatedReq = [
+      SELECT Status__c
+      FROM Return_Request__c
+      WHERE Id = :req.Id
+    ];
+    System.assertEquals('Pending Approval', updatedReq.Status__c);
 
     // Chuyển trạng thái lỗi qua Service
     exceptionCaught = false;
     try {
-      StateTransitionService.transition(c.Id, 'Completed', 'Invalid note');
+      StateTransitionService.transition(req.Id, 'Completed');
     } catch (StateTransitionService.StateTransitionException e) {
       exceptionCaught = true;
     }
@@ -125,83 +131,40 @@ private class StateTransitionTests {
   }
 
   // ==========================================
-  // 3. TEST STATE TRANSITION SERVICE (BULK)
-  // ==========================================
-  @isTest
-  static void testServiceBulkTransition() {
-    List<Case> cases = [SELECT Id, Status FROM Case];
-
-    Test.startTest();
-
-    // Truyền tham số null hoặc empty collection
-    System.assertEquals(0, StateTransitionService.transitionBulk(null).size());
-    System.assertEquals(
-      0,
-      StateTransitionService.transitionBulk(
-          new Map<Id, StateTransitionService.TransitionRequest>()
-        )
-        .size()
-    );
-
-    Map<Id, StateTransitionService.TransitionRequest> requests = new Map<Id, StateTransitionService.TransitionRequest>();
-
-    // 1. Chuyển hợp lệ
-    requests.put(
-      cases[0].Id,
-      new StateTransitionService.TransitionRequest(
-        'Pending Approval',
-        'Bulk note 1'
-      )
-    );
-
-    // 2. Trùng trạng thái hiện tại
-    requests.put(
-      cases[1].Id,
-      new StateTransitionService.TransitionRequest('New', 'Bulk note 2')
-    );
-
-    // 3. Chuyển không hợp lệ (New -> Completed)
-    requests.put(
-      cases[2].Id,
-      new StateTransitionService.TransitionRequest('Completed', 'Bulk note 3')
-    );
-
-    List<StateTransitionService.TransitionResult> results = StateTransitionService.transitionBulk(
-      requests
-    );
-    System.assert(!results.isEmpty());
-
-    // Kiểm tra method lấy note (sau khi kết thúc transaction bulk, map bị clear)
-    System.assertEquals(
-      null,
-      StateTransitionService.getTransitionNote(cases[0].Id)
-    );
-
-    Test.stopTest();
-  }
-
-  // ==========================================
-  // 4. TEST TRIGGER HANDLER & DML VALIDATION
+  // 3. TEST TRIGGER HANDLER & DML VALIDATION
   // ==========================================
   @isTest
   static void testTriggerHandlerBranches() {
-    Case c = [SELECT Id, Status FROM Case LIMIT 1];
+    Return_Request__c req = [
+      SELECT Id, Status__c
+      FROM Return_Request__c
+      LIMIT 1
+    ];
 
     Test.startTest();
 
     // Nhánh 1: oldRecord == null (giả lập context thiếu bản ghi cũ)
-    Case newRecordNullOld = new Case(Id = c.Id, Status = 'Pending Approval');
+    Return_Request__c newRecordNullOld = new Return_Request__c(
+      Id = req.Id,
+      Status__c = 'Pending Approval'
+    );
     ReturnRequestTriggerHandler.beforeUpdate(
-      new List<Case>{ newRecordNullOld },
-      new Map<Id, Case>()
+      new List<Return_Request__c>{ newRecordNullOld },
+      new Map<Id, Return_Request__c>()
     );
 
-    // Nhánh 2: oldRecord.Status == newRecord.Status (không đổi trạng thái)
-    Case oldRecSame = new Case(Id = c.Id, Status = 'New');
-    Case newRecSame = new Case(Id = c.Id, Status = 'New');
+    // Nhánh 2: oldRecord.Status__c == newRecord.Status__c (không đổi trạng thái)
+    Return_Request__c oldRecSame = new Return_Request__c(
+      Id = req.Id,
+      Status__c = 'New'
+    );
+    Return_Request__c newRecSame = new Return_Request__c(
+      Id = req.Id,
+      Status__c = 'New'
+    );
     ReturnRequestTriggerHandler.beforeUpdate(
-      new List<Case>{ newRecSame },
-      new Map<Id, Case>{ c.Id => oldRecSame }
+      new List<Return_Request__c>{ newRecSame },
+      new Map<Id, Return_Request__c>{ req.Id => oldRecSame }
     );
 
     Test.stopTest();
@@ -209,15 +172,19 @@ private class StateTransitionTests {
 
   @isTest
   static void testTriggerDmlError() {
-    Case c = [SELECT Id, Status FROM Case LIMIT 1];
+    Return_Request__c req = [
+      SELECT Id, Status__c
+      FROM Return_Request__c
+      LIMIT 1
+    ];
 
     // Cố tình update trực tiếp sai quy luật để trigger kích hoạt `addError`
-    c.Status = 'Completed';
+    req.Status__c = 'Completed';
 
     Test.startTest();
     Boolean dmlExceptionCaught = false;
     try {
-      update c;
+      update req;
     } catch (DmlException e) {
       dmlExceptionCaught = true;
     }

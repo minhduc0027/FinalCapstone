@@ -5,26 +5,18 @@ public with sharing class ApprovalService {
   // - Pending Approval -> Inspecting
   // - Pending Approval -> Rejected
   //===================================================
-  public static void approveRequest(String caseId, String origin) {
-    if (origin == 'App') {
-      StateTransitionService.transition(
-        caseId,
-        'Awaiting Goods',
-        'Approved by manager.'
-      );
+  public static void approveRequest(String requestId, String sourceChannel) {
+    if (sourceChannel == 'App') {
+      StateTransitionService.transition(requestId, 'AWAITING_GOODS');
     } else {
-      StateTransitionService.transition(
-        caseId,
-        'Inspecting',
-        'Approved by manager.'
-      );
+      StateTransitionService.transition(requestId, 'INSPECTING');
     }
   }
 
-  public static void rejectRequest(String caseId, String reason) {
+  public static void rejectRequest(String requestId, String reason) {
     if (String.isBlank(reason)) {
       throw new StateTransitionException('Rejection reason cannot be blank.');
     }
-    StateTransitionService.transition(caseId, 'Rejected', reason);
+    StateTransitionService.transition(requestId, 'REJECTED');
   }
 }

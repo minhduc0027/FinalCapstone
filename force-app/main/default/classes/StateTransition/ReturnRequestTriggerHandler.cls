@@ -1,23 +1,26 @@
 public inherited sharing class ReturnRequestTriggerHandler {
   public static void beforeUpdate(
-    List<Case> newRecords,
-    Map<Id, Case> oldRecordsById
+    List<Return_Request__c> newRecords,
+    Map<Id, Return_Request__c> oldRecordsById
   ) {
-    for (Case newRecord : newRecords) {
-      Case oldRecord = oldRecordsById.get(newRecord.Id);
+    for (Return_Request__c newRecord : newRecords) {
+      Return_Request__c oldRecord = oldRecordsById.get(newRecord.Id);
 
       if (oldRecord == null) {
         continue;
       }
 
-      if (oldRecord.Status == newRecord.Status) {
+      if (oldRecord.Status__c == newRecord.Status__c) {
         continue;
       }
 
       try {
-        StateTransitionValidator.validate(oldRecord.Status, newRecord.Status);
+        StateTransitionValidator.validate(
+          oldRecord.Status__c,
+          newRecord.Status__c
+        );
       } catch (StateTransitionValidator.StateTransitionException ex) {
-        newRecord.Status.addError(ex.getMessage());
+        newRecord.Status__c.addError(ex.getMessage());
       }
     }
   }

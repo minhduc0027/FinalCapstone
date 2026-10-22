@@ -16,30 +16,18 @@ public with sharing class ApprovalRoutingService {
   // - New -> Awaiting Goods
   // - New -> Inspecting
   //===================================================
-  public static void evaluateInitialStatus(Case caseRecord) {
+  public static void evaluateInitialStatus(Return_Request__c returnRequest) {
     // reject criteria check Move to ReturnRequestValidator
 
     //if auto approval criteria check
-    if (checkAutoApprovalCriterial(caseRecord)) {
-      if (caseRecord.Origin == 'App') {
-        StateTransitionService.transition(
-          caseRecord.Id,
-          'Awaiting Goods',
-          'Auto approved.'
-        );
+    if (checkAutoApprovalCriterial(returnRequest)) {
+      if (returnRequest.Source_Channel__c == 'App') {
+        StateTransitionService.transition(returnRequest.Id, 'AWAITING_GOODS');
       } else {
-        StateTransitionService.transition(
-          caseRecord.Id,
-          'Inspecting',
-          'Auto approved.'
-        );
+        StateTransitionService.transition(returnRequest.Id, 'INSPECTING');
       }
     } else {
-      StateTransitionService.transition(
-        caseRecord.Id,
-        'Pending Approval',
-        'Auto approval criteria not met.'
-      );
+      StateTransitionService.transition(returnRequest.Id, 'PENDING_APPROVAL');
     }
   }
   /**
@@ -47,7 +35,9 @@ public with sharing class ApprovalRoutingService {
    * risk flag check
    * refund amount check
    */
-  private static Boolean checkAutoApprovalCriterial(Case caseRecord) {
+  private static Boolean checkAutoApprovalCriterial(
+    Return_Request__c returnRequest
+  ) {
     // todo: risk flag check
 
     // auto approval feature flag check
@@ -56,7 +46,7 @@ public with sharing class ApprovalRoutingService {
     }
     // refund amount check
     if (
-      caseRecord.Refund_Amount__c >
+      returnRequest.Actual_Refund_Amount__c >
       SmartReturnConfigService.getAutoApprovalLimit()
     ) {
       return false;
