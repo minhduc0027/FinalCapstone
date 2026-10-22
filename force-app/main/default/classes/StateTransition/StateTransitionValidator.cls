@@ -2,30 +2,30 @@ public inherited sharing class StateTransitionValidator {
   private static final Map<String, Set<String>> ALLOWED_TRANSITIONS = buildAllowedTransitions();
 
   private static final Set<String> TERMINAL_STATUSES = new Set<String>{
-    'Completed',
-    'Rejected',
-    'Cancelled'
+    'COMPLETED',
+    'REJECTED',
+    'CANCELLED'
   };
 
   private static Map<String, Set<String>> buildAllowedTransitions() {
     return new Map<String, Set<String>>{
-      'New' => new Set<String>{
-        'Pending Approval',
-        'Awaiting Goods',
-        'Inspecting',
-        'Rejected',
-        'Cancelled'
+      'NEW' => new Set<String>{
+        'PENDING_APPROVAL',
+        'AWAITING_GOODS',
+        'INSPECTING',
+        'REJECTED',
+        'CANCELLED'
       },
-      'Pending Approval' => new Set<String>{
-        'Awaiting Goods',
-        'Inspecting',
-        'Rejected',
-        'Cancelled'
+      'PENDING_APPROVAL' => new Set<String>{
+        'AWAITING_GOODS',
+        'INSPECTING',
+        'REJECTED',
+        'CANCELLED'
       },
-      'Awaiting Goods' => new Set<String>{ 'Inspecting', 'Cancelled' },
-      'Inspecting' => new Set<String>{ 'Refund Processing', 'Rejected' },
-      'Refund Processing' => new Set<String>{ 'Completed', 'Refund Failed' },
-      'Refund Failed' => new Set<String>{ 'Completed' }
+      'AWAITING_GOODS' => new Set<String>{ 'INSPECTING', 'CANCELLED' },
+      'INSPECTING' => new Set<String>{ 'REFUND_PROCESSING', 'REJECTED' },
+      'REFUND_PROCESSING' => new Set<String>{ 'COMPLETED', 'REFUND_FAILED' },
+      'REFUND_FAILED' => new Set<String>{ 'COMPLETED' }
     };
   }
 
