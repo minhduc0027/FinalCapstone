@@ -27,7 +27,7 @@ public inherited sharing class StateTransitionService {
     try {
       update requestRecord;
       LogService.info(
-        requestRecord,
+        new List<Return_Request__c>{ requestRecord },
         'Status updated from ' + oldStatus + ' to ' + targetStatus,
         'StateTransitionService',
         'UPDATE'
