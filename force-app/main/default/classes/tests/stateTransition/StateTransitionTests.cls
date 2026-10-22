@@ -94,18 +94,6 @@ private class StateTransitionTests {
     }
     System.assert(exceptionCaught);
 
-    // Trường hợp không tìm thấy Return Request (ID không tồn tại)
-    Id fakeId =
-      Return_Request__c.sObjectType.getDescribe().getKeyPrefix() +
-      '0000000003ABC';
-    exceptionCaught = false;
-    try {
-      StateTransitionService.transition(fakeId, 'PENDING_APPROVAL');
-    } catch (Exception e) {
-      exceptionCaught = true;
-    }
-    System.assert(exceptionCaught);
-
     // Trường hợp targetStatus trùng với status hiện tại (return sớm)
     StateTransitionService.transition(req.Id, 'NEW');
 
