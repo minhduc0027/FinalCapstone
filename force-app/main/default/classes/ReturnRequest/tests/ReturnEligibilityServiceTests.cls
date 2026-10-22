@@ -42,6 +42,9 @@ private class ReturnEligibilityServiceTests {
     PricebookEntry pricebookEntry,
     Date deliveryDate
   ) {
+    Store__c store = new Store__c(Store_Code__c = '012345678998765432');
+    insert store;
+
     Account customer = new Account(Name = 'REQ-05 Test Customer');
     insert customer;
 
@@ -50,7 +53,8 @@ private class ReturnEligibilityServiceTests {
       EffectiveDate = Date.today(),
       Delivery_Date__c = deliveryDate,
       Status = 'Draft',
-      Pricebook2Id = Test.getStandardPricebookId()
+      Pricebook2Id = Test.getStandardPricebookId(),
+      Store__c = store.Id
     );
     insert orderRecord;
 
@@ -64,7 +68,11 @@ private class ReturnEligibilityServiceTests {
 
     System.debug(
       LoggingLevel.INFO,
-      'TEST REQ-05 | Created OrderItem' +
+      'TEST DATA' +
+        ' | storeId=' +
+        store.Id +
+        ' | customerId=' +
+        customer.Id +
         ' | orderId=' +
         orderRecord.Id +
         ' | orderItemId=' +
