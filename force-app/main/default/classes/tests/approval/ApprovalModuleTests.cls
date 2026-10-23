@@ -254,6 +254,49 @@ public class ApprovalModuleTests {
   }
 
   @IsTest
+  static void approveBulkPosRequestMovesToInspecting() {
+    Account customer = createCustomer();
+
+    Return_Request__c requestRecord = createRequest(
+      customer.Id,
+      SmartReturnConstants.STATUS_PENDING_APPROVAL,
+      SmartReturnConstants.APPROVAL_CHT,
+      SmartReturnConstants.SOURCE_POS,
+      5000000
+    );
+    Return_Request__c requestRecord2 = createRequest(
+      customer.Id,
+      SmartReturnConstants.STATUS_PENDING_APPROVAL,
+      SmartReturnConstants.APPROVAL_CHT,
+      SmartReturnConstants.SOURCE_POS,
+      4000000
+    );
+    List<Id> requestIds = new List<Id>{ requestRecord.Id, requestRecord2.Id };
+    Test.startTest();
+
+    ApprovalService.approveRequestBulk(
+      requestIds,
+      SmartReturnConstants.SOURCE_POS
+    );
+
+    Test.stopTest();
+
+    List<Return_Request__c> actualRequests = [
+      SELECT Status__c
+      FROM Return_Request__c
+      WHERE Id IN :requestIds
+    ];
+
+    for (Return_Request__c request : actualRequests) {
+      System.assertEquals(
+        SmartReturnConstants.STATUS_INSPECTING,
+        request.Status__c,
+        'Request không phải APP phải chuyển sang INSPECTING.'
+      );
+    }
+  }
+
+  @IsTest
   static void rejectRequestMovesToRejected() {
     Account customer = createCustomer();
 
