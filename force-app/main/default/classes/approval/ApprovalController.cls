@@ -1,4 +1,32 @@
 public with sharing class ApprovalController {
-  public ApprovalController() {
+  @AuraEnabled(cacheable=true)
+  public static ApprovalPageResult getWorklist(ApprovalFilter filter) {
+    return ApprovalService.getWorklist(filter);
+  }
+
+  @AuraEnabled
+  public static void bulkApprove(List<Id> requestIds, String sourchChannel) {
+    validateRequestIds(requestIds);
+    ApprovalService.approveRequestBulk(requestIds, sourchChannel);
+  }
+
+  @AuraEnabled
+  public static void bulkReject(List<Id> requestIds) {
+    validateRequestIds(requestIds);
+    ApprovalService.rejectRequestBulk(requestIds);
+  }
+
+  private static void validateRequestIds(List<Id> requestIds) {
+    if (requestIds == null || requestIds.isEmpty()) {
+      throw new AuraHandledException(
+        'At least one Return Request is required.'
+      );
+    }
+
+    if (requestIds.size() > 200) {
+      throw new AuraHandledException(
+        'A maximum of 200 requests can be processed ' + 'at one time.'
+      );
+    }
   }
 }

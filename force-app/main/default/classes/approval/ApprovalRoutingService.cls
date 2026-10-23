@@ -1,15 +1,4 @@
 public with sharing class ApprovalRoutingService {
-  /**
-   * New -> Pending Approval
-   * New -> Awaiting Goods
-   * New -> Inspecting
-   * New -> Rejected
-   * Pending Approval -> Awaiting Goods
-   * Pending Approval -> Inspecting
-   * Pending Approval -> Rejected
-   * Pending Approval -> Pending Approval (escalation)
-   */
-
   //===================================================
   // Auto Approval Route
   // - New -> Pending Approval
@@ -51,6 +40,39 @@ public with sharing class ApprovalRoutingService {
       }
     }
   }
+
+  public static String determineRequiredApprovalLevel(
+    Id customerId,
+    Decimal estimatedRefundAmount
+  ) {
+    Decimal refundAmount = estimatedRefundAmount == null
+      ? 0
+      : estimatedRefundAmount;
+
+    Boolean isRisky = checkRiskCriteria(customerId);
+
+    if (isRisky) {
+      return SmartReturnConstants.APPROVAL_QLV;
+    }
+
+    Boolean autoApprovalEnabled = SmartReturnConfigService.isFeatureEnabled(
+      'Auto_Approval'
+    );
+
+    if (
+      autoApprovalEnabled &&
+      refundAmount <= SmartReturnConfigService.getAutoApprovalLimit()
+    ) {
+      return SmartReturnConstants.APPROVAL_AUTO;
+    }
+
+    if (refundAmount <= SmartReturnConfigService.getStoreApprovalLimit()) {
+      return SmartReturnConstants.APPROVAL_CHT;
+    }
+
+    return SmartReturnConstants.APPROVAL_QLV;
+  }
+
   /**
    * auto approval feature flag check
    * risk flag check
@@ -59,8 +81,32 @@ public with sharing class ApprovalRoutingService {
   private static Boolean checkAutoApprovalCriterial(
     Return_Request__c returnRequest
   ) {
-    //risk flag check
-    Id customerId = returnRequest.Customer__c;
+    if (returnRequest == null || returnRequest.Customer__c == null) {
+      return false;
+    }
+
+    if (checkRiskCriteria(returnRequest.Customer__c)) {
+      return false;
+    }
+
+    if (!SmartReturnConfigService.isFeatureEnabled('Auto_Approval')) {
+      return false;
+    }
+
+    if (
+      returnRequest.Estimated_Refund_Amount__c >
+      SmartReturnConfigService.getAutoApprovalLimit()
+    ) {
+      return false;
+    }
+    return true;
+  }
+
+  private static Boolean checkRiskCriteria(Id customerId) {
+    if (customerId == null) {
+      return false;
+    }
+
     Integer dateWindow = SmartReturnConfigService.getRiskWindowDays();
     Integer riskRequestCount = SmartReturnConfigService.getRiskRequestCount();
     Decimal riskRefundAmount = SmartReturnConfigService.getRiskRefundAmount();
@@ -73,27 +119,15 @@ public with sharing class ApprovalRoutingService {
       WHERE
         Customer__c = :customerId
         AND CreatedDate >= :System.now().addDays(-dateWindow)
+        AND Status__c IN :SmartReturnConstants.ACTIVE_RETURN_STATUSES
     ];
+
     Integer requestCount = (Integer) result.get('requestCount');
     Decimal totalRefundAmount = (Decimal) result.get('totalRefundAmount');
+
     totalRefundAmount = totalRefundAmount == null ? 0 : totalRefundAmount;
-    Boolean isRisky =
-      requestCount >= riskRequestCount ||
+
+    return requestCount >= riskRequestCount ||
       totalRefundAmount >= riskRefundAmount;
-    if (isRisky) {
-      return false;
-    }
-    // auto approval feature flag check
-    if (!SmartReturnConfigService.isFeatureEnabled('Auto_Approval')) {
-      return false;
-    }
-    // refund amount check
-    if (
-      returnRequest.Estimated_Refund_Amount__c >
-      SmartReturnConfigService.getAutoApprovalLimit()
-    ) {
-      return false;
-    }
-    return true;
   }
 }

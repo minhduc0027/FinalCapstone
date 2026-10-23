@@ -156,4 +156,60 @@ private class StateTransitionTests {
     );
     Test.stopTest();
   }
+
+  @IsTest
+  static void transitionBulk_ShouldUpdateMultipleRecords() {
+    List<Return_Request__c> requests = new List<Return_Request__c>();
+
+    for (Integer i = 0; i < 2; i++) {
+      requests.add(
+        new Return_Request__c(
+          Status__c = SmartReturnConstants.STATUS_NEW,
+          Source_Channel__c = 'STORE'
+        )
+      );
+    }
+
+    insert requests;
+
+    List<TransitionRequest> transitionRequests = new List<TransitionRequest>();
+
+    for (Return_Request__c request : requests) {
+      transitionRequests.add(
+        new TransitionRequest(
+          request.Id,
+          SmartReturnConstants.STATUS_PENDING_APPROVAL,
+          SmartReturnConstants.APPROVAL_CHT
+        )
+      );
+    }
+
+    Test.startTest();
+
+    List<TransitionResult> results = StateTransitionService.transitionBulk(
+      transitionRequests
+    );
+
+    Test.stopTest();
+
+    System.assertEquals(2, results.size());
+
+    List<Return_Request__c> updatedRequests = [
+      SELECT Status__c, Required_Approval_Level__c
+      FROM Return_Request__c
+      WHERE Id IN :requests
+    ];
+
+    for (Return_Request__c request : updatedRequests) {
+      System.assertEquals(
+        SmartReturnConstants.STATUS_PENDING_APPROVAL,
+        request.Status__c
+      );
+
+      System.assertEquals(
+        SmartReturnConstants.APPROVAL_CHT,
+        request.Required_Approval_Level__c
+      );
+    }
+  }
 }
