@@ -32,8 +32,15 @@ private class ReturnQuantityServiceTests {
     );
     insert customer;
 
+    Store__c store = new Store__c(
+      Store_Code__c = 'REQ06-' +
+        String.valueOf(Math.abs(Crypto.getRandomInteger())).left(10)
+    );
+    insert store;
+
     Order orderRecord = new Order(
       AccountId = customer.Id,
+      Store__c = store.Id,
       EffectiveDate = Date.today(),
       Delivery_Date__c = Date.today(),
       Status = 'Draft',
