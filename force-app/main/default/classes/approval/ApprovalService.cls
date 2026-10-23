@@ -28,10 +28,10 @@ public with sharing class ApprovalService {
   ) {
     // TODO: add validation approverId match currentUserId
 
-    List<StateTransitionService.TransitionRequest> transitionRequests = new List<StateTransitionService.TransitionRequest>();
+    List<TransitionRequest> transitionRequests = new List<TransitionRequest>();
     for (Id requestId : requestIds) {
       transitionRequests.add(
-        new StateTransitionService.TransitionRequest(
+        new TransitionRequest(
           requestId,
           sourceChannel == 'APP'
             ? SmartReturnConstants.STATUS_AWAITING_GOODS
@@ -56,10 +56,10 @@ public with sharing class ApprovalService {
     );
   }
   public static void rejectRequestBulk(List<Id> requestIds) {
-    List<StateTransitionService.TransitionRequest> transitionRequests = new List<StateTransitionService.TransitionRequest>();
+    List<TransitionRequest> transitionRequests = new List<TransitionRequest>();
     for (Id requestId : requestIds) {
       transitionRequests.add(
-        new StateTransitionService.TransitionRequest(
+        new TransitionRequest(
           requestId,
           SmartReturnConstants.STATUS_REJECTED,
           null

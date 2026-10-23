@@ -7,7 +7,7 @@ public with sharing class ApprovalController {
   @AuraEnabled
   public static void bulkApprove(List<Id> requestIds) {
     validateRequestIds(requestIds);
-    ApprovalService.bulkApprove(requestIds);
+    ApprovalService.approveRequestBulk(requestIds);
   }
 
   @AuraEnabled
@@ -16,7 +16,7 @@ public with sharing class ApprovalController {
     if (String.isBlank(reason)) {
       throw new AuraHandledException('Rejection reason is required.');
     }
-    ApprovalService.bulkReject(requestIds, reason);
+    ApprovalService.rejectRequestBulk(requestIds, reason);
   }
 
   private static void validateRequestIds(List<Id> requestIds) {

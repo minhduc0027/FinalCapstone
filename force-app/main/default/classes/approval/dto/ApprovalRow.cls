@@ -32,10 +32,8 @@ public with sharing class ApprovalRow {
   @AuraEnabled
   public Integer waitingHours { get; set; }
 
-  public static ApprovalWorklistRow fromRecord(
-    Return_Request__c requestRecord
-  ) {
-    ApprovalWorklistRow row = new ApprovalWorklistRow();
+  public static ApprovalRow fromRecord(Return_Request__c requestRecord) {
+    ApprovalRow row = new ApprovalRow();
 
     row.requestId = requestRecord.Id;
     row.requestName = requestRecord.Name;
