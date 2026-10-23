@@ -64,6 +64,7 @@ public with sharing class ApprovalRoutingService {
     ];
     Integer requestCount = (Integer) result.get('requestCount');
     Decimal totalRefundAmount = (Decimal) result.get('totalRefundAmount');
+    totalRefundAmount = totalRefundAmount == null ? 0 : totalRefundAmount;
     Boolean isRisky =
       requestCount >= riskRequestCount ||
       totalRefundAmount >= riskRefundAmount;

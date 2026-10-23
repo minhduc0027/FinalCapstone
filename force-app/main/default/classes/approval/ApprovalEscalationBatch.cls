@@ -46,9 +46,9 @@ public with sharing class ApprovalEscalationBatch implements Database.Batchable<
         );
       }
     }
+    LogService.insertLogs();
   }
 
   public void finish(Database.BatchableContext context) {
-    LogService.insertLogs();
   }
 }
