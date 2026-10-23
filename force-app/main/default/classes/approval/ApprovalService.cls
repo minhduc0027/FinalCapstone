@@ -40,7 +40,7 @@ public with sharing class ApprovalService {
         )
       );
     }
-    StateTransitionService.transitionBulk(requests);
+    StateTransitionService.transitionBulk(transitionRequests);
   }
 
   public static void rejectRequest(String requestId, String reason) {
@@ -66,7 +66,7 @@ public with sharing class ApprovalService {
         )
       );
     }
-    StateTransitionService.transitionBulk(requests);
+    StateTransitionService.transitionBulk(transitionRequests);
   }
 
   private static final Integer DEFAULT_PAGE_SIZE = 20;
@@ -139,7 +139,7 @@ public with sharing class ApprovalService {
     request.page = filter.page == null
       ? buildDefaultPageRequest()
       : filter.page;
-    request.page.strategy = DbPageRequest.KEYSET;
+    request.page.strategy = DbPageRequest.OFFSET;
 
     return request;
   }
