@@ -337,15 +337,15 @@ public with sharing class InspectionService {
   /**
    * Quantity thực tế được hoàn:
    *
-   * min(Requested Quantity, Purchase Quantity)
+   * min(Requested Quantity, Purchased Quantity)
    */
   private static Decimal getRefundableQuantity(Return_Request_Line__c line) {
-    Decimal purchasedQuantity = line.Purchase_Quantity__c;
+    Decimal purchasedQuantity = line.Purchased_Quantity__c;
     Decimal requestedQuantity = line.Requested_Quantity__c;
 
     if (purchasedQuantity == null || purchasedQuantity <= 0) {
       throw new InspectionException(
-        'Purchase Quantity phải lớn hơn 0 cho line ' + line.Id + '.'
+        'Purchased Quantity phải lớn hơn 0 cho line ' + line.Id + '.'
       );
     }
     if (requestedQuantity == null || requestedQuantity <= 0) {
@@ -355,7 +355,7 @@ public with sharing class InspectionService {
     }
     if (requestedQuantity > purchasedQuantity) {
       throw new InspectionException(
-        'Requested Quantity không được vượt Purchase Quantity ' +
+        'Requested Quantity không được vượt Purchased Quantity ' +
           'cho line ' +
           line.Id +
           '.'
