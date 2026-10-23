@@ -172,11 +172,11 @@ private class StateTransitionTests {
 
     insert requests;
 
-    List<StateTransitionService.TransitionRequest> transitionRequests = new List<StateTransitionService.TransitionRequest>();
+    List<TransitionRequest> transitionRequests = new List<TransitionRequest>();
 
     for (Return_Request__c request : requests) {
       transitionRequests.add(
-        new StateTransitionService.TransitionRequest(
+        new TransitionRequest(
           request.Id,
           SmartReturnConstants.STATUS_PENDING_APPROVAL,
           SmartReturnConstants.APPROVAL_CHT
@@ -186,7 +186,7 @@ private class StateTransitionTests {
 
     Test.startTest();
 
-    List<StateTransitionService.TransitionResult> results = StateTransitionService.transitionBulk(
+    List<TransitionResult> results = StateTransitionService.transitionBulk(
       transitionRequests
     );
 
