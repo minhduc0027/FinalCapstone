@@ -176,7 +176,7 @@ private class ReturnQuantityServiceTests {
 
     Return_Request__c existingRequest = createReturnRequest(
       orderItem,
-      StateTransitionService.STATUS_NEW
+      SmartReturnConstants.STATUS_NEW
     );
 
     createReturnLine(existingRequest, orderItem, 2);
@@ -206,7 +206,7 @@ private class ReturnQuantityServiceTests {
 
     Return_Request__c existingRequest = createReturnRequest(
       orderItem,
-      StateTransitionService.STATUS_PENDING_APPROVAL
+      SmartReturnConstants.STATUS_PENDING_APPROVAL
     );
 
     createReturnLine(existingRequest, orderItem, 3);
@@ -235,12 +235,12 @@ private class ReturnQuantityServiceTests {
 
     Return_Request__c rejectedRequest = createReturnRequest(
       orderItem,
-      StateTransitionService.STATUS_REJECTED
+      SmartReturnConstants.STATUS_REJECTED
     );
 
     Return_Request__c cancelledRequest = createReturnRequest(
       orderItem,
-      StateTransitionService.STATUS_CANCELLED
+      SmartReturnConstants.STATUS_CANCELLED
     );
 
     createReturnLine(rejectedRequest, orderItem, 2);
@@ -275,12 +275,12 @@ private class ReturnQuantityServiceTests {
 
     Return_Request__c completedRequest = createReturnRequest(
       orderItem,
-      StateTransitionService.STATUS_COMPLETED
+      SmartReturnConstants.STATUS_COMPLETED
     );
 
     Return_Request__c refundFailedRequest = createReturnRequest(
       orderItem,
-      StateTransitionService.STATUS_REFUND_FAILED
+      SmartReturnConstants.STATUS_REFUND_FAILED
     );
 
     createReturnLine(completedRequest, orderItem, 2);
