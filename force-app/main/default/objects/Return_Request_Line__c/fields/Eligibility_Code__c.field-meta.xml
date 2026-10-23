@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Eligibility_Code__c</fullName>
     <label>Eligibility Code</label>
@@ -38,6 +38,11 @@
                 <fullName>MISSING_POLICY</fullName>
                 <default>false</default>
                 <label>MISSING_POLICY</label>
+            </value>
+            <value>
+                <fullName>MISSING_DELIVERY_DATE</fullName>
+                <default>false</default>
+                <label>MISSING_DELIVERY_DATE</label>
             </value>
         </valueSetDefinition>
     </valueSet>
