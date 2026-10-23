@@ -1,7 +1,7 @@
 public inherited sharing class ReturnRequestLineSelector {
   private static final Set<String> EXCLUDED_STATUSES = new Set<String>{
-    StateTransitionService.STATUS_REJECTED,
-    StateTransitionService.STATUS_CANCELLED
+    SmartReturnConstants.STATUS_REJECTED,
+    SmartReturnConstants.STATUS_CANCELLED
   };
 
   public static Map<Id, Decimal> sumActiveReturnedQuantityByOrderItem(
