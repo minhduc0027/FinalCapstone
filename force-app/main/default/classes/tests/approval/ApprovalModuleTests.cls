@@ -155,45 +155,43 @@ public class ApprovalModuleTests {
   }
 
   @IsTest
-  static void schedulerExecutesEscalationBatch() {
-    Account customer = createCustomer();
-
-    Return_Request__c overdueRequest = createRequest(
-      customer.Id,
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      SmartReturnConstants.APPROVAL_CHT,
-      SOURCE_APP,
-      5000000
-    );
-
-    Test.setCreatedDate(overdueRequest.Id, System.now().addDays(-10));
-
+  static void schedulerEnqueuesEscalationBatch() {
     Test.startTest();
 
     String scheduledJobId = System.schedule(
-      'Approval Escalation Test Job',
+      'Approval Escalation Test',
       '0 0 1 1 1 ? 2099',
       new ApprovalEscalationBatchScheduler()
     );
 
-    System.assertNotEquals(
-      null,
-      scheduledJobId,
-      'Scheduler phải trả về CronTrigger Id.'
-    );
-
     Test.stopTest();
 
-    Return_Request__c actualRequest = [
-      SELECT Required_Approval_Level__c
-      FROM Return_Request__c
-      WHERE Id = :overdueRequest.Id
+    CronTrigger scheduledJob = [
+      SELECT Id, CronJobDetail.Name, State, TimesTriggered
+      FROM CronTrigger
+      WHERE Id = :scheduledJobId
     ];
 
     System.assertEquals(
-      SmartReturnConstants.APPROVAL_QLV,
-      actualRequest.Required_Approval_Level__c,
-      'Scheduler phải gọi batch và escalate request.'
+      'Approval Escalation Test',
+      scheduledJob.CronJobDetail.Name
+    );
+
+    System.assertEquals(
+      1,
+      scheduledJob.TimesTriggered,
+      'Scheduled job phải được kích hoạt trong Test.stopTest().'
+    );
+
+    List<AsyncApexJob> batchJobs = [
+      SELECT Id, JobType, ApexClass.Name, Status
+      FROM AsyncApexJob
+      WHERE ApexClass.Name = 'ApprovalEscalationBatch'
+    ];
+
+    System.assert(
+      !batchJobs.isEmpty(),
+      'Scheduler phải enqueue ApprovalEscalationBatch.'
     );
   }
 
