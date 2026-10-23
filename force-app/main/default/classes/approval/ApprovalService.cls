@@ -10,12 +10,14 @@ public with sharing class ApprovalService {
     if (sourceChannel == 'APP') {
       StateTransitionService.transition(
         requestId,
-        SmartReturnConstants.STATUS_AWAITING_GOODS
+        SmartReturnConstants.STATUS_AWAITING_GOODS,
+        null
       );
     } else {
       StateTransitionService.transition(
         requestId,
-        SmartReturnConstants.STATUS_INSPECTING
+        SmartReturnConstants.STATUS_INSPECTING,
+        null
       );
     }
   }
@@ -28,7 +30,8 @@ public with sharing class ApprovalService {
     }
     StateTransitionService.transition(
       requestId,
-      SmartReturnConstants.STATUS_REJECTED
+      SmartReturnConstants.STATUS_REJECTED,
+      null
     );
   }
 }

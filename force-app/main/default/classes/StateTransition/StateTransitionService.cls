@@ -1,5 +1,9 @@
 public inherited sharing class StateTransitionService {
-  public static void transition(Id requestId, String targetStatus) {
+  public static void transition(
+    Id requestId,
+    String targetStatus,
+    String requiredApprovalLevel
+  ) {
     if (requestId == null) {
       throw new StateTransitionException('Return Request Id is required.');
     }
@@ -13,6 +17,9 @@ public inherited sharing class StateTransitionService {
     String oldStatus = requestRecord.Status__c;
     StateTransitionValidator.validate(oldStatus, targetStatus);
     requestRecord.Status__c = targetStatus;
+    if (String.isNotBlank(requiredApprovalLevel)) {
+      requestRecord.Required_Approval_Level__c = requiredApprovalLevel;
+    }
 
     try {
       update requestRecord;

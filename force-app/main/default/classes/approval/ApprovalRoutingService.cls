@@ -21,22 +21,34 @@ public with sharing class ApprovalRoutingService {
 
     //if auto approval criteria check
     if (checkAutoApprovalCriterial(returnRequest)) {
-      if (returnRequest.Source_Channel__c == 'App') {
+      if (returnRequest.Source_Channel__c == smartReturnConstants.SOURCE_APP) {
         StateTransitionService.transition(
           returnRequest.Id,
-          SmartReturnConstants.STATUS_AWAITING_GOODS
+          SmartReturnConstants.STATUS_AWAITING_GOODS,
+          SmartReturnConstants.APPROVAL_AUTO
         );
       } else {
         StateTransitionService.transition(
           returnRequest.Id,
-          SmartReturnConstants.STATUS_INSPECTING
+          SmartReturnConstants.STATUS_INSPECTING,
+          SmartReturnConstants.APPROVAL_AUTO
         );
       }
     } else {
-      StateTransitionService.transition(
-        returnRequest.Id,
-        SmartReturnConstants.STATUS_PENDING_APPROVAL
-      );
+      Decimal storeApprovalLimit = SmartReturnConfigService.getStoreApprovalLimit();
+      if (returnRequest.Estimated_Refund_Amount__c <= storeApprovalLimit) {
+        StateTransitionService.transition(
+          returnRequest.Id,
+          SmartReturnConstants.STATUS_PENDING_APPROVAL,
+          SmartReturnConstants.APPROVAL_CHT
+        );
+      } else {
+        StateTransitionService.transition(
+          returnRequest.Id,
+          SmartReturnConstants.STATUS_PENDING_APPROVAL,
+          SmartReturnConstants.APPROVAL_QLV
+        );
+      }
     }
   }
   /**

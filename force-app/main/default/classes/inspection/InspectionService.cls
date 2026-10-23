@@ -109,7 +109,8 @@ public with sharing class InspectionService {
     if (eligibleLineCount == 0) {
       StateTransitionService.transition(
         requestId,
-        SmartReturnConstants.STATUS_REJECTED
+        SmartReturnConstants.STATUS_REJECTED,
+        null
       );
 
       logInspection(
@@ -124,7 +125,8 @@ public with sharing class InspectionService {
       // Cân nhắc thêm STATUS_RE_CONFIRMING = 'RE_CONFIRMING';
       StateTransitionService.transition(
         requestId,
-        SmartReturnConstants.STATUS_PENDING_APPROVAL
+        SmartReturnConstants.STATUS_PENDING_APPROVAL,
+        null
       );
       logInspection(
         storedLines,
@@ -141,7 +143,8 @@ public with sharing class InspectionService {
     if (SmartReturnConfigService.isFeatureEnabled('Send_PayHub')) {
       StateTransitionService.transition(
         requestId,
-        SmartReturnConstants.STATUS_REFUND_PROCESSING
+        SmartReturnConstants.STATUS_REFUND_PROCESSING,
+        null
       );
       logInspection(
         storedLines,
@@ -196,7 +199,7 @@ public with sharing class InspectionService {
 
     Decimal refundRate = SmartReturnConfigService.getRefundRate(
       requestLine.Reported_Condition__c,
-      requestLine.Eligibility_Reason__c // Could be Eligibility_Code__c
+      requestLine.Return_Reason__c
     );
 
     if (refundRate == null || refundRate < 0) {
