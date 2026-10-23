@@ -73,6 +73,7 @@ public with sharing class ApprovalRoutingService {
       WHERE
         Customer__c = :customerId
         AND CreatedDate >= :System.now().addDays(-dateWindow)
+        AND Status__c IN :SmartReturnConstants.ACTIVE_RETURN_STATUSES
     ];
     Integer requestCount = (Integer) result.get('requestCount');
     Decimal totalRefundAmount = (Decimal) result.get('totalRefundAmount');

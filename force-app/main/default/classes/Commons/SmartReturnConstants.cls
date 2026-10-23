@@ -44,4 +44,19 @@ public with sharing class SmartReturnConstants {
   public static final String SOURCE_POS = 'POS';
   public static final String SOURCE_MIGRATION = 'MIGRATION';
   public static final String SOURCE_STORE = 'STORE';
+
+  public static final List<String> RISK_STATUS_EXCLUDE = new List<String>{
+    SmartReturnConstants.STATUS_REJECTED,
+    SmartReturnConstants.STATUS_CANCELLED
+  };
+
+  public static final List<String> ACTIVE_RETURN_STATUSES = new List<String>{
+    SmartReturnConstants.STATUS_NEW,
+    SmartReturnConstants.STATUS_PENDING_APPROVAL,
+    SmartReturnConstants.STATUS_AWAITING_GOODS,
+    SmartReturnConstants.STATUS_INSPECTING,
+    SmartReturnConstants.STATUS_REFUND_PROCESSING,
+    SmartReturnConstants.STATUS_REFUND_FAILED,
+    SmartReturnConstants.STATUS_COMPLETED
+  };
 }
