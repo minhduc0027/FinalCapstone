@@ -30,7 +30,7 @@ public with sharing class InspectionService {
         Is_Eligible__c,
         Eligibility_Code__c,
         Eligibility_Reason__c,
-        Purchase_Quantity__c,
+        Purchased_Quantity__c,
         Requested_Quantity__c,
         Order_Item__c,
         Order_Item__r.UnitPrice
