@@ -47,12 +47,8 @@ public with sharing class InspectionService {
 
     Id requestId = validateSameRequest(storedLines);
     Return_Request__c requestRecord = [
-      SELECT
-        Id,
-        Status__c,
-        Required_Approval_Level__c,
-        Actual_Refund_Amount__c,
-        ApproverId__c
+      SELECT Id, Status__c, Required_Approval_Level__c, Actual_Refund_Amount__c
+      //ApproverId__c
       FROM Return_Request__c
       WHERE Id = :requestId
       LIMIT 1
