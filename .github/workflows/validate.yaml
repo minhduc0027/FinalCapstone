@@ -9,9 +9,11 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout Source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -19,6 +21,18 @@ jobs:
 
       - name: Install Salesforce CLI
         run: npm install --global @salesforce/cli
+
+      - name: Install SFDX Git Delta
+        run: echo y | sf plugins install sfdx-git-delta
+
+      - name: Generate Delta
+        run: |
+          mkdir -p delta
+
+          sf sgd source delta \
+            --from "${{ github.event.pull_request.base.sha }}" \
+            --to HEAD \
+            --output-dir delta
 
       - name: Install Node Dependencies
         run: npm ci
@@ -36,5 +50,23 @@ jobs:
 
       - name: Validate Deployment
         run: |
-          sf project deploy validate --source-dir force-app --target-org prod --test-level RunLocalTests --wait 120
- 
+          PACKAGE="delta/package/package.xml"
+          DESTRUCTIVE="delta/destructiveChanges/destructiveChanges.xml"
+
+          if ! grep -q '<types>' "$PACKAGE" &&
+             ! grep -q '<types>' "$DESTRUCTIVE"; then
+            echo "No metadata changes."
+            exit 0
+          fi
+
+          ARGS=(--manifest "$PACKAGE")
+
+          if grep -q '<types>' "$DESTRUCTIVE"; then
+            ARGS+=(--post-destructive-changes "$DESTRUCTIVE")
+          fi
+
+          sf project deploy validate \
+            --target-org prod \
+            --test-level RunLocalTests \
+            --wait 120 \
+            "${ARGS[@]}"
