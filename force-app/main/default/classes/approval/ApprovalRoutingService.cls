@@ -22,12 +22,21 @@ public with sharing class ApprovalRoutingService {
     //if auto approval criteria check
     if (checkAutoApprovalCriterial(returnRequest)) {
       if (returnRequest.Source_Channel__c == 'App') {
-        StateTransitionService.transition(returnRequest.Id, 'AWAITING_GOODS');
+        StateTransitionService.transition(
+          returnRequest.Id,
+          SmartReturnConstants.STATUS_AWAITING_GOODS
+        );
       } else {
-        StateTransitionService.transition(returnRequest.Id, 'INSPECTING');
+        StateTransitionService.transition(
+          returnRequest.Id,
+          SmartReturnConstants.STATUS_INSPECTING
+        );
       }
     } else {
-      StateTransitionService.transition(returnRequest.Id, 'PENDING_APPROVAL');
+      StateTransitionService.transition(
+        returnRequest.Id,
+        SmartReturnConstants.STATUS_PENDING_APPROVAL
+      );
     }
   }
   /**
@@ -38,15 +47,37 @@ public with sharing class ApprovalRoutingService {
   private static Boolean checkAutoApprovalCriterial(
     Return_Request__c returnRequest
   ) {
-    // todo: risk flag check
+    //risk flag check
+    Id customerId = returnRequest.Customer__c;
+    Integer dateWindow = SmartReturnConfigService.getRiskWindowDays();
+    Integer riskRequestCount = SmartReturnConfigService.getRiskRequestCount();
+    Decimal riskRefundAmount = SmartReturnConfigService.getRiskRefundAmount();
 
+    AggregateResult result = [
+      SELECT
+        COUNT(Id) requestCount,
+        SUM(Estimated_Refund_Amount__c) totalRefundAmount
+      FROM Return_Request__c
+      WHERE
+        Customer__c = :customerId
+        AND CreatedDate >= :System.now().addDays(-dateWindow)
+    ];
+    Integer requestCount = (Integer) result.get('requestCount');
+    Decimal totalRefundAmount = (Decimal) result.get('totalRefundAmount');
+    totalRefundAmount = totalRefundAmount == null ? 0 : totalRefundAmount;
+    Boolean isRisky =
+      requestCount >= riskRequestCount ||
+      totalRefundAmount >= riskRefundAmount;
+    if (isRisky) {
+      return false;
+    }
     // auto approval feature flag check
     if (!SmartReturnConfigService.isFeatureEnabled('Auto_Approval')) {
       return false;
     }
     // refund amount check
     if (
-      returnRequest.Actual_Refund_Amount__c >
+      returnRequest.Estimated_Refund_Amount__c >
       SmartReturnConfigService.getAutoApprovalLimit()
     ) {
       return false;
