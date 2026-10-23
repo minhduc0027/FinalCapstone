@@ -22,12 +22,21 @@ public with sharing class ApprovalRoutingService {
     //if auto approval criteria check
     if (checkAutoApprovalCriterial(returnRequest)) {
       if (returnRequest.Source_Channel__c == 'App') {
-        StateTransitionService.transition(returnRequest.Id, 'AWAITING_GOODS');
+        StateTransitionService.transition(
+          returnRequest.Id,
+          SmartReturnConstants.STATUS_AWAITING_GOODS
+        );
       } else {
-        StateTransitionService.transition(returnRequest.Id, 'INSPECTING');
+        StateTransitionService.transition(
+          returnRequest.Id,
+          SmartReturnConstants.STATUS_INSPECTING
+        );
       }
     } else {
-      StateTransitionService.transition(returnRequest.Id, 'PENDING_APPROVAL');
+      StateTransitionService.transition(
+        returnRequest.Id,
+        SmartReturnConstants.STATUS_PENDING_APPROVAL
+      );
     }
   }
   /**
