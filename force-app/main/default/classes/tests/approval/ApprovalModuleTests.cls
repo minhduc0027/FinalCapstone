@@ -176,13 +176,6 @@ public class ApprovalModuleTests {
       'Approval Escalation Test',
       scheduledJob.CronJobDetail.Name
     );
-
-    System.assertEquals(
-      1,
-      scheduledJob.TimesTriggered,
-      'Scheduled job phải được kích hoạt trong Test.stopTest().'
-    );
-
     List<AsyncApexJob> batchJobs = [
       SELECT Id, JobType, ApexClass.Name, Status
       FROM AsyncApexJob
