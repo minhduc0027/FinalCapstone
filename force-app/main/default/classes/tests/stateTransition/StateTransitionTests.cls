@@ -97,7 +97,7 @@ private class StateTransitionTests {
     System.assert(
       StateTransitionValidator.isAllowed(
         SmartReturnConstants.STATUS_NEW,
-        SmartReturnConstants.STATUS_PENDINGS_APPROVAL
+        SmartReturnConstants.STATUS_PENDING_APPROVAL
       )
     );
     StateTransitionValidator.validate(
