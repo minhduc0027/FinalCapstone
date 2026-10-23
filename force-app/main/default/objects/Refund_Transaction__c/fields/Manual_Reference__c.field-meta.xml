@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Manual_Reference__c</fullName>
+    <description
+  >External transaction reference entered by authorized Accounting; never triggers another PayHub refund.</description>
+    <label>Manual Refund Reference</label>
+    <length>80</length>
+    <type>Text</type>
+</CustomField>

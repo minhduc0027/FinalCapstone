@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Refund_Reference_Matches_Request</fullName>
+    <active>true</active>
+    <description
+  >BR-13 and INT-03: the unique merchant reference and stable Idempotency-Key must equal the canonical Return Request number, including direct API inserts.</description>
+    <errorConditionFormula
+  >OR(Merchant_Reference__c &lt;&gt; Return_Request__r.Name, Idempotency_Key__c &lt;&gt; Merchant_Reference__c)</errorConditionFormula>
+    <errorMessage
+  >Merchant reference and idempotency key must match the return request number.</errorMessage>
+</ValidationRule>
