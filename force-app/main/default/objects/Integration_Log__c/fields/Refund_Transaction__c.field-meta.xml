@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Refund_Transaction__c</fullName>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <description
+  >Refund associated with this exchange, when correlated. May be blank for unmatched callbacks; existing logs prevent deletion of their linked refund.</description>
+    <inlineHelpText
+  >Refund associated with this exchange, when correlated. May be blank for unmatched callbacks; existing logs prevent deletion of their linked refund.</inlineHelpText>
+    <label>Refund Transaction</label>
+    <referenceTo>Refund_Transaction__c</referenceTo>
+    <relationshipLabel>Integration Logs</relationshipLabel>
+    <relationshipName>Integration_Logs</relationshipName>
+    <required>false</required>
+    <type>Lookup</type>
+</CustomField>

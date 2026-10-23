@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <description
+  >Records each PayHub request attempt, response, timeout, and callback for reconciliation. Links exchanges to the refund transaction when known and captures sanitized payloads, HTTP status, timing, and outcome. Credentials and authorization headers must never be stored here.</description>
+    <enableReports>true</enableReports>
+    <externalSharingModel>Private</externalSharingModel>
+    <label>Integration Log</label>
+    <nameField>
+        <displayFormat>IL-{000000}</displayFormat>
+        <label>Integration Log Number</label>
+        <startingNumber>1</startingNumber>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Integration Logs</pluralLabel>
+    <sharingModel>Private</sharingModel>
+    <visibility>Public</visibility>
+</CustomObject>

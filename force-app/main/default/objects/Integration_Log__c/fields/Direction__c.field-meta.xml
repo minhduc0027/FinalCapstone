@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Direction__c</fullName>
+    <description
+  >OUTBOUND for a refund attempt and its response or timeout; INBOUND for each received callback, including duplicates.</description>
+    <inlineHelpText
+  >OUTBOUND for a refund attempt and its response or timeout; INBOUND for each received callback, including duplicates.</inlineHelpText>
+    <label>Direction</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>INBOUND</fullName>
+                <default>false</default>
+                <label>INBOUND</label>
+            </value>
+            <value>
+                <fullName>OUTBOUND</fullName>
+                <default>false</default>
+                <label>OUTBOUND</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

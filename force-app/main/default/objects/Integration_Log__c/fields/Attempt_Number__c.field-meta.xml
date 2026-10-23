@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Attempt_Number__c</fullName>
+    <description
+  >Outbound attempt ordinal starting at one. For callbacks populate only when the originating attempt is reliably known.</description>
+    <inlineHelpText
+  >Outbound attempt ordinal starting at one. For callbacks populate only when the originating attempt is reliably known.</inlineHelpText>
+    <label>Attempt Number</label>
+    <precision>3</precision>
+    <scale>0</scale>
+    <type>Number</type>
+</CustomField>
