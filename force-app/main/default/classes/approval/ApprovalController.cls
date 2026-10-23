@@ -13,9 +13,6 @@ public with sharing class ApprovalController {
   @AuraEnabled
   public static void bulkReject(List<Id> requestIds) {
     validateRequestIds(requestIds);
-    if (String.isBlank(reason)) {
-      throw new AuraHandledException('Rejection reason is required.');
-    }
     ApprovalService.rejectRequestBulk(requestIds);
   }
 

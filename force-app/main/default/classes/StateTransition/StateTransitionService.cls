@@ -118,7 +118,7 @@ public inherited sharing class StateTransitionService {
       }
 
       LogService.info(
-        new List<SObject>(requestsToUpdate),
+        requestsToUpdate,
         'Bulk state transition completed.',
         'StateTransitionService',
         'BULK_UPDATE'
