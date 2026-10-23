@@ -2,30 +2,41 @@ public inherited sharing class StateTransitionValidator {
   private static final Map<String, Set<String>> ALLOWED_TRANSITIONS = buildAllowedTransitions();
 
   private static final Set<String> TERMINAL_STATUSES = new Set<String>{
-    'COMPLETED',
-    'REJECTED',
-    'CANCELLED'
+    SmartReturnConstants.STATUS_COMPLETED,
+    SmartReturnConstants.STATUS_REJECTED,
+    SmartReturnConstants.STATUS_CANCELLED
   };
 
   private static Map<String, Set<String>> buildAllowedTransitions() {
     return new Map<String, Set<String>>{
-      'NEW' => new Set<String>{
-        'PENDING_APPROVAL',
-        'AWAITING_GOODS',
-        'INSPECTING',
-        'REJECTED',
-        'CANCELLED'
+      SmartReturnConstants.STATUS_NEW => new Set<String>{
+        SmartReturnConstants.STATUS_PENDING_APPROVAL,
+        SmartReturnConstants.STATUS_AWAITING_GOODS,
+        SmartReturnConstants.STATUS_INSPECTING,
+        SmartReturnConstants.STATUS_REJECTED,
+        SmartReturnConstants.STATUS_CANCELLED
       },
-      'PENDING_APPROVAL' => new Set<String>{
-        'AWAITING_GOODS',
-        'INSPECTING',
-        'REJECTED',
-        'CANCELLED'
+      SmartReturnConstants.STATUS_PENDING_APPROVAL => new Set<String>{
+        SmartReturnConstants.STATUS_AWAITING_GOODS,
+        SmartReturnConstants.STATUS_INSPECTING,
+        SmartReturnConstants.STATUS_REJECTED,
+        SmartReturnConstants.STATUS_CANCELLED
       },
-      'AWAITING_GOODS' => new Set<String>{ 'INSPECTING', 'CANCELLED' },
-      'INSPECTING' => new Set<String>{ 'REFUND_PROCESSING', 'REJECTED' },
-      'REFUND_PROCESSING' => new Set<String>{ 'COMPLETED', 'REFUND_FAILED' },
-      'REFUND_FAILED' => new Set<String>{ 'COMPLETED' }
+      SmartReturnConstants.STATUS_AWAITING_GOODS => new Set<String>{
+        SmartReturnConstants.STATUS_INSPECTING,
+        SmartReturnConstants.STATUS_CANCELLED
+      },
+      SmartReturnConstants.STATUS_INSPECTING => new Set<String>{
+        SmartReturnConstants.STATUS_REFUND_PROCESSING,
+        SmartReturnConstants.STATUS_REJECTED
+      },
+      SmartReturnConstants.STATUS_REFUND_PROCESSING => new Set<String>{
+        SmartReturnConstants.STATUS_COMPLETED,
+        SmartReturnConstants.STATUS_REFUND_FAILED
+      },
+      SmartReturnConstants.STATUS_REFUND_FAILED => new Set<String>{
+        SmartReturnConstants.STATUS_COMPLETED
+      }
     };
   }
 
