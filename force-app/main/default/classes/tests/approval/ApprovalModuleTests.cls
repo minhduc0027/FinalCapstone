@@ -1,8 +1,5 @@
 @IsTest
 public class ApprovalModuleTests {
-  private static final String SOURCE_APP = 'APP';
-  private static final String SOURCE_POS = 'POS';
-
   /*
    * Không dùng @TestSetup cho các test cần Test.setCreatedDate
    * với thời điểm riêng biệt. Factory nhỏ giúp từng test có
@@ -51,7 +48,7 @@ public class ApprovalModuleTests {
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_CHT,
-      SOURCE_APP,
+      SmartReturnConstants.SOURCE_APP,
       5000000
     );
 
@@ -94,7 +91,7 @@ public class ApprovalModuleTests {
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_CHT,
-      SOURCE_APP,
+      SmartReturnConstants.SOURCE_APP,
       5000000
     );
 
@@ -129,7 +126,7 @@ public class ApprovalModuleTests {
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_QLV,
-      SOURCE_APP,
+      SmartReturnConstants.SOURCE_APP,
       30000000
     );
 
@@ -196,7 +193,7 @@ public class ApprovalModuleTests {
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_CHT,
-      SOURCE_APP,
+      SmartReturnConstants.SOURCE_APP,
       5000000
     );
 
@@ -204,7 +201,7 @@ public class ApprovalModuleTests {
 
     ApprovalService.approveRequest(
       String.valueOf(requestRecord.Id),
-      SOURCE_APP
+      SmartReturnConstants.SOURCE_APP
     );
 
     Test.stopTest();
@@ -230,7 +227,7 @@ public class ApprovalModuleTests {
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_CHT,
-      SOURCE_POS,
+      SmartReturnConstants.SOURCE_POS,
       5000000
     );
 
@@ -238,7 +235,7 @@ public class ApprovalModuleTests {
 
     ApprovalService.approveRequest(
       String.valueOf(requestRecord.Id),
-      SOURCE_POS
+      SmartReturnConstants.SOURCE_POS
     );
 
     Test.stopTest();
@@ -264,7 +261,7 @@ public class ApprovalModuleTests {
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_CHT,
-      SOURCE_APP,
+      SmartReturnConstants.SOURCE_APP,
       5000000
     );
 
@@ -298,7 +295,7 @@ public class ApprovalModuleTests {
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_CHT,
-      SOURCE_APP,
+      SmartReturnConstants.SOURCE_APP,
       5000000
     );
 
@@ -343,7 +340,7 @@ public class ApprovalModuleTests {
       customer.Id,
       SmartReturnConstants.STATUS_NEW,
       null,
-      SOURCE_APP,
+      SmartReturnConstants.SOURCE_APP,
       999999999
     );
 
@@ -362,6 +359,47 @@ public class ApprovalModuleTests {
     System.assertEquals(
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       actualRequest.Status__c,
+      'Request vượt auto limit phải chờ manual approval.'
+    );
+  }
+
+  @IsTest
+  static void initialRoutingSendsHighAmountToPendingApproval_CHT() {
+    Account customer = createCustomer();
+
+    /*
+     * Giá trị lớn để chắc chắn vượt Auto Approval Limit.
+     * Điều này giúp test không phụ thuộc trạng thái feature flag.
+     */
+    Decimal storeApprovalLimit = SmartReturnConfigService.getStoreApprovalLimit();
+    Return_Request__c requestRecord = createRequest(
+      customer.Id,
+      SmartReturnConstants.STATUS_NEW,
+      null,
+      SmartReturnConstants.SOURCE_APP,
+      storeApprovalLimit
+    );
+
+    Test.startTest();
+
+    ApprovalRoutingService.evaluateInitialStatus(requestRecord);
+
+    Test.stopTest();
+
+    Return_Request__c actualRequest = [
+      SELECT Status__c, Required_Approval_Level__c
+      FROM Return_Request__c
+      WHERE Id = :requestRecord.Id
+    ];
+
+    System.assertEquals(
+      SmartReturnConstants.STATUS_PENDING_APPROVAL,
+      actualRequest.Status__c,
+      'Request vượt auto limit phải chờ manual approval.'
+    );
+    System.assertEquals(
+      SmartReturnConstants.APPROVAL_CHT,
+      actualRequest.Required_Approval_Level__c,
       'Request vượt auto limit phải chờ manual approval.'
     );
   }

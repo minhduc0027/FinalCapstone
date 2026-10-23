@@ -36,4 +36,12 @@ public with sharing class SmartReturnConstants {
   public static final String GOODS_CONDITION_USED = 'USED';
   public static final String GOODS_CONDITION_SEALED = 'SEALED';
   public static final String GOODS_CONDITION_OPENED = 'OPENED';
+
+  //========================================================
+  // Source Channels
+  //========================================================
+  public static final String SOURCE_APP = 'APP';
+  public static final String SOURCE_POS = 'POS';
+  public static final String SOURCE_MIGRATION = 'MIGRATION';
+  public static final String SOURCE_STORE = 'STORE';
 }
