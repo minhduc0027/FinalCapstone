@@ -5,18 +5,18 @@ public with sharing class ApprovalController {
   }
 
   @AuraEnabled
-  public static void bulkApprove(List<Id> requestIds) {
+  public static void bulkApprove(List<Id> requestIds, String sourchChannel) {
     validateRequestIds(requestIds);
-    ApprovalService.approveRequestBulk(requestIds);
+    ApprovalService.approveRequestBulk(requestIds, sourchChannel);
   }
 
   @AuraEnabled
-  public static void bulkReject(List<Id> requestIds, String reason) {
+  public static void bulkReject(List<Id> requestIds) {
     validateRequestIds(requestIds);
     if (String.isBlank(reason)) {
       throw new AuraHandledException('Rejection reason is required.');
     }
-    ApprovalService.rejectRequestBulk(requestIds, reason);
+    ApprovalService.rejectRequestBulk(requestIds);
   }
 
   private static void validateRequestIds(List<Id> requestIds) {

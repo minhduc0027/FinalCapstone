@@ -96,7 +96,7 @@ public with sharing class ApprovalService {
     for (SObject recordValue : queryResult.records) {
       Return_Request__c requestRecord = (Return_Request__c) recordValue;
 
-      pageResult.records.add(ApprovalWorklistRow.fromRecord(requestRecord));
+      pageResult.records.add(ApprovalRow.fromRecord(requestRecord));
     }
 
     return pageResult;
