@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Return_Reason__c</fullName>
     <label>Return Reason</label>
@@ -10,9 +10,9 @@
         <valueSetDefinition>
             <sorted>false</sorted>
             <value>
-                <fullName>TECHNICAL_DEFECT</fullName>
+                <fullName>DEFECT</fullName>
                 <default>false</default>
-                <label>TECHNICAL_DEFECT</label>
+                <label>DEFECT</label>
             </value>
             <value>
                 <fullName>WRONG_ITEM</fullName>
@@ -25,8 +25,14 @@
                 <label>NOT_SATISFIED</label>
             </value>
             <value>
+                <fullName>CUSTOMER_DAMAGED</fullName>
+                <default>false</default>
+                <label>CUSTOMER_DAMAGED</label>
+            </value>
+            <value>
                 <fullName>CUSTOMER_DAMAGE</fullName>
                 <default>false</default>
+                <isActive>false</isActive>
                 <label>CUSTOMER_DAMAGE</label>
             </value>
         </valueSetDefinition>

@@ -111,7 +111,7 @@ private class ReturnQuantityServiceTests {
       Purchased_Quantity__c = orderItem.Quantity,
       Requested_Quantity__c = requestedQuantity,
       Unit_Price_Paid__c = orderItem.UnitPrice,
-      Return_Reason__c = 'TECHNICAL_DEFECT',
+      Return_Reason__c = 'DEFECT',
       Reported_Condition__c = 'SEALED',
       Is_Eligible__c = true,
       Eligibility_Code__c = 'ELIGIBLE',
