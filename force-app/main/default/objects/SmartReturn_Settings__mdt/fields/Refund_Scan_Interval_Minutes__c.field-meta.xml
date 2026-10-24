@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Refund_Scan_Interval_Minutes__c</fullName>
+    <description
+  >How often the shared refund dispatcher scans due retries and inspected requests waiting for PayHub.</description>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Refund Scan Interval (Minutes)</label>
+    <precision>2</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+</CustomField>

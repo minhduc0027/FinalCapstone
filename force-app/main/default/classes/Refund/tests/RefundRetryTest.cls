@@ -314,6 +314,63 @@ private class RefundRetryTest {
   }
 
   @IsTest
+  static void schedulerUsesConfiguredScanInterval() {
+    System.runAs(RefundTestDataFactory.processor()) {
+      Test.startTest();
+      Id scheduled = RefundSchedulerService.ensureScheduled();
+      Id repeated = RefundSchedulerService.ensureScheduled();
+      Assert.areEqual(
+        scheduled,
+        repeated,
+        'One shared schedule is sufficient.'
+      );
+      CronTrigger job = [
+        SELECT CronExpression, NextFireTime
+        FROM CronTrigger
+        WHERE Id = :scheduled
+      ];
+      Assert.areEqual(
+        RefundSchedulerService.cronFor(job.NextFireTime),
+        job.CronExpression,
+        'Schedule targets the next run.'
+      );
+      Assert.isTrue(
+        job.NextFireTime <= System.now().addMinutes(6),
+        'Default scan interval is five minutes.'
+      );
+      Test.stopTest();
+    }
+  }
+
+  @IsTest
+  static void changedCronIsReplaced() {
+    System.runAs(RefundTestDataFactory.processor()) {
+      Test.startTest();
+      Id previous = System.schedule(
+        RefundSchedulerService.JOB_NAME + ' previous',
+        RefundSchedulerService.cronFor(System.now().addMinutes(15)),
+        new RefundRetryScheduler()
+      );
+      Id current = RefundSchedulerService.refreshSchedule();
+      Assert.areNotEqual(
+        previous,
+        current,
+        'Changed interval replaces the job.'
+      );
+      CronTrigger replacement = [
+        SELECT NextFireTime
+        FROM CronTrigger
+        WHERE Id = :current
+      ];
+      Assert.isTrue(
+        replacement.NextFireTime <= System.now().addMinutes(6),
+        'Replacement uses current setting.'
+      );
+      Test.stopTest();
+    }
+  }
+
+  @IsTest
   static void threeConsecutiveFailuresKeepThreeAudits() {
     System.runAs(RefundTestDataFactory.processor()) {
       Refund_Transaction__c row = priorAttempt(0, 16);

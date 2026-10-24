@@ -36,6 +36,10 @@
         <value xsi:type="xsd:double">1000.0</value>
     </values>
     <values>
+        <field>Refund_Scan_Interval_Minutes__c</field>
+        <value xsi:type="xsd:double">5.0</value>
+    </values>
+    <values>
         <field>Risk_Refund_Amount__c</field>
         <value xsi:type="xsd:double">3.0E7</value>
     </values>
