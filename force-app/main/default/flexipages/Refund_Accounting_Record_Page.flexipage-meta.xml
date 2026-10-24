@@ -47,8 +47,8 @@
         </itemInstances>
         <itemInstances>
             <componentInstance>
-                <componentName>force:detailPanel</componentName>
-                <identifier>refundDetails</identifier>
+                <componentName>c:refundReadOnlyDetails</componentName>
+                <identifier>refundReadOnlyDetails</identifier>
             </componentInstance>
         </itemInstances>
         <name>main</name>
