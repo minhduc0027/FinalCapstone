@@ -1,4 +1,5 @@
 public with sharing class RefundService {
+  private static final Integer REFUNDS_PER_WORKER = 10;
   @TestVisible
   private static Integer eventsPublished = 0;
 
@@ -135,7 +136,10 @@ public with sharing class RefundService {
     List<Refund_Transaction__c> updates = new List<Refund_Transaction__c>();
     List<Refund_Transaction__c> exhausted = new List<Refund_Transaction__c>();
     List<Integration_Log__c> expiredExchanges = new List<Integration_Log__c>();
-    Integer room = Limits.getLimitQueueableJobs() - Limits.getQueueableJobs();
+    Integer room =
+      REFUNDS_PER_WORKER *
+      (Limits.getLimitQueueableJobs() - Limits.getQueueableJobs());
+    List<Refund_Transaction__c> toSend = new List<Refund_Transaction__c>();
     Datetime nowValue = System.now();
 
     Savepoint checkpoint = Database.setSavepoint();
@@ -177,10 +181,24 @@ public with sharing class RefundService {
           row.Attempt_Count__c++;
           row.Last_Attempt_At__c = nowValue;
           row.Next_Retry_At__c = null;
-          row.Worker_Job_Id__c = System.enqueueJob(new RefundQueueable(row.Id));
+          toSend.add(row);
           room--;
         }
         updates.add(row);
+      }
+
+      for (
+        Integer offset = 0; offset < toSend.size(); offset += REFUNDS_PER_WORKER
+      ) {
+        List<Id> workerIds = new List<Id>();
+        Integer endIndex = Math.min(offset + REFUNDS_PER_WORKER, toSend.size());
+        for (Integer i = offset; i < endIndex; i++) {
+          workerIds.add(toSend[i].Id);
+        }
+        String workerId = System.enqueueJob(new RefundQueueable(workerIds));
+        for (Integer i = offset; i < endIndex; i++) {
+          toSend[i].Worker_Job_Id__c = workerId;
+        }
       }
 
       IntegrationLogService.recordAll(expiredExchanges);
@@ -201,39 +219,63 @@ public with sharing class RefundService {
   }
 
   public static void processClaimed(Id refundId, String jobId) {
+    processClaimed(new Set<Id>{ refundId }, jobId);
+  }
+
+  public static void processClaimed(Set<Id> refundIds, String jobId) {
     requirePermission('Refund_Process');
     List<Refund_Transaction__c> snapshots = RefundSelector.byIds(
-      new Set<Id>{ refundId },
+      refundIds,
       false
     );
     if (snapshots.isEmpty()) {
       return;
     }
-    Refund_Transaction__c sent = snapshots[0];
-    Integer attempt = sent.Attempt_Count__c.intValue();
-    if (!RefundDomain.ownsClaim(sent, jobId, attempt)) {
-      return;
-    }
     if (!SmartReturnConfigService.isFeatureEnabled('Send_PayHub')) {
-      releaseUnsentClaim(sent, jobId, attempt);
+      for (Refund_Transaction__c sent : snapshots) {
+        releaseUnsentClaim(sent, jobId, sent.Attempt_Count__c.intValue());
+      }
       return;
     }
 
-    PayHubClient.Result response;
     try {
-      response = PayHubClient.send(
-        sent.Merchant_Reference__c,
-        sent.Order_Number__c,
-        sent.Refund_Amount__c,
-        sent.Idempotency_Key__c
-      );
+      PayHubClient.configuredTimeoutMs();
     } catch (PayHubClient.ConfigurationException e) {
-      releaseUnsentClaim(sent, jobId, attempt);
+      for (Refund_Transaction__c sent : snapshots) {
+        releaseUnsentClaim(sent, jobId, sent.Attempt_Count__c.intValue());
+      }
       LogService.error(e, 'RefundService', 'processClaimed');
       LogService.insertLogs();
       return;
     }
-    persistResponse(sent, jobId, attempt, response);
+
+    Map<Id, PayHubClient.Result> responses = new Map<Id, PayHubClient.Result>();
+    for (Refund_Transaction__c sent : snapshots) {
+      if (
+        !RefundDomain.ownsClaim(sent, jobId, sent.Attempt_Count__c.intValue())
+      ) {
+        continue;
+      }
+      responses.put(
+        sent.Id,
+        PayHubClient.send(
+          sent.Merchant_Reference__c,
+          sent.Order_Number__c,
+          sent.Refund_Amount__c,
+          sent.Idempotency_Key__c
+        )
+      );
+    }
+    for (Refund_Transaction__c sent : snapshots) {
+      if (responses.containsKey(sent.Id)) {
+        persistResponse(
+          sent,
+          jobId,
+          sent.Attempt_Count__c.intValue(),
+          responses.get(sent.Id)
+        );
+      }
+    }
   }
 
   private static void releaseUnsentClaim(
@@ -343,7 +385,8 @@ public with sharing class RefundService {
     RefundDomain.Policy current = policy();
     Integer room = Math.min(
       25,
-      Limits.getLimitQueueableJobs() - Limits.getQueueableJobs()
+      REFUNDS_PER_WORKER *
+      (Limits.getLimitQueueableJobs() - Limits.getQueueableJobs())
     );
     if (room <= 0) {
       return;
@@ -355,7 +398,8 @@ public with sharing class RefundService {
     claimRefunds(ids);
     room = Math.min(
       25,
-      Limits.getLimitQueueableJobs() - Limits.getQueueableJobs()
+      REFUNDS_PER_WORKER *
+      (Limits.getLimitQueueableJobs() - Limits.getQueueableJobs())
     );
     if (room > 0) {
       Set<Id> waitingIds = new Map<Id, Return_Request__c>(

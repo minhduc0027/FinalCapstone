@@ -1,11 +1,11 @@
 public with sharing class RefundQueueable implements Queueable, Database.AllowsCallouts {
-  private Id refundId;
+  private List<Id> refundIds;
 
-  public RefundQueueable(Id refundId) {
-    this.refundId = refundId;
+  public RefundQueueable(List<Id> refundIds) {
+    this.refundIds = refundIds;
   }
 
   public void execute(QueueableContext context) {
-    RefundService.processClaimed(refundId, context.getJobId());
+    RefundService.processClaimed(new Set<Id>(refundIds), context.getJobId());
   }
 }
