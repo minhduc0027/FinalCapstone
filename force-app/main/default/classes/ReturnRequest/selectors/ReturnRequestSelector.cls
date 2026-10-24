@@ -1,5 +1,23 @@
-// Temporary selector class to allow for the use of DbQueryService in ReturnRequestService. This is a temporary solution until we can refactor the service to not require this.
 public with sharing class ReturnRequestSelector {
+  private static final String RETURN_REQUEST_OBJECT = 'Return_Request__c';
+  private static final String RETURN_REQUEST_LINE_OBJECT = 'Return_Request_Line__c';
+  private static final List<String> REQUEST_FIELDS = new List<String>{
+    'Id',
+    'Name',
+    'Status__c',
+    'Order__c',
+    'Order__r.OrderNumber',
+    'Store__c',
+    'Store__r.Store_Code__c',
+    'Actual_Refund_Amount__c',
+    'Inspection_Completed_At__c'
+  };
+  private static final List<String> LINE_FIELDS = new List<String>{
+    'Id',
+    'Return_Request__c',
+    'Inspection_Result__c'
+  };
+
   private static List<SObject> selectRows(
     String objectName,
     List<String> fields,
@@ -71,18 +89,8 @@ public with sharing class ReturnRequestSelector {
       return new Map<Id, Return_Request__c>();
     }
     List<Return_Request__c> rows = (List<Return_Request__c>) selectRows(
-      'Return_Request__c',
-      new List<String>{
-        'Id',
-        'Name',
-        'Status__c',
-        'Order__c',
-        'Order__r.OrderNumber',
-        'Store__c',
-        'Store__r.Store_Code__c',
-        'Actual_Refund_Amount__c',
-        'Inspection_Completed_At__c'
-      },
+      RETURN_REQUEST_OBJECT,
+      REQUEST_FIELDS,
       'Id IN :ids',
       new Map<String, Object>{ 'ids' => ids },
       lockRows,
@@ -94,8 +102,8 @@ public with sharing class ReturnRequestSelector {
 
   public static List<Return_Request_Line__c> lines(Set<Id> requestIds) {
     return (List<Return_Request_Line__c>) selectRows(
-      'Return_Request_Line__c',
-      new List<String>{ 'Id', 'Return_Request__c', 'Inspection_Result__c' },
+      RETURN_REQUEST_LINE_OBJECT,
+      LINE_FIELDS,
       'Return_Request__c IN :ids',
       new Map<String, Object>{ 'ids' => requestIds },
       false,
@@ -106,11 +114,14 @@ public with sharing class ReturnRequestSelector {
 
   public static List<Return_Request__c> waitingForRefund(Integer size) {
     DbQueryPlan plan = new DbQueryPlan();
-    plan.selectFrom = 'SELECT Id FROM Return_Request__c';
-    plan.orderField = 'Inspection_Completed_At__c';
-    plan.whereParts.add(
-      'Status__c = \'INSPECTING\' AND Inspection_Completed_At__c != NULL'
+    plan.selectFrom = String.join(
+      new List<String>{ 'SELECT Id FROM', RETURN_REQUEST_OBJECT },
+      ' '
     );
+    plan.orderField = 'Inspection_Completed_At__c';
+    plan.whereParts.add('Status__c = :inspectingStatus');
+    plan.whereParts.add('Inspection_Completed_At__c != NULL');
+    plan.binds.put('inspectingStatus', SmartReturnConstants.STATUS_INSPECTING);
     plan.binds.put('rowLimit', size + 1);
     return (List<Return_Request__c>) DbQueryService.queryPage(
         plan,

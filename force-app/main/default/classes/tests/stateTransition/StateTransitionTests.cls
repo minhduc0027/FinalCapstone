@@ -108,6 +108,32 @@ private class StateTransitionTests {
     Test.stopTest();
   }
 
+  @IsTest
+  static void triggerRoutesStatusValidationToStateTransitionService() {
+    List<Return_Request__c> requests = [
+      SELECT Id, Status__c
+      FROM Return_Request__c
+      ORDER BY Id
+      LIMIT 2
+    ];
+    requests[0].Status__c = SmartReturnConstants.STATUS_PENDING_APPROVAL;
+    requests[1].Status__c = SmartReturnConstants.STATUS_COMPLETED;
+
+    Test.startTest();
+    Database.SaveResult[] results = Database.update(requests, false);
+    Test.stopTest();
+
+    Assert.isTrue(results[0].isSuccess(), 'The valid transition must save.');
+    Assert.isFalse(
+      results[1].isSuccess(),
+      'The invalid transition must be rejected.'
+    );
+    Assert.isTrue(
+      results[1].getErrors()[0].getMessage().contains('Không thể chuyển'),
+      'The status validator must explain the rejected transition.'
+    );
+  }
+
   // ==========================================
   // 2. TEST STATE TRANSITION SERVICE (SINGLE)
   // ==========================================

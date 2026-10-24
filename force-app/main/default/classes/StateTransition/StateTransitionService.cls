@@ -1,4 +1,29 @@
 public inherited sharing class StateTransitionService {
+  public static void validateBeforeUpdate(
+    List<Return_Request__c> newRecords,
+    Map<Id, Return_Request__c> oldRecordsById
+  ) {
+    if (newRecords == null || newRecords.isEmpty() || oldRecordsById == null) {
+      return;
+    }
+
+    for (Return_Request__c newRecord : newRecords) {
+      Return_Request__c oldRecord = oldRecordsById.get(newRecord.Id);
+      if (oldRecord == null || oldRecord.Status__c == newRecord.Status__c) {
+        continue;
+      }
+
+      try {
+        StateTransitionValidator.validate(
+          oldRecord.Status__c,
+          newRecord.Status__c
+        );
+      } catch (StateTransitionValidator.StateTransitionException ex) {
+        newRecord.Status__c.addError(ex.getMessage());
+      }
+    }
+  }
+
   public static void transition(
     Id requestId,
     String targetStatus,
