@@ -52,7 +52,7 @@ public with sharing class RefundService {
     }
 
     List<Refund_Transaction__c> inserts = new List<Refund_Transaction__c>();
-    List<Return_Request__c> requestUpdates = new List<Return_Request__c>();
+    List<TransitionRequest> requestUpdates = new List<TransitionRequest>();
     for (Id requestId : ids) {
       if (existing.containsKey(requestId)) {
         result.put(requestId, existing.get(requestId).Id);
@@ -82,9 +82,10 @@ public with sharing class RefundService {
       );
 
       requestUpdates.add(
-        new Return_Request__c(
-          Id = request.Id,
-          Status__c = SmartReturnConstants.STATUS_REFUND_PROCESSING
+        new TransitionRequest(
+          request.Id,
+          SmartReturnConstants.STATUS_REFUND_PROCESSING,
+          null
         )
       );
     }
@@ -97,7 +98,7 @@ public with sharing class RefundService {
           result.put(row.Return_Request__c, row.Id);
         }
 
-        update as system requestUpdates;
+        StateTransitionService.transitionBulk(requestUpdates, true);
       }
 
       claimRefunds(new Set<Id>(result.values()));
@@ -487,15 +488,13 @@ public with sharing class RefundService {
     Map<Id, Return_Request__c> requests,
     String status
   ) {
-    List<Return_Request__c> requestUpdates = new List<Return_Request__c>();
+    List<TransitionRequest> requestUpdates = new List<TransitionRequest>();
     List<Task> tasks = new List<Task>();
     List<Refund_Transaction__c> taskRefunds = new List<Refund_Transaction__c>();
     for (Refund_Transaction__c row : refunds) {
       Return_Request__c request = requests.get(row.Return_Request__c);
       RefundDomain.validateCompletion(request, row, status);
-      requestUpdates.add(
-        new Return_Request__c(Id = request.Id, Status__c = status)
-      );
+      requestUpdates.add(new TransitionRequest(request.Id, status, null));
       if (
         status == SmartReturnConstants.STATUS_REFUND_FAILED &&
         row.Accounting_Task_Id__c == null
@@ -522,7 +521,7 @@ public with sharing class RefundService {
       }
     }
 
-    update as system requestUpdates;
+    StateTransitionService.transitionBulk(requestUpdates, true);
     if (!tasks.isEmpty()) {
       Id owner = RefundSelector.accountingQueue();
       for (Task task : tasks) {

@@ -63,6 +63,13 @@ public inherited sharing class StateTransitionService {
   public static List<TransitionResult> transitionBulk(
     List<TransitionRequest> requests
   ) {
+    return transitionBulk(requests, false);
+  }
+
+  public static List<TransitionResult> transitionBulk(
+    List<TransitionRequest> requests,
+    Boolean allOrNone
+  ) {
     List<TransitionResult> results = new List<TransitionResult>();
 
     if (requests == null || requests.isEmpty()) {
@@ -71,6 +78,16 @@ public inherited sharing class StateTransitionService {
 
     Set<Id> requestIds = new Set<Id>();
     for (TransitionRequest request : requests) {
+      if (
+        allOrNone == true &&
+        (request == null ||
+        request.requestId == null ||
+        requestIds.contains(request.requestId))
+      ) {
+        throw new StateTransitionException(
+          'Each return request must have a unique Id.'
+        );
+      }
       requestIds.add(request.requestId);
     }
 
@@ -91,6 +108,9 @@ public inherited sharing class StateTransitionService {
       );
 
       if (requestRecord == null) {
+        if (allOrNone == true) {
+          throw new StateTransitionException('Request not found.');
+        }
         results.add(
           new TransitionResult(
             transitionRequest.requestId,
@@ -114,6 +134,9 @@ public inherited sharing class StateTransitionService {
         }
         requestsToUpdate.add(requestRecord);
       } catch (Exception ex) {
+        if (allOrNone == true) {
+          throw ex;
+        }
         results.add(
           new TransitionResult(requestRecord.Id, false, ex.getMessage())
         );
@@ -121,35 +144,47 @@ public inherited sharing class StateTransitionService {
     }
 
     if (!requestsToUpdate.isEmpty()) {
-      Database.SaveResult[] saveResults = Database.update(
-        requestsToUpdate,
-        false
-      );
+      Savepoint checkpoint = allOrNone == true ? Database.setSavepoint() : null;
+      try {
+        Database.SaveResult[] saveResults = Database.update(
+          requestsToUpdate,
+          allOrNone
+        );
 
-      for (Integer index = 0; index < saveResults.size(); index++) {
-        if (saveResults[index].isSuccess()) {
-          results.add(
-            new TransitionResult(requestsToUpdate[index].Id, true, 'SUCCESS')
-          );
-        } else {
-          results.add(
-            new TransitionResult(
-              requestsToUpdate[index].Id,
-              false,
-              saveResults[index].getErrors()[0].getMessage()
-            )
-          );
+        for (Integer index = 0; index < saveResults.size(); index++) {
+          if (saveResults[index].isSuccess()) {
+            results.add(
+              new TransitionResult(requestsToUpdate[index].Id, true, 'SUCCESS')
+            );
+          } else {
+            results.add(
+              new TransitionResult(
+                requestsToUpdate[index].Id,
+                false,
+                saveResults[index].getErrors()[0].getMessage()
+              )
+            );
+          }
         }
+
+        LogService.info(
+          requestsToUpdate,
+          'Bulk state transition completed.',
+          'StateTransitionService',
+          'BULK_UPDATE'
+        );
+
+        LogService.insertLogs();
+      } catch (Exception ex) {
+        if (allOrNone != true) {
+          throw ex;
+        }
+        Database.rollback(checkpoint);
+        throw new StateTransitionException(
+          'Could not transition return requests: ' + ex.getMessage(),
+          ex
+        );
       }
-
-      LogService.info(
-        requestsToUpdate,
-        'Bulk state transition completed.',
-        'StateTransitionService',
-        'BULK_UPDATE'
-      );
-
-      LogService.insertLogs();
     }
 
     return results;
