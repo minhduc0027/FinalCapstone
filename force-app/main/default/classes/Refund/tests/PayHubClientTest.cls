@@ -11,7 +11,7 @@ private class PayHubClientTest {
     }
     public HttpResponse respond(HttpRequest request) {
       Assert.areEqual(
-        PayHubClient.ENDPOINT,
+        'callout:PayHub/v1/refunds',
         request.getEndpoint(),
         'Use the Named Credential.'
       );

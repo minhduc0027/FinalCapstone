@@ -1,5 +1,6 @@
 public with sharing class PayHubClient {
-  public static final String ENDPOINT = 'callout:PayHub/v1/refund';
+  public static final String REFUND_PATH = '/v1/refunds';
+  public static final String ENDPOINT = 'callout:PayHub' + REFUND_PATH;
 
   @TestVisible
   private static Integer timeoutSecondsOverride;

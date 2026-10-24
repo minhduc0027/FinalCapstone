@@ -58,7 +58,7 @@ private class IntegrationLogServiceTest {
       Assert.areEqual(row.Id, entry.Refund_Transaction__c, 'Link the refund.');
       Assert.areEqual('OUTBOUND', entry.Direction__c, 'Mark the direction.');
       Assert.areEqual(
-        '/v1/refund',
+        '/v1/refunds',
         entry.Endpoint__c,
         'Keep the audit endpoint.'
       );

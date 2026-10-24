@@ -1,6 +1,5 @@
 public with sharing class IntegrationLogService {
   private static final String SYSTEM_NAME = 'PAYHUB';
-  private static final String REFUND_ENDPOINT = '/v1/refund';
   private static final String CALLBACK_ENDPOINT = '/services/apexrest/smartreturn/v1/refund-callback';
 
   public static Integration_Log__c outboundEntry(
@@ -13,7 +12,7 @@ public with sharing class IntegrationLogService {
       Refund_Transaction__c = refund.Id,
       System__c = SYSTEM_NAME,
       Direction__c = Direction.OUTBOUND.name(),
-      Endpoint__c = REFUND_ENDPOINT,
+      Endpoint__c = PayHubClient.REFUND_PATH,
       Attempt_Number__c = refund.Attempt_Count__c,
       Request_Body__c = response == null ? null : response.requestBody,
       Response_Body__c = response == null ? null : response.responseBody,
