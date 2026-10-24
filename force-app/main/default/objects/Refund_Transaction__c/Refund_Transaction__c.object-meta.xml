@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionOverrides>
+        <actionName>View</actionName>
+        <content>Refund_Accounting_Record_Page</content>
+        <formFactor>Large</formFactor>
+        <skipRecordTypeSelect>false</skipRecordTypeSelect>
+        <type>Flexipage</type>
+    </actionOverrides>
     <deploymentStatus>Deployed</deploymentStatus>
     <description
   >The Refund Transaction object stores one PayHub refund identity, integer VND amount, processing status, retry scheduling, and final outcome after successful inspection. Commonly used for refund processing, reconciliation, and accounting review.</description>
