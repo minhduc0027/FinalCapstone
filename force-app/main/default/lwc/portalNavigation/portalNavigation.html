@@ -1,0 +1,28 @@
+<template>
+  <header class="site-header">
+    <p class="slds-text-heading_small">SmartReturn</p>
+    <nav class="links" aria-label="Điều hướng chính">
+      <lightning-button
+        variant="base"
+        label="Tra cứu yêu cầu"
+        data-page="Home"
+        onclick={handleNavigate}
+      ></lightning-button>
+      <lightning-button
+        variant="base"
+        label="Yêu cầu của tôi"
+        data-page="My_Returns__c"
+        onclick={handleNavigate}
+      ></lightning-button>
+      <template lwc:if={isGuest}
+        ><lightning-button
+          variant="base"
+          label="Đăng nhập"
+          data-page="Login"
+          onclick={handleNavigate}
+        ></lightning-button
+      ></template>
+      <template lwc:else><a href={logoutUrl}>Đăng xuất</a></template>
+    </nav>
+  </header>
+</template>

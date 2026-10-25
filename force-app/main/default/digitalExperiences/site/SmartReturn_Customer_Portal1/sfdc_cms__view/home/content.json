@@ -1,0 +1,82 @@
+{
+  "type": "sfdc_cms__view",
+  "title": "Tra cứu yêu cầu đổi trả",
+  "contentBody": {
+    "component": {
+      "children": [
+        {
+          "children": [
+            {
+              "attributes": {
+                "backgroundImageConfig": "",
+                "backgroundImageOverlay": "rgba(0,0,0,0)",
+                "componentSpacerSize": "",
+                "layoutDirectionDesktop": "row",
+                "layoutDirectionMobile": "column",
+                "layoutDirectionTablet": "column",
+                "maxContentWidth": "",
+                "sectionColumnGutterWidth": "",
+                "sectionConfig": "{\"UUID\":\"f5c41aad-e9c2-47c0-9470-1cfef554aa50\",\"columns\":[{\"UUID\":\"2ebf38c0-4ba5-4076-a76b-d1c05d040677\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+                "sectionMinHeight": "",
+                "sectionVerticalAlign": "flex-start"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "attributes": {
+                        "heading": "Tra cứu yêu cầu đổi trả",
+                        "showProducts": true,
+                        "guestSitePath": "/smartreturnvforcesite"
+                      },
+                      "definition": "c:returnRequestLookup",
+                      "id": "05dcb472-022f-4c87-b840-341a6d51362a",
+                      "type": "component"
+                    }
+                  ],
+                  "id": "2ebf38c0-4ba5-4076-a76b-d1c05d040677",
+                  "name": "col1",
+                  "title": "Column 1",
+                  "type": "region"
+                }
+              ],
+              "definition": "community_layout:section",
+              "id": "f5c41aad-e9c2-47c0-9470-1cfef554aa50",
+              "type": "component"
+            }
+          ],
+          "id": "cbca7087-431c-411c-9ccb-a6a3f172929d",
+          "name": "content",
+          "title": "Content",
+          "type": "region"
+        },
+        {
+          "children": [
+            {
+              "attributes": {
+                "customHeadTags": "",
+                "description": "",
+                "pageTitle": "Tra cứu yêu cầu đổi trả",
+                "recordId": "{!recordId}"
+              },
+              "definition": "community_builder:seoAssistant",
+              "id": "0b800a97-688d-46ea-9694-ea2c4adb3d04",
+              "type": "component"
+            }
+          ],
+          "id": "dff41ed8-d921-4c78-8aec-6290d1d23734",
+          "name": "sfdcHiddenRegion",
+          "title": "sfdcHiddenRegion",
+          "type": "region"
+        }
+      ],
+      "definition": "community_layout:sldsFlexibleLayout",
+      "id": "ebb70f00-f5b7-4034-923a-4b95bcd97ee1",
+      "type": "component"
+    },
+    "dataProviders": [],
+    "themeLayoutType": "Inner",
+    "viewType": "home"
+  },
+  "urlName": "home"
+}
