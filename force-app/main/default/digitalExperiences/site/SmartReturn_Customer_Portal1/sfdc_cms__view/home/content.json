@@ -25,9 +25,10 @@
                   "children": [
                     {
                       "attributes": {
-                        "heading": "Tra cứu yêu cầu đổi trả",
+                        "heading": "Mã yêu cầu",
                         "showProducts": true,
-                        "guestSitePath": "/smartreturnvforcesite"
+                        "guestSitePath": "/smartreturnvforcesite",
+                        "subtitle": "Gồm mã yêu cầu và 4 chữ số cuối của số điện thoại gửi yêu cầu, cách nhau bằng dấu cách. Ví dụ: RR-2610-00001 4567."
                       },
                       "definition": "c:returnRequestLookup",
                       "id": "05dcb472-022f-4c87-b840-341a6d51362a",

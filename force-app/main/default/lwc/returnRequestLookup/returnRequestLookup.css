@@ -6,13 +6,15 @@
   margin-inline: auto;
   padding: var(--slds-g-spacing-5, 1.5rem);
 }
+.portal h1 {
+  font-size: var(--slds-g-font-scale-2, 1rem);
+}
 .intro {
+  font-size: var(--slds-g-font-scale-1, 0.875rem);
+  color: var(--slds-g-color-on-surface-1, #5c5c5c);
   margin-block: var(--slds-g-spacing-2, 0.5rem) var(--slds-g-spacing-5, 1.5rem);
 }
 .fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-  gap: var(--slds-g-spacing-4, 1rem);
   max-inline-size: 48rem;
 }
 .actions,

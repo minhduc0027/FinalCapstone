@@ -1,35 +1,21 @@
 <template>
   <main class="portal">
-    <h1 class="slds-text-heading_medium">{heading}</h1>
-    <p class="intro">
-      Nhập thông tin để theo dõi tiến độ xử lý yêu cầu của bạn.
-    </p>
+    <h1 class="slds-text-title_bold">{heading}</h1>
+    <p class="intro" id="lookup-description">{subtitle}</p>
     <form onsubmit={handleSubmit} aria-busy={isLoading}>
       <div class="fields">
         <lightning-input
-          name="requestNumber"
-          label="Mã yêu cầu"
-          value={requestNumber}
-          maxlength="80"
-          required
-          disabled={isLoading}
-          onchange={handleInput}
-          message-when-value-missing="Vui lòng nhập mã yêu cầu."
-        ></lightning-input>
-        <lightning-input
-          name="phoneSuffix"
-          label="4 số cuối số điện thoại"
-          value={phoneSuffix}
-          type="text"
-          pattern="[0-9]{4}"
-          minlength="4"
-          maxlength="4"
+          name="lookupValue"
+          label={heading}
+          variant="label-hidden"
+          aria-describedby="lookup-description"
+          value={lookupValue}
+          maxlength="100"
           autocomplete="off"
           required
           disabled={isLoading}
           onchange={handleInput}
-          message-when-value-missing="Vui lòng nhập 4 số cuối số điện thoại."
-          message-when-pattern-mismatch="Vui lòng nhập đúng 4 chữ số."
+          message-when-value-missing="Vui lòng nhập mã yêu cầu và 4 số cuối số điện thoại."
         ></lightning-input>
       </div>
       <div class="actions">

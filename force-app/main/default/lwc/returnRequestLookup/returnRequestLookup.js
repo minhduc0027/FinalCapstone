@@ -1,11 +1,12 @@
 import { LightningElement, api } from "lwc";
 
 export default class ReturnRequestLookup extends LightningElement {
-  @api heading = "Tra cứu yêu cầu đổi trả";
+  @api heading = "Mã yêu cầu";
+  @api subtitle =
+    "Gồm mã yêu cầu và 4 chữ số cuối của số điện thoại gửi yêu cầu, cách nhau bằng dấu cách. Ví dụ: RR-2610-00001 4567.";
   @api showProducts = false;
   @api guestSitePath;
-  requestNumber = "";
-  phoneSuffix = "";
+  lookupValue = "";
   request;
   message = "";
   isLoading = false;
@@ -16,18 +17,22 @@ export default class ReturnRequestLookup extends LightningElement {
   }
 
   handleInput(event) {
-    if (event.target.name === "requestNumber")
-      this.requestNumber = event.target.value;
-    else if (event.target.name === "phoneSuffix")
-      this.phoneSuffix = event.target.value;
+    this.lookupValue = event.target.value;
+    event.target.setCustomValidity("");
   }
 
   async handleSubmit(event) {
     event.preventDefault();
     if (this.isLoading) return;
-    const inputs = [...this.template.querySelectorAll("lightning-input")];
-    inputs.forEach((input) => input.reportValidity());
-    if (!inputs.every((input) => input.checkValidity())) return;
+    const input = this.template.querySelector("lightning-input");
+    const proof = this.lookupValue.trim().match(/^(\S{1,80})\s+([0-9]{4})$/);
+    input.setCustomValidity(
+      this.lookupValue.trim() && !proof
+        ? "Vui lòng nhập mã yêu cầu, dấu cách và đúng 4 số cuối số điện thoại. Ví dụ: RR-2610-00001 4567."
+        : ""
+    );
+    input.reportValidity();
+    if (!proof || !input.checkValidity()) return;
 
     this.request = undefined;
     this.message = "";
@@ -47,8 +52,8 @@ export default class ReturnRequestLookup extends LightningElement {
           credentials: "same-origin",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            requestNumber: this.requestNumber.trim(),
-            phoneSuffix: this.phoneSuffix
+            requestNumber: proof[1],
+            phoneSuffix: proof[2]
           })
         }
       );
@@ -73,7 +78,7 @@ export default class ReturnRequestLookup extends LightningElement {
       this.message =
         "Không thể tra cứu lúc này. Vui lòng thử lại hoặc liên hệ bộ phận hỗ trợ.";
     } finally {
-      this.phoneSuffix = "";
+      this.lookupValue = "";
       this.isLoading = false;
     }
   }

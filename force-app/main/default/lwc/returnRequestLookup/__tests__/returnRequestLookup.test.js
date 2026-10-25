@@ -17,13 +17,12 @@ function render() {
 }
 
 function fill(element, code = "RR-2610-00001", suffix = "4567") {
-  const values = { requestNumber: code, phoneSuffix: suffix };
-  element.shadowRoot.querySelectorAll("lightning-input").forEach((input) => {
-    input.checkValidity = jest.fn(() => true);
-    input.reportValidity = jest.fn(() => true);
-    input.value = values[input.name];
-    input.dispatchEvent(new CustomEvent("change"));
-  });
+  const input = element.shadowRoot.querySelector("lightning-input");
+  input.checkValidity = jest.fn(() => true);
+  input.reportValidity = jest.fn(() => true);
+  input.setCustomValidity = jest.fn();
+  input.value = `${code} ${suffix}`;
+  input.dispatchEvent(new CustomEvent("change"));
 }
 
 function submit(element) {
@@ -71,11 +70,55 @@ describe("guest return lookup", () => {
     const result = element.shadowRoot.querySelector("c-return-request-summary");
     expect(result).not.toBeNull();
     expect(result.showAmount).toBe(false);
-    expect(
-      [...element.shadowRoot.querySelectorAll("lightning-input")].find(
-        (input) => input.name === "phoneSuffix"
-      ).value
-    ).toBe("");
+    expect(element.shadowRoot.querySelector("lightning-input").value).toBe("");
+  });
+
+  it("renders one input with Builder-configurable title and description", async () => {
+    const element = render();
+    element.heading = "Tra cứu mã của bạn";
+    element.subtitle = "Nhập mã và 4 số cuối, cách nhau bằng dấu cách.";
+    await flush();
+    expect(element.shadowRoot.querySelectorAll("lightning-input")).toHaveLength(
+      1
+    );
+    expect(element.shadowRoot.querySelector("h1").textContent).toBe(
+      element.heading
+    );
+    expect(element.shadowRoot.querySelector(".intro").textContent).toBe(
+      element.subtitle
+    );
+    expect(element.shadowRoot.querySelector("lightning-input").label).toBe(
+      element.heading
+    );
+  });
+
+  it.each(["RR-2610-00001", "RR-2610-00001 123", "RR-2610-00001 12345"])(
+    "rejects malformed combined proof locally: %s",
+    async (value) => {
+      const element = render();
+      fill(element, value, "");
+      submit(element);
+      await flush();
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(
+        element.shadowRoot.querySelector("lightning-input").setCustomValidity
+      ).toHaveBeenLastCalledWith(expect.stringContaining("4 số cuối"));
+    }
+  );
+
+  it("trims pasted whitespace and preserves leading zeroes in the phone suffix", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ outcome: "NOT_FOUND" })
+    });
+    const element = render();
+    fill(element, "  RR-2610-00001  ", "0012  ");
+    submit(element);
+    await flush();
+    expect(JSON.parse(global.fetch.mock.calls[0][1].body)).toEqual({
+      requestNumber: "RR-2610-00001",
+      phoneSuffix: "0012"
+    });
   });
 
   it("clears a previous result before showing the uniform no-match error", async () => {

@@ -9,7 +9,13 @@
         name="heading"
         type="String"
         label="Tiêu đề"
-        default="Tra cứu yêu cầu đổi trả"
+        default="Mã yêu cầu"
+      />
+        <property
+        name="subtitle"
+        type="String"
+        label="Mô tả dưới tiêu đề"
+        default="Gồm mã yêu cầu và 4 chữ số cuối của số điện thoại gửi yêu cầu, cách nhau bằng dấu cách. Ví dụ: RR-2610-00001 4567."
       />
         <property
         name="showProducts"
