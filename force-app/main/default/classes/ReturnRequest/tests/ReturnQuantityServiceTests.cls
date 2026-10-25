@@ -84,7 +84,8 @@ private class ReturnQuantityServiceTests {
       Estimated_Refund_Amount__c = 0
     );
 
-    insert returnRequest;
+    // Quantity scenarios need historical statuses, independently of the runner's field access.
+    insert as system returnRequest;
 
     System.debug(
       LoggingLevel.INFO,

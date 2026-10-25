@@ -29,6 +29,16 @@ public inherited sharing class StateTransitionService {
     String targetStatus,
     String requiredApprovalLevel
   ) {
+    transition(requestId, targetStatus, requiredApprovalLevel, null);
+  }
+
+  /** Transitions a request and persists the rejection reason in the same update. */
+  public static void transition(
+    Id requestId,
+    String targetStatus,
+    String requiredApprovalLevel,
+    String rejectionReason
+  ) {
     if (requestId == null) {
       throw new StateTransitionException('Return Request Id is required.');
     }
@@ -45,6 +55,9 @@ public inherited sharing class StateTransitionService {
     if (String.isNotBlank(requiredApprovalLevel)) {
       requestRecord.Required_Approval_Level__c = requiredApprovalLevel;
     }
+
+    if (rejectionReason != null)
+      requestRecord.Rejection_Reason__c = rejectionReason;
 
     try {
       update requestRecord;

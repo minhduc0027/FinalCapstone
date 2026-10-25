@@ -11,16 +11,18 @@ private class ApprovalWorklistTests {
     String status,
     String approvalLevel
   ) {
-    Return_Request__c requestRecord = new Return_Request__c(
-      Customer__c = customerId,
-      Status__c = status,
-      Required_Approval_Level__c = approvalLevel,
-      Source_Channel__c = SmartReturnConstants.SOURCE_APP,
-      Estimated_Refund_Amount__c = 1000000,
-      ApproverId__c = UserInfo.getUserId()
-    );
-
-    insert requestRecord;
+    Return_Request__c requestRecord = ReturnRequestTestDataFactory.requests(
+      1,
+      customerId
+    )[0];
+    requestRecord.Status__c = status;
+    requestRecord.Required_Approval_Level__c = approvalLevel;
+    requestRecord.Source_Channel__c = SmartReturnConstants.SOURCE_APP;
+    requestRecord.Estimated_Refund_Amount__c = 1000000;
+    requestRecord.ApproverId__c = UserInfo.getUserId();
+    if (status == SmartReturnConstants.STATUS_REJECTED)
+      requestRecord.Rejection_Reason__c = 'Test rejection reason';
+    insert as system requestRecord;
     return requestRecord;
   }
 

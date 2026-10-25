@@ -19,24 +19,15 @@ public class ApprovalModuleTests {
     String sourceChannel,
     Decimal estimatedRefund
   ) {
-    Return_Request__c requestRecord = new Return_Request__c(
-      Customer__c = customerId,
-      Status__c = status,
-      Required_Approval_Level__c = approvalLevel,
-      Source_Channel__c = sourceChannel,
-      Estimated_Refund_Amount__c = estimatedRefund
-    );
-
-    /*
-     * Nếu Name là Text thay vì Auto Number, bổ sung:
-     *
-     * requestRecord.Name =
-     *     'RR-' + String.valueOf(Crypto.getRandomInteger());
-     *
-     * Nếu Store__c là required, tạo Store test và gán tại đây.
-     */
-
-    insert requestRecord;
+    Return_Request__c requestRecord = ReturnRequestTestDataFactory.requests(
+      1,
+      customerId
+    )[0];
+    requestRecord.Status__c = status;
+    requestRecord.Required_Approval_Level__c = approvalLevel;
+    requestRecord.Source_Channel__c = sourceChannel;
+    requestRecord.Estimated_Refund_Amount__c = estimatedRefund;
+    insert as system requestRecord;
     return requestRecord;
   }
 
@@ -318,15 +309,21 @@ public class ApprovalModuleTests {
     Test.stopTest();
 
     Return_Request__c actualRequest = [
-      SELECT Status__c
+      SELECT Status__c, Rejection_Reason__c
       FROM Return_Request__c
       WHERE Id = :requestRecord.Id
+      WITH SYSTEM_MODE
     ];
 
     System.assertEquals(
       SmartReturnConstants.STATUS_REJECTED,
       actualRequest.Status__c,
       'Reject request phải chuyển trạng thái sang REJECTED.'
+    );
+    Assert.areEqual(
+      'Return request does not meet approval conditions.',
+      actualRequest.Rejection_Reason__c,
+      'Rejecting a request must persist the supplied reason.'
     );
   }
 

@@ -1,3 +1,11 @@
-trigger UserTrigger on User(after insert, after update) {
+trigger UserTrigger on User(
+  before insert,
+  before update,
+  before delete,
+  after insert,
+  after update,
+  after delete,
+  after undelete
+) {
   UserTriggerHandler.handle();
 }
