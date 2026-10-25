@@ -11,10 +11,25 @@ public inherited sharing class ReturnRequestTriggerHandler {
         );
       }
       when AFTER_INSERT {
-        return;
+        ReturnRequestSharingService.refresh(
+          (List<Return_Request__c>) Trigger.new
+        );
       }
       when AFTER_UPDATE {
-        return;
+        List<Return_Request__c> changedStores = new List<Return_Request__c>();
+        for (
+          Return_Request__c request : (List<Return_Request__c>) Trigger.new
+        ) {
+          Return_Request__c previous = (Return_Request__c) Trigger.oldMap
+            .get(request.Id);
+          if (
+            request.Store__c != previous.Store__c ||
+            request.OwnerId != previous.OwnerId
+          ) {
+            changedStores.add(request);
+          }
+        }
+        ReturnRequestSharingService.refresh(changedStores);
       }
     }
   }
