@@ -1,0 +1,59 @@
+<template>
+  <main class="portal">
+    <h1 class="slds-text-heading_medium">{heading}</h1>
+    <p class="intro">
+      Nhập thông tin để theo dõi tiến độ xử lý yêu cầu của bạn.
+    </p>
+    <form onsubmit={handleSubmit} aria-busy={isLoading}>
+      <div class="fields">
+        <lightning-input
+          name="requestNumber"
+          label="Mã yêu cầu"
+          value={requestNumber}
+          maxlength="80"
+          required
+          disabled={isLoading}
+          onchange={handleInput}
+          message-when-value-missing="Vui lòng nhập mã yêu cầu."
+        ></lightning-input>
+        <lightning-input
+          name="phoneSuffix"
+          label="4 số cuối số điện thoại"
+          value={phoneSuffix}
+          type="text"
+          pattern="[0-9]{4}"
+          minlength="4"
+          maxlength="4"
+          autocomplete="off"
+          required
+          disabled={isLoading}
+          onchange={handleInput}
+          message-when-value-missing="Vui lòng nhập 4 số cuối số điện thoại."
+          message-when-pattern-mismatch="Vui lòng nhập đúng 4 chữ số."
+        ></lightning-input>
+      </div>
+      <div class="actions">
+        <lightning-button
+          type="submit"
+          variant="brand"
+          label={submitLabel}
+          disabled={isLoading}
+        ></lightning-button>
+      </div>
+    </form>
+    <template lwc:if={isLoading}
+      ><p class="message" role="status">Đang tra cứu yêu cầu…</p></template
+    >
+    <template lwc:if={message}
+      ><p class="message" role="alert">{message}</p></template
+    >
+    <template lwc:if={request}>
+      <div class="result">
+        <c-return-request-summary
+          request={request}
+          show-products={showProducts}
+        ></c-return-request-summary>
+      </div>
+    </template>
+  </main>
+</template>

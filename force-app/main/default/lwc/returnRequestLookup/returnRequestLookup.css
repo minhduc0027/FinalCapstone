@@ -1,0 +1,26 @@
+:host {
+  display: block;
+}
+.portal {
+  max-inline-size: 64rem;
+  margin-inline: auto;
+  padding: var(--slds-g-spacing-5, 1.5rem);
+}
+.intro {
+  margin-block: var(--slds-g-spacing-2, 0.5rem) var(--slds-g-spacing-5, 1.5rem);
+}
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--slds-g-spacing-4, 1rem);
+  max-inline-size: 48rem;
+}
+.actions,
+.message {
+  margin-block-start: var(--slds-g-spacing-4, 1rem);
+}
+.result {
+  margin-block-start: var(--slds-g-spacing-7, 2.5rem);
+  padding-block-start: var(--slds-g-spacing-5, 1.5rem);
+  border-top: 1px solid var(--slds-g-color-border-1, #c9c9c9);
+}
