@@ -8,12 +8,6 @@
         data-page="Home"
         onclick={handleNavigate}
       ></lightning-button>
-      <lightning-button
-        variant="base"
-        label="Yêu cầu của tôi"
-        data-page="My_Returns__c"
-        onclick={handleNavigate}
-      ></lightning-button>
       <template lwc:if={isGuest}
         ><lightning-button
           variant="base"
@@ -22,7 +16,15 @@
           onclick={handleNavigate}
         ></lightning-button
       ></template>
-      <template lwc:else><a href={logoutUrl}>Đăng xuất</a></template>
+      <template lwc:else>
+        <lightning-button
+          variant="base"
+          label="Yêu cầu của tôi"
+          data-page="My_Returns__c"
+          onclick={handleNavigate}
+        ></lightning-button>
+        <a href={logoutUrl}>Đăng xuất</a>
+      </template>
     </nav>
   </header>
 </template>
