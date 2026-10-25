@@ -77,6 +77,9 @@ private class ReturnQuantityServiceTests {
       Customer__c = populatedOrderItem.Order.AccountId,
       Store__c = populatedOrderItem.Order.Store__c,
       Status__c = status,
+      Rejection_Reason__c = status == SmartReturnConstants.STATUS_REJECTED
+        ? 'Test rejection reason'
+        : null,
       Source_Channel__c = 'STORE',
       Estimated_Refund_Amount__c = 0
     );
