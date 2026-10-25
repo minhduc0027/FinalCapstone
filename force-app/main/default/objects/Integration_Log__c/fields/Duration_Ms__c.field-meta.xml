@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Duration_Ms__c</fullName>
+    <description
+  >Elapsed exchange duration in whole milliseconds, when measured. Leave blank when unavailable.</description>
+    <inlineHelpText
+  >Elapsed exchange duration in whole milliseconds, when measured. Leave blank when unavailable.</inlineHelpText>
+    <label>Duration (ms)</label>
+    <precision>12</precision>
+    <scale>0</scale>
+    <type>Number</type>
+</CustomField>

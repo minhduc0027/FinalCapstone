@@ -48,6 +48,12 @@ public inherited sharing class SmartReturnConfigService {
     return Integer.valueOf(getSettings().PayHub_Retry_Interval__c);
   }
 
+  // REFUND INTEGRATION: the dispatcher interval is independent of the retry delay.
+  public static Integer getRefundScanIntervalMinutes() {
+    Decimal configured = getSettings().Refund_Scan_Interval_Minutes__c;
+    return configured == null ? 5 : Integer.valueOf(configured);
+  }
+
   public static Decimal getRefundRounding() {
     return getSettings().Refund_Rounding__c;
   }

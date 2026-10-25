@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Refund_Identity_Is_Immutable</fullName>
+    <active>true</active>
+    <description
+  >Keep the merchant reference and idempotency key stable across retries and callbacks.</description>
+    <errorConditionFormula
+  >AND(NOT(ISNEW()), OR(ISCHANGED(Merchant_Reference__c), ISCHANGED(Idempotency_Key__c), ISCHANGED(Return_Request__c), ISCHANGED(Order_Number__c), ISCHANGED(Refund_Amount__c)))</errorConditionFormula>
+    <errorMessage
+  >The return request, idempotency key, order, and amount cannot change after creation.</errorMessage>
+</ValidationRule>

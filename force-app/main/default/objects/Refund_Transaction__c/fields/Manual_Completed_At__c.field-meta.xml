@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Manual_Completed_At__c</fullName>
+    <description
+  >Time Accounting confirmed an external/manual payment. Preserves the original provider outcome.</description>
+    <label>Manual Completed At</label>
+    <type>DateTime</type>
+</CustomField>

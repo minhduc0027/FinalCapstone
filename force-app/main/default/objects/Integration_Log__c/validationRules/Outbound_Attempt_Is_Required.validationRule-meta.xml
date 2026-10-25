@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Outbound_Attempt_Is_Required</fullName>
+    <active>true</active>
+    <description
+  >Every outbound exchange must identify its refund and attempt; unmatched inbound callbacks may remain unlinked.</description>
+    <errorConditionFormula
+  >AND(ISPICKVAL(Direction__c, "OUTBOUND"), OR(ISBLANK(Refund_Transaction__c), ISBLANK(Attempt_Number__c)))</errorConditionFormula>
+    <errorMessage
+  >Outbound exchanges require a Refund Transaction and Attempt Number.</errorMessage>
+</ValidationRule>

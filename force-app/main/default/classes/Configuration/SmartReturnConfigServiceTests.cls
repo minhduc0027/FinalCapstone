@@ -24,6 +24,8 @@ private class SmartReturnConfigServiceTests {
 
     Integer retryInterval = SmartReturnConfigService.getPayHubRetryInterval();
 
+    Integer scanInterval = SmartReturnConfigService.getRefundScanIntervalMinutes();
+
     Decimal refundRounding = SmartReturnConfigService.getRefundRounding();
 
     Test.stopTest();
@@ -38,6 +40,7 @@ private class SmartReturnConfigServiceTests {
     System.assertNotEquals(null, payhubTimeout);
     System.assertNotEquals(null, payhubRetry);
     System.assertNotEquals(null, retryInterval);
+    System.assertEquals(5, scanInterval);
     System.assertNotEquals(null, refundRounding);
   }
 

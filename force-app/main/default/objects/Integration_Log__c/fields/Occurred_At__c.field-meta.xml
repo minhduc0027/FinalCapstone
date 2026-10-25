@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Occurred_At__c</fullName>
+    <defaultValue>NOW()</defaultValue>
+    <description
+  >Time the outbound exchange started or callback arrived. Populate the captured event time when persistence happens later.</description>
+    <inlineHelpText
+  >Time the outbound exchange started or callback arrived. Populate the captured event time when persistence happens later.</inlineHelpText>
+    <label>Occurred At</label>
+    <required>true</required>
+    <type>DateTime</type>
+</CustomField>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Status__c</fullName>
+    <description
+  >Internal PayHub refund state, separate from Return Request status. QUEUED means ready for initial processing or a permitted scheduled retry.</description>
+    <inlineHelpText
+  >Internal PayHub refund state, separate from Return Request status. QUEUED means ready for initial processing or a permitted scheduled retry.</inlineHelpText>
+    <label>Status</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>QUEUED</fullName>
+                <default>true</default>
+                <label>QUEUED</label>
+            </value>
+            <value>
+                <fullName>PROCESSING</fullName>
+                <default>false</default>
+                <label>PROCESSING</label>
+            </value>
+            <value>
+                <fullName>PENDING</fullName>
+                <default>false</default>
+                <label>PENDING</label>
+            </value>
+            <value>
+                <fullName>SUCCEEDED</fullName>
+                <default>false</default>
+                <label>SUCCEEDED</label>
+            </value>
+            <value>
+                <fullName>FAILED</fullName>
+                <default>false</default>
+                <label>FAILED</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
