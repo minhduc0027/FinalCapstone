@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<SharingSet xmlns="http://soap.sforce.com/2006/04/metadata"><accessMappings
+  ><accessLevel>Read</accessLevel><object>Return_Request__c</object><objectField
+    >Customer__c</objectField><userField
+    >AccountId</userField></accessMappings><description
+  >Read-only returns for the Account linked to the external customer Contact.</description><name
+  >SmartReturn Customer Returns</name><profiles
+  >SmartReturn Customer</profiles></SharingSet>

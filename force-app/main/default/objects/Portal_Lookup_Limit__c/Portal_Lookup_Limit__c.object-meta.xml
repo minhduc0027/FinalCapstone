@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+<description
+  >Server-side guest lookup lockouts keyed by a one-way request-number and source-address fingerprint. Stores counts and timestamps only; no phone suffixes, request references or raw IP addresses. Not accessible to Portal users.</description>
+<deploymentStatus>Deployed</deploymentStatus><enableActivities
+  >false</enableActivities><enableReports>false</enableReports><enableSearch
+  >false</enableSearch><externalSharingModel
+  >Private</externalSharingModel><label>Portal Lookup Limit</label><nameField
+  ><displayFormat>PLL-{000000}</displayFormat><label>Lookup Limit</label><type
+    >AutoNumber</type></nameField><pluralLabel
+  >Portal Lookup Limits</pluralLabel><sharingModel
+  >Private</sharingModel><visibility>Public</visibility></CustomObject>

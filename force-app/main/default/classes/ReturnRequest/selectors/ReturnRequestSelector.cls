@@ -1,4 +1,7 @@
 public with sharing class ReturnRequestSelector {
+  private static final String PORTAL_FIELDS =
+    'Id, Name, Status__c, CreatedDate, ' +
+    'Actual_Refund_Amount__c, Estimated_Refund_Amount__c, Inspection_Completed_At__c';
   private static final String RETURN_REQUEST_OBJECT = 'Return_Request__c';
   private static final String RETURN_REQUEST_LINE_OBJECT = 'Return_Request_Line__c';
   private static final List<String> REQUEST_FIELDS = new List<String>{
@@ -129,6 +132,83 @@ public with sharing class ReturnRequestSelector {
         size
       )
       .records;
+  }
+
+  public static Id currentCustomerAccount() {
+    // Identity resolution must not depend on exposing User.ContactId through Portal FLS.
+    User current = [
+      SELECT ContactId, Contact.AccountId
+      FROM User
+      WHERE Id = :UserInfo.getUserId()
+      WITH SYSTEM_MODE
+    ];
+    return current.ContactId == null ? null : current.Contact.AccountId;
+  }
+
+  public static List<Return_Request__c> customerPage(
+    Id accountId,
+    Integer pageSize,
+    Datetime beforeCreatedAt,
+    Id beforeId
+  ) {
+    Map<String, Object> binds = new Map<String, Object>{
+      'accountId' => accountId,
+      'rowLimit' => pageSize + 1
+    };
+    String condition = 'Customer__c = :accountId';
+    if (beforeCreatedAt != null && beforeId != null) {
+      condition += ' AND (CreatedDate < :beforeCreatedAt OR (CreatedDate = :beforeCreatedAt AND Id < :beforeId))';
+      binds.put('beforeCreatedAt', beforeCreatedAt);
+      binds.put('beforeId', beforeId);
+    }
+    return (List<Return_Request__c>) Database.queryWithBinds(
+      'SELECT ' +
+        PORTAL_FIELDS +
+        ' FROM Return_Request__c WHERE ' +
+        condition +
+        ' ORDER BY CreatedDate DESC, Id DESC LIMIT :rowLimit',
+      binds,
+      AccessLevel.USER_MODE
+    );
+  }
+
+  public static List<Return_Request__c> customerRequest(
+    Id accountId,
+    String requestNumber
+  ) {
+    return (List<Return_Request__c>) Database.queryWithBinds(
+      'SELECT ' +
+        PORTAL_FIELDS +
+        ' FROM Return_Request__c ' +
+        'WHERE Customer__c = :accountId AND Name = :requestNumber LIMIT 1',
+      new Map<String, Object>{
+        'accountId' => accountId,
+        'requestNumber' => requestNumber
+      },
+      AccessLevel.USER_MODE
+    );
+  }
+
+  public static List<Return_Request_Line__c> portalLines(Id requestId) {
+    return [
+      SELECT Product__c, Product__r.Name, Requested_Quantity__c
+      FROM Return_Request_Line__c
+      WHERE Return_Request__c = :requestId
+      WITH USER_MODE
+      ORDER BY Id
+      LIMIT 1001
+    ];
+  }
+
+  public static List<Return_Request__History> portalHistory(Id requestId) {
+    return [
+      SELECT NewValue, CreatedDate
+      FROM Return_Request__History
+      WHERE ParentId = :requestId AND Field = 'Status__c'
+      WITH USER_MODE
+      ORDER BY CreatedDate, Id
+      LIMIT 1001
+    ];
   }
 
   public class SelectorException extends Exception {
