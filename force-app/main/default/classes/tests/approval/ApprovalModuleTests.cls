@@ -1,9 +1,13 @@
 @IsTest
 public class ApprovalModuleTests {
+  @TestSetup
+  static void approver() {
+    ReturnRequestTestDataFactory.createApprover();
+  }
+
   /*
-   * Không dùng @TestSetup cho các test cần Test.setCreatedDate
-   * với thời điểm riêng biệt. Factory nhỏ giúp từng test có
-   * dữ liệu độc lập và dễ đọc.
+   * Tạo request trong từng test để đặt CreatedDate riêng biệt.
+   * @TestSetup chỉ chuẩn bị user và quyền.
    */
   private static Account createCustomer() {
     Account customer = new Account(Name = 'Approval Test Customer');
@@ -289,42 +293,54 @@ public class ApprovalModuleTests {
 
   @IsTest
   static void rejectRequestMovesToRejected() {
-    Account customer = createCustomer();
-
-    Return_Request__c requestRecord = createRequest(
-      customer.Id,
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      SmartReturnConstants.APPROVAL_CHT,
-      SmartReturnConstants.SOURCE_APP,
-      5000000
-    );
-
-    Test.startTest();
-
-    ApprovalService.rejectRequest(
-      String.valueOf(requestRecord.Id),
-      'Return request does not meet approval conditions.'
-    );
-
-    Test.stopTest();
-
-    Return_Request__c actualRequest = [
-      SELECT Status__c, Rejection_Reason__c
-      FROM Return_Request__c
-      WHERE Id = :requestRecord.Id
+    User actor = [
+      SELECT Id
+      FROM User
+      WHERE LastName = 'Return Request Test Approver'
       WITH SYSTEM_MODE
     ];
+    System.runAs(actor) {
+      Assert.isTrue(
+        Return_Request__c.Rejection_Reason__c.getDescribe().isUpdateable(),
+        'The rejecting actor must have explicit write access to the reason.'
+      );
+      Account customer = createCustomer();
 
-    System.assertEquals(
-      SmartReturnConstants.STATUS_REJECTED,
-      actualRequest.Status__c,
-      'Reject request phải chuyển trạng thái sang REJECTED.'
-    );
-    Assert.areEqual(
-      'Return request does not meet approval conditions.',
-      actualRequest.Rejection_Reason__c,
-      'Rejecting a request must persist the supplied reason.'
-    );
+      Return_Request__c requestRecord = createRequest(
+        customer.Id,
+        SmartReturnConstants.STATUS_PENDING_APPROVAL,
+        SmartReturnConstants.APPROVAL_CHT,
+        SmartReturnConstants.SOURCE_APP,
+        5000000
+      );
+
+      Test.startTest();
+
+      ApprovalService.rejectRequest(
+        String.valueOf(requestRecord.Id),
+        'Return request does not meet approval conditions.'
+      );
+
+      Test.stopTest();
+
+      Return_Request__c actualRequest = [
+        SELECT Status__c, Rejection_Reason__c
+        FROM Return_Request__c
+        WHERE Id = :requestRecord.Id
+        WITH SYSTEM_MODE
+      ];
+
+      System.assertEquals(
+        SmartReturnConstants.STATUS_REJECTED,
+        actualRequest.Status__c,
+        'Reject request phải chuyển trạng thái sang REJECTED.'
+      );
+      Assert.areEqual(
+        'Return request does not meet approval conditions.',
+        actualRequest.Rejection_Reason__c,
+        'Rejecting a request must persist the supplied reason.'
+      );
+    }
   }
 
   @IsTest
