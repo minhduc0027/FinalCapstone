@@ -7,6 +7,7 @@
   >Internal PayHub refund state, separate from Return Request status. QUEUED means ready for initial processing or a permitted scheduled retry.</inlineHelpText>
     <label>Status</label>
     <required>true</required>
+    <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
         <restricted>true</restricted>

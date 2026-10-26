@@ -9,9 +9,6 @@ public with sharing class InspectionService {
    * - Is_Eligible__c
    * - Eligibility_Code__c
    * - Eligibility_Reason__c
-   *
-   * Các field về giá, số lượng và parent phải được query lại
-   * từ Salesforce, không tin dữ liệu gửi từ client.
    */
   public static void processInspection(
     List<Return_Request_Line__c> inputLines
@@ -23,21 +20,11 @@ public with sharing class InspectionService {
     Map<Id, Return_Request_Line__c> inputById = validateAndBuildInputMap(
       inputLines
     );
-    List<Return_Request_Line__c> storedLines = [
-      SELECT
-        Id,
-        Return_Request__c,
-        Is_Eligible__c,
-        Eligibility_Code__c,
-        Eligibility_Reason__c,
-        Purchased_Quantity__c,
-        Requested_Quantity__c,
-        Order_Item__c,
-        Order_Item__r.UnitPrice
-      FROM Return_Request_Line__c
-      WHERE Id IN :inputById.keySet()
-      FOR UPDATE
-    ];
+    Id requestId = inputLines[0].Return_Request__c;
+    List<Return_Request_Line__c> storedLines = ReturnRequestSelector.getReturnRequestLines(
+      requestId,
+      true
+    );
 
     if (storedLines.size() != inputById.size()) {
       throw new InspectionException(

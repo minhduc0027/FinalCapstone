@@ -7,6 +7,7 @@
   >Outcome of this exchange, not the overall return. PENDING means awaiting a final result; TIMEOUT means no response was received.</inlineHelpText>
     <label>Result</label>
     <required>true</required>
+    <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
         <restricted>true</restricted>

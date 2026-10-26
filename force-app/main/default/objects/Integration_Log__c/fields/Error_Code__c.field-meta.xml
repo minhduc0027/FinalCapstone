@@ -3,9 +3,13 @@
     <fullName>Error_Code__c</fullName>
     <description
   >Sanitized PayHub or transport error code for this exchange, including correlation or callback processing errors.</description>
+    <externalId>false</externalId>
     <inlineHelpText
   >Sanitized PayHub or transport error code for this exchange, including correlation or callback processing errors.</inlineHelpText>
     <label>Error Code</label>
     <length>100</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>Text</type>
+    <unique>false</unique>
 </CustomField>

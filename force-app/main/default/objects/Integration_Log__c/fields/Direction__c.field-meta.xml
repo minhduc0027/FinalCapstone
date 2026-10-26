@@ -7,6 +7,7 @@
   >OUTBOUND for a refund attempt and its response or timeout; INBOUND for each received callback, including duplicates.</inlineHelpText>
     <label>Direction</label>
     <required>true</required>
+    <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
         <restricted>true</restricted>
