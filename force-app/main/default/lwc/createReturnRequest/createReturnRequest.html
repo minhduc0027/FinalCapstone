@@ -1,0 +1,211 @@
+<template>
+  <lightning-card title="Tạo yêu cầu trả hàng" icon-name="standard:orders">
+    <template lwc:if={showSpinner}>
+      <lightning-spinner alternative-text="Đang xử lý" size="medium">
+      </lightning-spinner>
+    </template>
+
+    <div class="content">
+      <template lwc:if={errorMessage}>
+        <div
+          class="slds-notify slds-notify_alert slds-alert_error error-banner"
+          role="alert"
+        >
+          <lightning-icon
+            icon-name="utility:error"
+            size="x-small"
+            variant="inverse"
+            class="slds-m-right_x-small"
+          >
+          </lightning-icon>
+          <span>{errorMessage}</span>
+        </div>
+      </template>
+
+      <template lwc:if={hasHeader}>
+        <section class="section">
+          <h2 class="section-title">Thông tin đơn hàng</h2>
+          <div class="slds-grid slds-wrap slds-gutters">
+            <div
+              class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 field-block"
+            >
+              <span class="field-label">Số đơn</span>
+              <span class="field-value">{header.orderNumber}</span>
+            </div>
+            <div
+              class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 field-block"
+            >
+              <span class="field-label">Khách hàng</span>
+              <span class="field-value">{header.customerName}</span>
+            </div>
+            <div
+              class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 field-block"
+            >
+              <span class="field-label">Số điện thoại</span>
+              <span class="field-value">{header.customerPhone}</span>
+            </div>
+            <div
+              class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 field-block"
+            >
+              <span class="field-label">Ngày mua</span>
+              <lightning-formatted-date-time
+                value={header.purchaseDate}
+                year="numeric"
+                month="2-digit"
+                day="2-digit"
+              >
+              </lightning-formatted-date-time>
+            </div>
+            <div
+              class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 field-block"
+            >
+              <span class="field-label">Ngày giao</span>
+              <lightning-formatted-date-time
+                value={header.deliveryDate}
+                year="numeric"
+                month="2-digit"
+                day="2-digit"
+              >
+              </lightning-formatted-date-time>
+            </div>
+            <div
+              class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 field-block"
+            >
+              <span class="field-label">Cửa hàng</span>
+              <span class="field-value"
+                >{header.storeName} ({header.storeCode})</span
+              >
+            </div>
+          </div>
+        </section>
+      </template>
+
+      <template lwc:if={hasRows}>
+        <section class="section">
+          <h2 class="section-title">Sản phẩm trả hàng</h2>
+          <div class="table-container">
+            <table
+              class="slds-table slds-table_cell-buffer slds-table_bordered product-table"
+            >
+              <thead>
+                <tr>
+                  <th scope="col">Sản phẩm</th>
+                  <th scope="col">Ngành hàng</th>
+                  <th scope="col">SL mua</th>
+                  <th scope="col">Đã trả</th>
+                  <th scope="col">Còn lại</th>
+                  <th scope="col">Hạn trả</th>
+                  <th scope="col">SL trả</th>
+                  <th scope="col">Lý do</th>
+                  <th scope="col">Tình trạng</th>
+                  <th scope="col">Hoàn dự kiến</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template for:each={rows} for:item="row">
+                  <tr key={row.orderItemId} class={row.rowClass}>
+                    <td>
+                      <div class="product-name">{row.productName}</div>
+                      <div class="product-meta">SKU: {row.sku}</div>
+                      <template lwc:if={row.rowDisabled}>
+                        <div class="validation validation_error">
+                          {row.eligibilityReason}
+                        </div>
+                      </template>
+                    </td>
+                    <td>{row.productFamily}</td>
+                    <td>{row.purchasedQuantity}</td>
+                    <td>{row.activeReturnedQuantity}</td>
+                    <td>{row.remainingQuantity}</td>
+                    <td>{row.formattedDeadline}</td>
+                    <td class="input-cell">
+                      <lightning-input
+                        type="number"
+                        variant="label-hidden"
+                        label="Số lượng trả"
+                        min="0"
+                        max={row.remainingQuantity}
+                        step="1"
+                        value={row.requestedQuantity}
+                        data-id={row.orderItemId}
+                        disabled={row.quantityDisabled}
+                        onchange={handleQuantityChange}
+                      >
+                      </lightning-input>
+                    </td>
+                    <td class="input-cell combobox-cell">
+                      <lightning-combobox
+                        variant="label-hidden"
+                        label="Lý do trả hàng"
+                        placeholder="Chọn lý do"
+                        value={row.reasonCode}
+                        options={reasonOptions}
+                        data-id={row.orderItemId}
+                        disabled={row.reasonDisabled}
+                        onchange={handleReasonChange}
+                      >
+                      </lightning-combobox>
+                    </td>
+                    <td class="input-cell combobox-cell">
+                      <lightning-combobox
+                        variant="label-hidden"
+                        label="Tình trạng sản phẩm"
+                        placeholder="Chọn tình trạng"
+                        value={row.conditionCode}
+                        options={conditionOptions}
+                        data-id={row.orderItemId}
+                        disabled={row.conditionDisabled}
+                        onchange={handleConditionChange}
+                      >
+                      </lightning-combobox>
+                    </td>
+                    <td>
+                      <div class="refund-amount">
+                        {row.formattedRefundAmount}
+                      </div>
+                      <template lwc:if={row.validationMessage}>
+                        <div class="validation validation_error">
+                          {row.validationMessage}
+                        </div>
+                      </template>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </template>
+
+      <template lwc:if={showEmptyState}>
+        <div class="empty-state">
+          Đơn hàng không có sản phẩm phù hợp để trả.
+        </div>
+      </template>
+
+      <template lwc:if={hasRows}>
+        <section class="summary">
+          <div class="summary-item">
+            <span class="summary-label">Tổng tiền hoàn dự kiến</span>
+            <span class="summary-value total-refund"
+              >{formattedTotalRefund}</span
+            >
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Cấp duyệt dự kiến</span>
+            <span class="approval-badge">{approvalLevelLabel}</span>
+          </div>
+        </section>
+        <div class="footer-actions">
+          <lightning-button
+            variant="brand"
+            label={submitLabel}
+            disabled={submitDisabled}
+            onclick={handleSubmit}
+          >
+          </lightning-button>
+        </div>
+      </template>
+    </div>
+  </lightning-card>
+</template>

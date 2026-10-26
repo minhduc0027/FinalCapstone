@@ -1,5 +1,7 @@
 @IsTest
 private class ReturnQuantityServiceTests {
+  private static Integer storeSequence = 0;
+
   private static PricebookEntry createPricebookEntry(
     String productCode,
     Decimal unitPrice
@@ -27,24 +29,25 @@ private class ReturnQuantityServiceTests {
     String productCode,
     Decimal purchasedQuantity
   ) {
+    storeSequence++;
+
+    Store__c store = new Store__c(
+      Store_Code__c = 'STORE-REQ06-' + String.valueOf(storeSequence)
+    );
+    insert store;
+
     Account customer = new Account(
       Name = 'REQ-06 Test Customer ' + productCode
     );
     insert customer;
 
-    Store__c store = new Store__c(
-      Store_Code__c = 'REQ06-' +
-        String.valueOf(Math.abs(Crypto.getRandomInteger())).left(10)
-    );
-    insert store;
-
     Order orderRecord = new Order(
       AccountId = customer.Id,
-      Store__c = store.Id,
       EffectiveDate = Date.today(),
       Delivery_Date__c = Date.today(),
       Status = 'Draft',
-      Pricebook2Id = Test.getStandardPricebookId()
+      Pricebook2Id = Test.getStandardPricebookId(),
+      Store__c = store.Id
     );
     insert orderRecord;
 
@@ -58,6 +61,20 @@ private class ReturnQuantityServiceTests {
     );
     insert orderItem;
 
+    System.debug(
+      LoggingLevel.INFO,
+      'TEST REQ-06 | Created OrderItem' +
+        ' | storeId=' +
+        store.Id +
+        ' | storeCode=' +
+        store.Store_Code__c +
+        ' | orderId=' +
+        orderRecord.Id +
+        ' | orderItemId=' +
+        orderItem.Id +
+        ' | purchasedQuantity=' +
+        purchasedQuantity
+    );
     return orderItem;
   }
 
@@ -115,7 +132,7 @@ private class ReturnQuantityServiceTests {
       Purchased_Quantity__c = orderItem.Quantity,
       Requested_Quantity__c = requestedQuantity,
       Unit_Price_Paid__c = orderItem.UnitPrice,
-      Return_Reason__c = 'DEFECT',
+      Return_Reason__c = 'NOT_SATISFIED',
       Reported_Condition__c = 'SEALED',
       Is_Eligible__c = true,
       Eligibility_Code__c = 'ELIGIBLE',
