@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Decision_By__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description
+  >User who made the latest approval or rejection decision; distinct from the assigned approver.</description>
+    <inlineHelpText
+  >Shows who actually approved or rejected this request.</inlineHelpText>
+    <label>Decision By</label>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>Decided Return Requests</relationshipLabel>
+    <relationshipName>Decided_Return_Requests</relationshipName>
+    <required>false</required>
+    <trackHistory>true</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

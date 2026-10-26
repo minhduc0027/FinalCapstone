@@ -28,7 +28,7 @@ public with sharing class ApprovalService {
         Status__c,
         Source_Channel__c,
         ApproverId__c,
-        Required_Approver_Level__c,
+        Required_Approval_Level__c,
         CreatedById
       FROM Return_Request__c
       WHERE Id IN :requestIds
@@ -42,11 +42,11 @@ public with sharing class ApprovalService {
       if (request.Status__c != SmartReturnConstants.STATUS_RE_CONFIRMING) {
         transitionRequests.add(
           new TransitionRequest(
-            requestId,
+            request.Id,
             request.Source_Channel__c == SmartReturnConstants.SOURCE_APP
               ? SmartReturnConstants.STATUS_AWAITING_GOODS
               : SmartReturnConstants.STATUS_INSPECTING,
-            request.Required_Approver_Level__c,
+            request.Required_Approval_Level__c,
             null,
             null
           )
@@ -54,9 +54,9 @@ public with sharing class ApprovalService {
       } else {
         transitionRequests.add(
           new TransitionRequest(
-            requestId,
+            request.Id,
             SmartReturnConstants.STATUS_REFUND_PROCESSING,
-            request.Required_Approver_Level__c,
+            request.Required_Approval_Level__c,
             null,
             null
           )
@@ -83,7 +83,7 @@ public with sharing class ApprovalService {
         Status__c,
         Source_Channel__c,
         ApproverId__c,
-        Required_Approver_Level__c,
+        Required_Approval_Level__c,
         CreatedById
       FROM Return_Request__c
       WHERE Id = :requestId
@@ -112,7 +112,7 @@ public with sharing class ApprovalService {
         Status__c,
         Source_Channel__c,
         ApproverId__c,
-        Required_Approver_Level__c,
+        Required_Approval_Level__c,
         CreatedById
       FROM Return_Request__c
       WHERE Id IN :requestIds
@@ -136,8 +136,13 @@ public with sharing class ApprovalService {
 
   private static void checkApprover(List<Return_Request__c> returnRequests) {
     for (Return_Request__c returnRequest : returnRequests) {
-      if (returnRequest.ApproverId__c != UserInfo.getUserId()) {
-        throw new Exception('Only assigned approver can process this request');
+      if (
+        returnRequest.ApproverId__c != null &&
+        returnRequest.ApproverId__c != UserInfo.getUserId()
+      ) {
+        throw new ApprovalException(
+          'Only assigned approver can process this request'
+        );
       }
     }
   }
@@ -324,5 +329,8 @@ public with sharing class ApprovalService {
      */
 
     return page;
+  }
+
+  public class ApprovalException extends Exception {
   }
 }

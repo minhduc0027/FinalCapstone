@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Internal_Notes__c</fullName>
+    <description
+  >Staff-only operational notes, excluded from customer Portal and POS/App responses.</description>
+    <inlineHelpText
+  >For internal staff only. Do not include this field in customer or partner responses.</inlineHelpText>
+    <label>Internal Notes</label>
+    <length>32768</length>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>4</visibleLines>
+</CustomField>

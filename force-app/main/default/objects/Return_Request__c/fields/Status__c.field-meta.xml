@@ -31,6 +31,11 @@
                 <label>INSPECTING</label>
             </value>
             <value>
+                <fullName>RE_CONFIRMING</fullName>
+                <default>false</default>
+                <label>RE_CONFIRMING</label>
+            </value>
+            <value>
                 <fullName>REFUND_PROCESSING</fullName>
                 <default>false</default>
                 <label>REFUND_PROCESSING</label>

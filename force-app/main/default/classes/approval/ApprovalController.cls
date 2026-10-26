@@ -11,9 +11,18 @@ public with sharing class ApprovalController {
   }
 
   @AuraEnabled
-  public static void bulkReject(List<Id> requestIds) {
+  public static void bulkReject(
+    List<Id> requestIds,
+    String reason,
+    String staffNote
+  ) {
     validateRequestIds(requestIds);
-    ApprovalService.rejectRequestBulk(requestIds);
+    ApprovalService.rejectRequestBulk(requestIds, reason, staffNote);
+  }
+
+  @AuraEnabled
+  public static void reject(String requestId, String reason, String staffNote) {
+    ApprovalService.rejectRequest(requestId, reason, staffNote);
   }
 
   private static void validateRequestIds(List<Id> requestIds) {

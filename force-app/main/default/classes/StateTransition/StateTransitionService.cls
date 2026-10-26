@@ -45,6 +45,10 @@ public inherited sharing class StateTransitionService {
     if (String.isNotBlank(requiredApprovalLevel)) {
       requestRecord.Required_Approval_Level__c = requiredApprovalLevel;
     }
+    if (targetStatus == SmartReturnConstants.STATUS_PENDING_APPROVAL) {
+      requestRecord.Approval_Due_At__c = System.now()
+        .addHours(SmartReturnConfigService.getApprovalTimeoutHours());
+    }
 
     try {
       update requestRecord;
@@ -85,6 +89,11 @@ public inherited sharing class StateTransitionService {
     }
     if (String.isNotBlank(staffInternalNote)) {
       requestRecord.Internal_Notes__c = staffInternalNote;
+    }
+
+    if (targetStatus == SmartReturnConstants.STATUS_PENDING_APPROVAL) {
+      requestRecord.Approval_Due_At__c = System.now()
+        .addHours(SmartReturnConfigService.getApprovalTimeoutHours());
     }
 
     try {
@@ -170,11 +179,19 @@ public inherited sharing class StateTransitionService {
 
         requestRecord.Status__c = transitionRequest.targetStatus;
 
+        if (
+          transitionRequest.targetStatus ==
+          SmartReturnConstants.STATUS_PENDING_APPROVAL
+        ) {
+          requestRecord.Approval_Due_At__c = System.now()
+            .addHours(SmartReturnConfigService.getApprovalTimeoutHours());
+        }
+
         if (String.isNotBlank(transitionRequest.requiredApprovalLevel)) {
           requestRecord.Required_Approval_Level__c = transitionRequest.requiredApprovalLevel;
         }
         if (String.isNotBlank(transitionRequest.rejectReason)) {
-          requestRecord.Reject_Reason__c = transitionRequest.rejectReason;
+          requestRecord.Rejection_Reason__c = transitionRequest.rejectReason;
         }
         if (String.isNotBlank(transitionRequest.internalStaffNote)) {
           requestRecord.Internal_Notes__c = transitionRequest.internalStaffNote;

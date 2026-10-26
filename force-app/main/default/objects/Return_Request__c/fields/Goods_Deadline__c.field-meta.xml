@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Goods_Deadline__c</fullName>
+    <description
+  >Last date for an App customer to bring approved goods to a store for inspection.</description>
+    <inlineHelpText
+  >After this date, an Awaiting Goods request is eligible for cancellation.</inlineHelpText>
+    <label>Goods Deadline</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Date</type>
+</CustomField>
