@@ -78,10 +78,6 @@ private class ApprovalModuleTests {
     return orderRecord;
   }
 
-  /**
-   * Request được tạo bởi test-running user.
-   * Approver là user khác, tránh vi phạm self-approval.
-   */
   private static Return_Request__c createRequest(
     Id customerId,
     String status,
@@ -89,7 +85,7 @@ private class ApprovalModuleTests {
     String sourceChannel,
     Decimal estimatedAmount,
     Id approverId,
-    Datetime approvalDueAt,
+    Datetime requestedApprovalDueAt,
     Id regionalManagerId,
     String suffix
   ) {
@@ -109,6 +105,13 @@ private class ApprovalModuleTests {
 
     Order orderRecord = createOrder(customerId, storeRecord.Id);
 
+    /*
+     * Không gán Approval_Due_At__c trên insert.
+     *
+     * Khi Status = PENDING_APPROVAL, trigger/service/flow có thể
+     * tự tính deadline theo Approval Timeout Hours và ghi đè giá trị
+     * mà test truyền vào.
+     */
     Return_Request__c requestRecord = new Return_Request__c(
       Customer__c = customerId,
       Order__c = orderRecord.Id,
@@ -117,37 +120,47 @@ private class ApprovalModuleTests {
       Required_Approval_Level__c = approvalLevel,
       Source_Channel__c = sourceChannel,
       Estimated_Refund_Amount__c = estimatedAmount,
-      ApproverId__c = approverId,
-      Approval_Due_At__c = approvalDueAt
+      ApproverId__c = approverId
     );
 
     insert as system requestRecord;
 
     /*
-     * Query lại để test fixture phản ánh chính xác
-     * dữ liệu sau trigger/flow.
+     * Sau khi automation insert đã chạy xong, test đặt deadline
+     * mong muốn cho từng scenario.
+     */
+    if (requestedApprovalDueAt != null) {
+      update as system new Return_Request__c(
+        Id = requestRecord.Id,
+        Approval_Due_At__c = requestedApprovalDueAt
+      );
+    }
+
+    /*
+     * Query đủ tất cả field mà ApprovalRoutingService và các
+     * test phía sau có thể truy cập.
      */
     Return_Request__c persistedRequest = [
       SELECT
         Id,
+        Customer__c,
+        Order__c,
+        Store__c,
+        Store__r.Store_Manager__c,
+        Store__r.Region_Manager__c,
         Status__c,
         Required_Approval_Level__c,
         Source_Channel__c,
+        Estimated_Refund_Amount__c,
+        Actual_Refund_Amount__c,
         ApproverId__c,
         Approval_Due_At__c,
-        CreatedById,
-        Store__c,
-        Store__r.Store_Manager__c,
-        Store__r.Region_Manager__c
+        CreatedById
       FROM Return_Request__c
       WHERE Id = :requestRecord.Id
       WITH SYSTEM_MODE
     ];
 
-    /*
-     * Chỉ assert cho manual-approval fixtures.
-     * Routing fixtures có thể chưa có approver.
-     */
     if (approverId != null) {
       System.assertEquals(
         approverId,
@@ -159,6 +172,15 @@ private class ApprovalModuleTests {
         approverId,
         persistedRequest.Store__r.Store_Manager__c,
         'Store Manager phải khớp approver của test.'
+      );
+    }
+
+    if (requestedApprovalDueAt != null) {
+      System.assertEquals(
+        requestedApprovalDueAt,
+        persistedRequest.Approval_Due_At__c,
+        'Approval_Due_At__c đã bị automation thay đổi ' +
+        'sau khi test cập nhật deadline.'
       );
     }
 
