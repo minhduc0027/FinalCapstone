@@ -186,6 +186,93 @@ private class RefundRetryTest {
   }
 
   @IsTest
+  static void invalidTimeoutDoesNotClaimRefund() {
+    System.runAs(RefundTestDataFactory.processor()) {
+      Refund_Transaction__c row = priorAttempt(0, 16);
+      PayHubClient.timeoutSecondsOverride = 0;
+
+      Test.startTest();
+      try {
+        RefundService.claimRefunds(new Set<Id>{ row.Id });
+        Assert.fail('Invalid timeout must stop the claim.');
+      } catch (PayHubClient.ConfigurationException e) {
+        Assert.isTrue(
+          e.getMessage().contains('between 1 and 120'),
+          'Explain the setting.'
+        );
+      }
+      Test.stopTest();
+
+      row = RefundSelector.byIds(new Set<Id>{ row.Id }, false)[0];
+      Assert.areEqual(
+        'QUEUED',
+        row.Status__c,
+        'Leave the refund ready after correction.'
+      );
+      Assert.areEqual(
+        0,
+        row.Attempt_Count__c,
+        'Do not count a payment attempt.'
+      );
+      Assert.areEqual(
+        0,
+        [SELECT COUNT() FROM Integration_Log__c],
+        'No PayHub exchange occurred.'
+      );
+    }
+  }
+
+  @IsTest
+  static void invalidTimeoutDoesNotBlockCompletedRefund() {
+    System.runAs(RefundTestDataFactory.processor()) {
+      Refund_Transaction__c row = priorAttempt(1, 16);
+      row.Status__c = 'SUCCEEDED';
+      update as system row;
+      PayHubClient.timeoutSecondsOverride = 0;
+
+      Test.startTest();
+      RefundService.claimRefunds(new Set<Id>{ row.Id });
+      Test.stopTest();
+
+      row = RefundSelector.byIds(new Set<Id>{ row.Id }, false)[0];
+      Assert.areEqual('SUCCEEDED', row.Status__c, 'Keep the completed result.');
+      Assert.areEqual(1, row.Attempt_Count__c, 'Do not change prior sends.');
+    }
+  }
+
+  @IsTest
+  static void invalidTimeoutAfterClaimReleasesRefund() {
+    System.runAs(RefundTestDataFactory.processor()) {
+      Refund_Transaction__c row = priorAttempt(1, 16);
+      row.Status__c = 'PROCESSING';
+      row.Worker_Job_Id__c = '707000000000001AAA';
+      update as system row;
+      PayHubClient.timeoutSecondsOverride = 0;
+
+      Test.startTest();
+      RefundService.processClaimed(row.Id, row.Worker_Job_Id__c);
+      Test.stopTest();
+
+      row = RefundSelector.byIds(new Set<Id>{ row.Id }, false)[0];
+      Assert.areEqual('QUEUED', row.Status__c, 'Release the unsent claim.');
+      Assert.areEqual(
+        0,
+        row.Attempt_Count__c,
+        'Do not count an unsent payment.'
+      );
+      Assert.isNull(row.Worker_Job_Id__c, 'Clear the worker claim.');
+      Assert.isNotNull(
+        row.Next_Retry_At__c,
+        'Retry only after the setting is corrected.'
+      );
+      Assert.areEqual(
+        0,
+        [SELECT COUNT() FROM Integration_Log__c],
+        'No PayHub exchange occurred.'
+      );
+    }
+  }
+  @IsTest
   static void staleWorkerDoesNotSend() {
     System.runAs(RefundTestDataFactory.processor()) {
       Refund_Transaction__c row = priorAttempt(1, 16);

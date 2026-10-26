@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Order__c</fullName>
-    <deleteConstraint>SetNull</deleteConstraint>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <description
+  >Original order whose purchased items are being returned.</description>
+    <inlineHelpText
+  >Select the customer's original order before creating a return request.</inlineHelpText>
     <label>Original Order</label>
     <referenceTo>Order</referenceTo>
     <relationshipLabel>Return Requests</relationshipLabel>
     <relationshipName>Return_Requests</relationshipName>
-    <required>false</required>
-    <trackHistory>false</trackHistory>
+    <required>true</required>
     <trackTrending>false</trackTrending>
     <type>Lookup</type>
 </CustomField>

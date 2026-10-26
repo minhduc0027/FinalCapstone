@@ -11,6 +11,5 @@
     <relationshipLabel>Integration Logs</relationshipLabel>
     <relationshipName>Integration_Logs</relationshipName>
     <required>false</required>
-    <trackTrending>false</trackTrending>
     <type>Lookup</type>
 </CustomField>

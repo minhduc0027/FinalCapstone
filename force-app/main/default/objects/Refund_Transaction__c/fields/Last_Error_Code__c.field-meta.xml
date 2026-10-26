@@ -3,13 +3,9 @@
     <fullName>Last_Error_Code__c</fullName>
     <description
   >Most recent sanitized PayHub or transport error code used for retry classification and accounting review.</description>
-    <externalId>false</externalId>
     <inlineHelpText
   >Most recent sanitized PayHub or transport error code used for retry classification and accounting review.</inlineHelpText>
     <label>Last Error Code</label>
     <length>100</length>
-    <required>false</required>
-    <trackTrending>false</trackTrending>
     <type>Text</type>
-    <unique>false</unique>
 </CustomField>

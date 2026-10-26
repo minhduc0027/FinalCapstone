@@ -55,6 +55,7 @@ public with sharing class SmartReturnConstants {
     SmartReturnConstants.STATUS_PENDING_APPROVAL,
     SmartReturnConstants.STATUS_AWAITING_GOODS,
     SmartReturnConstants.STATUS_INSPECTING,
+    SmartReturnConstants.STATUS_RE_CONFIRMING,
     SmartReturnConstants.STATUS_REFUND_PROCESSING,
     SmartReturnConstants.STATUS_REFUND_FAILED,
     SmartReturnConstants.STATUS_COMPLETED

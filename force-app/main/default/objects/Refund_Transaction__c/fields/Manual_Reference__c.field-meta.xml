@@ -3,11 +3,7 @@
     <fullName>Manual_Reference__c</fullName>
     <description
   >External transaction reference entered by authorized Accounting; never triggers another PayHub refund.</description>
-    <externalId>false</externalId>
     <label>Manual Refund Reference</label>
     <length>80</length>
-    <required>false</required>
-    <trackTrending>false</trackTrending>
     <type>Text</type>
-    <unique>false</unique>
 </CustomField>

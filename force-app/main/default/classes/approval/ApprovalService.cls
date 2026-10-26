@@ -52,7 +52,8 @@ public with sharing class ApprovalService {
     StateTransitionService.transition(
       requestId,
       SmartReturnConstants.STATUS_REJECTED,
-      null
+      null,
+      reason
     );
   }
   public static void rejectRequestBulk(List<Id> requestIds) {

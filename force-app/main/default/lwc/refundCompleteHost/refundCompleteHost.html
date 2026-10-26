@@ -7,10 +7,8 @@
       aria-labelledby="refund-modal-title"
       onkeydown={handleKeydown}
     >
-      <div class="slds-modal__container">
-        <header
-          class="slds-modal__header slds-grid slds-grid_vertical-align-center slds-grid_align-spread slds-text-align_left dialog-header"
-        >
+      <div class="slds-modal__container dialog-container">
+        <header class="slds-modal__header dialog-header">
           <h2
             id="refund-modal-title"
             class="slds-text-heading_small slds-text-title_bold"
@@ -30,7 +28,7 @@
         </header>
 
         <div
-          class="slds-modal__content slds-var-p-around_medium slds-scrollable_y"
+          class="slds-modal__content slds-var-p-around_medium dialog-content"
         >
           <template lwc:if={loadError}>
             <p role="alert">{loadError}</p>
@@ -42,11 +40,11 @@
             ></lightning-spinner>
           </template>
           <template lwc:else>
-            <div class="slds-var-m-bottom_medium" aria-live="polite">
+            <div class="slds-m-bottom_medium" aria-live="polite">
               <template lwc:if={reconciled}>
                 <p class="slds-text-color_success slds-text-title_bold">
                   <lightning-icon
-                    class="slds-var-m-right_x-small"
+                    class="slds-m-right_x-small"
                     icon-name="utility:success"
                     size="x-small"
                     variant="success"
@@ -61,13 +59,13 @@
             </div>
 
             <dl
-              class="slds-grid slds-wrap slds-border_bottom slds-var-p-bottom_medium"
+              class="slds-grid slds-wrap slds-border_bottom slds-p-bottom_medium"
             >
               <div
                 class="slds-size_1-of-1 slds-medium-size_1-of-2 slds-var-p-right_small slds-var-p-bottom_medium"
               >
                 <dt
-                  class="slds-text-title slds-text-title_bold slds-text-color_weak slds-var-m-bottom_xx-small"
+                  class="slds-text-title slds-text-title_bold slds-text-color_weak slds-m-bottom_xx-small"
                 >
                   Refund amount
                 </dt>
@@ -84,7 +82,7 @@
                 class="slds-size_1-of-1 slds-medium-size_1-of-2 slds-var-p-bottom_medium"
               >
                 <dt
-                  class="slds-text-title slds-text-title_bold slds-text-color_weak slds-var-m-bottom_xx-small"
+                  class="slds-text-title slds-text-title_bold slds-text-color_weak slds-m-bottom_xx-small"
                 >
                   Return request
                 </dt>
@@ -94,7 +92,7 @@
                 class="slds-size_1-of-1 slds-medium-size_1-of-2 slds-var-p-right_small"
               >
                 <dt
-                  class="slds-text-title slds-text-title_bold slds-text-color_weak slds-var-m-bottom_xx-small"
+                  class="slds-text-title slds-text-title_bold slds-text-color_weak slds-m-bottom_xx-small"
                 >
                   Refund
                 </dt>
@@ -102,7 +100,7 @@
               </div>
               <div class="slds-size_1-of-1 slds-medium-size_1-of-2">
                 <dt
-                  class="slds-text-title slds-text-title_bold slds-text-color_weak slds-var-m-bottom_xx-small"
+                  class="slds-text-title slds-text-title_bold slds-text-color_weak slds-m-bottom_xx-small"
                 >
                   Order number
                 </dt>
@@ -112,7 +110,7 @@
 
             <template lwc:if={awaitingReconciliation}>
               <section class="slds-var-p-vertical_small slds-border_bottom">
-                <h3 class="slds-text-title_bold slds-var-m-bottom_xx-small">
+                <h3 class="slds-text-title_bold slds-m-bottom_xx-small">
                   PayHub failure
                 </h3>
                 <p>
@@ -130,7 +128,7 @@
             <template lwc:if={canComplete}>
               <section class="slds-var-p-top_small">
                 <h3 class="slds-text-title_bold">External transfer</h3>
-                <p class="slds-text-color_weak slds-var-m-bottom_small">
+                <p class="slds-text-color_weak slds-m-bottom_small">
                   Confirm only after verifying the transfer and customer
                   receipt.
                 </p>
@@ -153,7 +151,7 @@
 
             <template lwc:if={reconciled}>
               <section class="slds-var-p-top_small">
-                <h3 class="slds-text-title_bold slds-var-m-bottom_small">
+                <h3 class="slds-text-title_bold slds-m-bottom_small">
                   Manual completion recorded
                 </h3>
                 <dl class="slds-grid slds-wrap">
@@ -161,17 +159,17 @@
                     class="slds-size_1-of-1 slds-medium-size_1-of-2 slds-var-p-right_small slds-var-p-bottom_small"
                   >
                     <dt
-                      class="slds-text-title slds-text-title_bold slds-text-color_weak slds-var-m-bottom_xx-small"
+                      class="slds-text-title slds-text-title_bold slds-text-color_weak slds-m-bottom_xx-small"
                     >
                       External transfer reference
                     </dt>
-                    <dd class="slds-text-heading_small slds-hyphenate">
+                    <dd class="slds-text-heading_small reference-value">
                       {manualReference}
                     </dd>
                   </div>
                   <div class="slds-size_1-of-1 slds-medium-size_1-of-2">
                     <dt
-                      class="slds-text-title slds-text-title_bold slds-text-color_weak slds-var-m-bottom_xx-small"
+                      class="slds-text-title slds-text-title_bold slds-text-color_weak slds-m-bottom_xx-small"
                     >
                       Recorded at
                     </dt>
@@ -191,10 +189,10 @@
             </template>
 
             <template lwc:if={actionError}>
-              <p class="slds-var-m-top_small" role="alert">{actionError}</p>
+              <p class="slds-m-top_small" role="alert">{actionError}</p>
             </template>
             <template lwc:if={verifying}>
-              <p class="slds-var-m-top_small" role="status">
+              <p class="slds-m-top_small" role="status">
                 Confirmation submitted. Verifying the saved status. Refresh the
                 record if it does not update.
               </p>
@@ -210,7 +208,7 @@
           ></lightning-button>
           <template lwc:if={canComplete}>
             <lightning-button
-              class="slds-var-m-left_small"
+              class="slds-m-left_small"
               variant="brand"
               label="Confirm"
               onclick={handleComplete}

@@ -6,7 +6,5 @@
     <inlineHelpText
   >Time the most recent outbound refund attempt started; distinct from record modification and callback times.</inlineHelpText>
     <label>Last Attempt At</label>
-    <required>false</required>
-    <trackTrending>false</trackTrending>
     <type>DateTime</type>
 </CustomField>
