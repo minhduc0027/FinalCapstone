@@ -1,115 +1,67 @@
 public with sharing class ApprovalRoutingService {
-  //===================================================
-  // Auto Approval Route
-  // - New -> Pending Approval
-  // - New -> Awaiting Goods
-  // - New -> Inspecting
-  //===================================================
   public static void evaluateInitialStatus(Return_Request__c returnRequest) {
-    // reject criteria check Move to ReturnRequestValidator
-
-    //if auto approval criteria check
-    if (checkAutoApprovalCriterial(returnRequest)) {
-      if (returnRequest.Source_Channel__c == smartReturnConstants.SOURCE_APP) {
-        StateTransitionService.transition(
-          returnRequest.Id,
-          SmartReturnConstants.STATUS_AWAITING_GOODS,
-          SmartReturnConstants.APPROVAL_AUTO
-        );
-      } else {
-        StateTransitionService.transition(
-          returnRequest.Id,
-          SmartReturnConstants.STATUS_INSPECTING,
-          SmartReturnConstants.APPROVAL_AUTO
-        );
-      }
-    } else {
-      Decimal storeApprovalLimit = SmartReturnConfigService.getStoreApprovalLimit();
-      if (returnRequest.Estimated_Refund_Amount__c <= storeApprovalLimit) {
-        StateTransitionService.transition(
-          returnRequest.Id,
-          SmartReturnConstants.STATUS_PENDING_APPROVAL,
-          SmartReturnConstants.APPROVAL_CHT
-        );
-      } else {
-        StateTransitionService.transition(
-          returnRequest.Id,
-          SmartReturnConstants.STATUS_PENDING_APPROVAL,
-          SmartReturnConstants.APPROVAL_QLV
-        );
-      }
+    if (returnRequest == null || returnRequest.Id == null) {
+      throw new ApprovalRoutingException('Return Request is required.');
     }
+
+    String approvalLevel = determineRequiredApprovalLevel(
+      returnRequest.Customer__c,
+      returnRequest.Estimated_Refund_Amount__c
+    );
+
+    if (approvalLevel == SmartReturnConstants.APPROVAL_AUTO) {
+      String targetStatus = returnRequest.Source_Channel__c ==
+        SmartReturnConstants.SOURCE_APP
+        ? SmartReturnConstants.STATUS_AWAITING_GOODS
+        : SmartReturnConstants.STATUS_INSPECTING;
+
+      StateTransitionService.transition(
+        returnRequest.Id,
+        targetStatus,
+        approvalLevel
+      );
+
+      return;
+    }
+
+    StateTransitionService.transition(
+      returnRequest.Id,
+      SmartReturnConstants.STATUS_PENDING_APPROVAL,
+      approvalLevel
+    );
   }
 
   public static String determineRequiredApprovalLevel(
     Id customerId,
     Decimal estimatedRefundAmount
   ) {
-    Decimal refundAmount = estimatedRefundAmount == null
-      ? 0
-      : estimatedRefundAmount;
+    Decimal amount = estimatedRefundAmount == null ? 0 : estimatedRefundAmount;
 
-    Boolean isRisky = checkRiskCriteria(customerId);
-
-    if (isRisky) {
+    if (isRiskCustomer(customerId)) {
       return SmartReturnConstants.APPROVAL_QLV;
     }
 
-    Boolean autoApprovalEnabled = SmartReturnConfigService.isFeatureEnabled(
-      'Auto_Approval'
-    );
-
     if (
-      autoApprovalEnabled &&
-      refundAmount <= SmartReturnConfigService.getAutoApprovalLimit()
+      SmartReturnConfigService.isFeatureEnabled('Auto_Approval') &&
+      amount <= SmartReturnConfigService.getAutoApprovalLimit()
     ) {
       return SmartReturnConstants.APPROVAL_AUTO;
     }
 
-    if (refundAmount <= SmartReturnConfigService.getStoreApprovalLimit()) {
+    if (amount <= SmartReturnConfigService.getStoreApprovalLimit()) {
       return SmartReturnConstants.APPROVAL_CHT;
     }
 
     return SmartReturnConstants.APPROVAL_QLV;
   }
 
-  /**
-   * auto approval feature flag check
-   * risk flag check
-   * refund amount check
-   */
-  private static Boolean checkAutoApprovalCriterial(
-    Return_Request__c returnRequest
-  ) {
-    if (returnRequest == null || returnRequest.Customer__c == null) {
-      return false;
-    }
-
-    if (checkRiskCriteria(returnRequest.Customer__c)) {
-      return false;
-    }
-
-    if (!SmartReturnConfigService.isFeatureEnabled('Auto_Approval')) {
-      return false;
-    }
-
-    if (
-      returnRequest.Estimated_Refund_Amount__c >
-      SmartReturnConfigService.getAutoApprovalLimit()
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  private static Boolean checkRiskCriteria(Id customerId) {
+  @TestVisible
+  private static Boolean isRiskCustomer(Id customerId) {
     if (customerId == null) {
       return false;
     }
 
-    Integer dateWindow = SmartReturnConfigService.getRiskWindowDays();
-    Integer riskRequestCount = SmartReturnConfigService.getRiskRequestCount();
-    Decimal riskRefundAmount = SmartReturnConfigService.getRiskRefundAmount();
+    Integer windowDays = SmartReturnConfigService.getRiskWindowDays();
 
     AggregateResult result = [
       SELECT
@@ -118,16 +70,20 @@ public with sharing class ApprovalRoutingService {
       FROM Return_Request__c
       WHERE
         Customer__c = :customerId
-        AND CreatedDate >= :System.now().addDays(-dateWindow)
+        AND CreatedDate >= :System.now().addDays(-windowDays)
         AND Status__c IN :SmartReturnConstants.ACTIVE_RETURN_STATUSES
     ];
 
     Integer requestCount = (Integer) result.get('requestCount');
-    Decimal totalRefundAmount = (Decimal) result.get('totalRefundAmount');
 
-    totalRefundAmount = totalRefundAmount == null ? 0 : totalRefundAmount;
+    Decimal totalAmount = (Decimal) result.get('totalRefundAmount');
 
-    return requestCount >= riskRequestCount ||
-      totalRefundAmount >= riskRefundAmount;
+    totalAmount = totalAmount == null ? 0 : totalAmount;
+
+    return requestCount >= SmartReturnConfigService.getRiskRequestCount() ||
+      totalAmount >= SmartReturnConfigService.getRiskRefundAmount();
+  }
+
+  public class ApprovalRoutingException extends Exception {
   }
 }

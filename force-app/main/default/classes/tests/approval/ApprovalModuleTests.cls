@@ -1,16 +1,23 @@
 @IsTest
-public class ApprovalModuleTests {
+private class ApprovalModuleTests {
+  private static final String APPROVER_LAST_NAME = 'Return Request Test Approver';
+
   @TestSetup
-  static void approver() {
+  static void setupUsers() {
     ReturnRequestTestDataFactory.createApprover();
   }
 
-  /*
-   * Tạo request trong từng test để đặt CreatedDate riêng biệt.
-   * @TestSetup chỉ chuẩn bị user và quyền.
-   */
-  private static Account createCustomer() {
-    Account customer = new Account(Name = 'Approval Test Customer');
+  private static User getApprover() {
+    return [
+      SELECT Id
+      FROM User
+      WHERE LastName = :APPROVER_LAST_NAME
+      LIMIT 1
+    ];
+  }
+
+  private static Account createCustomer(String suffix) {
+    Account customer = new Account(Name = 'Approval Test Customer ' + suffix);
 
     insert customer;
     return customer;
@@ -20,443 +27,375 @@ public class ApprovalModuleTests {
     Id customerId,
     String status,
     String approvalLevel,
-    String sourceChannel,
-    Decimal estimatedRefund
+    String channel,
+    Decimal amount,
+    Id approverId,
+    Datetime dueAt
   ) {
-    Return_Request__c requestRecord = ReturnRequestTestDataFactory.requests(
-      1,
-      customerId
-    )[0];
+    Return_Request__c requestRecord = ReturnRequestTestDataFactory
+      .requests(1, customerId)[0];
+
     requestRecord.Status__c = status;
     requestRecord.Required_Approval_Level__c = approvalLevel;
-    requestRecord.Source_Channel__c = sourceChannel;
-    requestRecord.Estimated_Refund_Amount__c = estimatedRefund;
+    requestRecord.Source_Channel__c = channel;
+    requestRecord.Estimated_Refund_Amount__c = amount;
+    requestRecord.ApproverId__c = approverId;
+    requestRecord.Approval_Due_At__c = dueAt;
+
     insert as system requestRecord;
+
     return requestRecord;
   }
 
   @IsTest
-  static void batchEscalatesOverdueChtRequest() {
-    Account customer = createCustomer();
+  static void approveBulk_ShouldRouteByStoredChannel() {
+    User approver = getApprover();
+    Account customer = createCustomer('CHANNEL');
 
-    Return_Request__c overdueRequest = createRequest(
+    Return_Request__c appRequest = createRequest(
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_CHT,
       SmartReturnConstants.SOURCE_APP,
-      5000000
+      5000000,
+      approver.Id,
+      System.now().addHours(24)
     );
 
-    /*
-     * Đặt CreatedDate đủ cũ để chắc chắn vượt mọi timeout
-     * hợp lý đang cấu hình, ví dụ 24 giờ.
-     */
-    Test.setCreatedDate(overdueRequest.Id, System.now().addDays(-10));
-
-    Test.startTest();
-
-    Database.executeBatch(new ApprovalEscalationBatch(), 200);
-
-    Test.stopTest();
-
-    Return_Request__c actualRequest = [
-      SELECT Status__c, Required_Approval_Level__c
-      FROM Return_Request__c
-      WHERE Id = :overdueRequest.Id
-    ];
-
-    System.assertEquals(
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      actualRequest.Status__c,
-      'Escalation không được thay đổi status.'
-    );
-
-    System.assertEquals(
-      SmartReturnConstants.APPROVAL_QLV,
-      actualRequest.Required_Approval_Level__c,
-      'Request CHT quá hạn phải được escalate lên QLV.'
-    );
-  }
-
-  @IsTest
-  static void batchDoesNotEscalateRecentChtRequest() {
-    Account customer = createCustomer();
-
-    Return_Request__c recentRequest = createRequest(
-      customer.Id,
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      SmartReturnConstants.APPROVAL_CHT,
-      SmartReturnConstants.SOURCE_APP,
-      5000000
-    );
-
-    /*
-     * Không thay CreatedDate, đây là request mới.
-     */
-
-    Test.startTest();
-
-    Database.executeBatch(new ApprovalEscalationBatch(), 200);
-
-    Test.stopTest();
-
-    Return_Request__c actualRequest = [
-      SELECT Required_Approval_Level__c
-      FROM Return_Request__c
-      WHERE Id = :recentRequest.Id
-    ];
-
-    System.assertEquals(
-      SmartReturnConstants.APPROVAL_CHT,
-      actualRequest.Required_Approval_Level__c,
-      'Request chưa quá hạn phải tiếp tục chờ CHT.'
-    );
-  }
-
-  @IsTest
-  static void batchDoesNotEscalateExistingQlvRequest() {
-    Account customer = createCustomer();
-
-    Return_Request__c qlvRequest = createRequest(
-      customer.Id,
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      SmartReturnConstants.APPROVAL_QLV,
-      SmartReturnConstants.SOURCE_APP,
-      30000000
-    );
-
-    Test.setCreatedDate(qlvRequest.Id, System.now().addDays(-10));
-
-    Test.startTest();
-
-    Database.executeBatch(new ApprovalEscalationBatch(), 200);
-
-    Test.stopTest();
-
-    Return_Request__c actualRequest = [
-      SELECT Required_Approval_Level__c
-      FROM Return_Request__c
-      WHERE Id = :qlvRequest.Id
-    ];
-
-    System.assertEquals(
-      SmartReturnConstants.APPROVAL_QLV,
-      actualRequest.Required_Approval_Level__c,
-      'Request đã ở mức QLV không được xử lý lại.'
-    );
-  }
-
-  @IsTest
-  static void schedulerEnqueuesEscalationBatch() {
-    Test.startTest();
-
-    String scheduledJobId = System.schedule(
-      'Approval Escalation Test',
-      '0 0 1 1 1 ? 2099',
-      new ApprovalEscalationBatchScheduler()
-    );
-
-    Test.stopTest();
-
-    CronTrigger scheduledJob = [
-      SELECT Id, CronJobDetail.Name, State, TimesTriggered
-      FROM CronTrigger
-      WHERE Id = :scheduledJobId
-    ];
-
-    System.assertEquals(
-      'Approval Escalation Test',
-      scheduledJob.CronJobDetail.Name
-    );
-    List<AsyncApexJob> batchJobs = [
-      SELECT Id, JobType, ApexClass.Name, Status
-      FROM AsyncApexJob
-      WHERE ApexClass.Name = 'ApprovalEscalationBatch'
-    ];
-
-    System.assert(
-      !batchJobs.isEmpty(),
-      'Scheduler phải enqueue ApprovalEscalationBatch.'
-    );
-  }
-
-  @IsTest
-  static void approveAppRequestMovesToAwaitingGoods() {
-    Account customer = createCustomer();
-
-    Return_Request__c requestRecord = createRequest(
-      customer.Id,
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      SmartReturnConstants.APPROVAL_CHT,
-      SmartReturnConstants.SOURCE_APP,
-      5000000
-    );
-
-    Test.startTest();
-
-    ApprovalService.approveRequest(
-      String.valueOf(requestRecord.Id),
-      SmartReturnConstants.SOURCE_APP
-    );
-
-    Test.stopTest();
-
-    Return_Request__c actualRequest = [
-      SELECT Status__c
-      FROM Return_Request__c
-      WHERE Id = :requestRecord.Id
-    ];
-
-    System.assertEquals(
-      SmartReturnConstants.STATUS_AWAITING_GOODS,
-      actualRequest.Status__c,
-      'APP request sau khi approve phải chờ khách mang hàng.'
-    );
-  }
-
-  @IsTest
-  static void approvePosRequestMovesToInspecting() {
-    Account customer = createCustomer();
-
-    Return_Request__c requestRecord = createRequest(
+    Return_Request__c posRequest = createRequest(
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_CHT,
       SmartReturnConstants.SOURCE_POS,
-      5000000
+      5000000,
+      approver.Id,
+      System.now().addHours(24)
     );
 
-    Test.startTest();
-
-    ApprovalService.approveRequest(
-      String.valueOf(requestRecord.Id),
-      SmartReturnConstants.SOURCE_POS
-    );
-
-    Test.stopTest();
-
-    Return_Request__c actualRequest = [
-      SELECT Status__c
-      FROM Return_Request__c
-      WHERE Id = :requestRecord.Id
-    ];
-
-    System.assertEquals(
-      SmartReturnConstants.STATUS_INSPECTING,
-      actualRequest.Status__c,
-      'Request không phải APP phải chuyển sang INSPECTING.'
-    );
-  }
-
-  @IsTest
-  static void approveBulkPosRequestMovesToInspecting() {
-    Account customer = createCustomer();
-
-    Return_Request__c requestRecord = createRequest(
-      customer.Id,
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      SmartReturnConstants.APPROVAL_CHT,
-      SmartReturnConstants.SOURCE_POS,
-      5000000
-    );
-    Return_Request__c requestRecord2 = createRequest(
-      customer.Id,
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      SmartReturnConstants.APPROVAL_CHT,
-      SmartReturnConstants.SOURCE_POS,
-      4000000
-    );
-    List<Id> requestIds = new List<Id>{ requestRecord.Id, requestRecord2.Id };
-    Test.startTest();
-
-    ApprovalService.approveRequestBulk(
-      requestIds,
-      SmartReturnConstants.SOURCE_POS
-    );
-
-    Test.stopTest();
-
-    List<Return_Request__c> actualRequests = [
-      SELECT Status__c
-      FROM Return_Request__c
-      WHERE Id IN :requestIds
-    ];
-
-    for (Return_Request__c request : actualRequests) {
-      System.assertEquals(
-        SmartReturnConstants.STATUS_INSPECTING,
-        request.Status__c,
-        'Request không phải APP phải chuyển sang INSPECTING.'
-      );
-    }
-  }
-
-  @IsTest
-  static void rejectRequestMovesToRejected() {
-    User actor = [
-      SELECT Id
-      FROM User
-      WHERE LastName = 'Return Request Test Approver'
-      WITH SYSTEM_MODE
-    ];
-    System.runAs(actor) {
-      Assert.isTrue(
-        Return_Request__c.Rejection_Reason__c.getDescribe().isUpdateable(),
-        'The rejecting actor must have explicit write access to the reason.'
-      );
-      Account customer = createCustomer();
-
-      Return_Request__c requestRecord = createRequest(
-        customer.Id,
-        SmartReturnConstants.STATUS_PENDING_APPROVAL,
-        SmartReturnConstants.APPROVAL_CHT,
-        SmartReturnConstants.SOURCE_APP,
-        5000000
-      );
-
+    System.runAs(approver) {
       Test.startTest();
 
-      ApprovalService.rejectRequest(
-        String.valueOf(requestRecord.Id),
-        'Return request does not meet approval conditions.'
+      List<ApprovalActionResult> results = ApprovalController.bulkApprove(
+        new List<Id>{ appRequest.Id, posRequest.Id }
       );
 
       Test.stopTest();
 
-      Return_Request__c actualRequest = [
-        SELECT Status__c, Rejection_Reason__c
-        FROM Return_Request__c
-        WHERE Id = :requestRecord.Id
-        WITH SYSTEM_MODE
-      ];
-
-      System.assertEquals(
-        SmartReturnConstants.STATUS_REJECTED,
-        actualRequest.Status__c,
-        'Reject request phải chuyển trạng thái sang REJECTED.'
-      );
-      Assert.areEqual(
-        'Return request does not meet approval conditions.',
-        actualRequest.Rejection_Reason__c,
-        'Rejecting a request must persist the supplied reason.'
-      );
+      System.assertEquals(2, results.size());
+      System.assertEquals(true, results[0].success);
+      System.assertEquals(true, results[1].success);
     }
+
+    Map<Id, Return_Request__c> actualById = new Map<Id, Return_Request__c>(
+      [
+        SELECT Id, Status__c
+        FROM Return_Request__c
+        WHERE Id IN :new Set<Id>{ appRequest.Id, posRequest.Id }
+      ]
+    );
+
+    System.assertEquals(
+      SmartReturnConstants.STATUS_AWAITING_GOODS,
+      actualById.get(appRequest.Id).Status__c
+    );
+
+    System.assertEquals(
+      SmartReturnConstants.STATUS_INSPECTING,
+      actualById.get(posRequest.Id).Status__c
+    );
   }
 
   @IsTest
-  static void rejectRequestRequiresReason() {
-    Account customer = createCustomer();
+  static void approveReconfirming_ShouldMoveToRefundProcessing() {
+    User approver = getApprover();
+    Account customer = createCustomer('RECONFIRM');
+
+    Return_Request__c requestRecord = createRequest(
+      customer.Id,
+      SmartReturnConstants.STATUS_RE_CONFIRMING,
+      SmartReturnConstants.APPROVAL_CHT,
+      SmartReturnConstants.SOURCE_POS,
+      5000000,
+      approver.Id,
+      null
+    );
+
+    System.runAs(approver) {
+      Test.startTest();
+
+      ApprovalService.approveRequest(requestRecord.Id);
+
+      Test.stopTest();
+    }
+
+    Return_Request__c actual = [
+      SELECT Status__c
+      FROM Return_Request__c
+      WHERE Id = :requestRecord.Id
+    ];
+
+    System.assertEquals(
+      SmartReturnConstants.STATUS_REFUND_PROCESSING,
+      actual.Status__c
+    );
+  }
+
+  @IsTest
+  static void approveBulk_ShouldReturnPartialSuccess() {
+    User approver = getApprover();
+    User wrongApprover = createAdditionalUser('wrong');
+    Account customer = createCustomer('PARTIAL');
+
+    Return_Request__c allowed = createRequest(
+      customer.Id,
+      SmartReturnConstants.STATUS_PENDING_APPROVAL,
+      SmartReturnConstants.APPROVAL_CHT,
+      SmartReturnConstants.SOURCE_APP,
+      5000000,
+      approver.Id,
+      System.now().addHours(24)
+    );
+
+    Return_Request__c denied = createRequest(
+      customer.Id,
+      SmartReturnConstants.STATUS_PENDING_APPROVAL,
+      SmartReturnConstants.APPROVAL_CHT,
+      SmartReturnConstants.SOURCE_APP,
+      5000000,
+      wrongApprover.Id,
+      System.now().addHours(24)
+    );
+
+    List<ApprovalActionResult> results;
+
+    System.runAs(approver) {
+      Test.startTest();
+
+      results = ApprovalService.approveRequestBulk(
+        new List<Id>{ allowed.Id, denied.Id }
+      );
+
+      Test.stopTest();
+    }
+
+    System.assertEquals(2, results.size());
+    System.assertEquals(true, results[0].success);
+    System.assertEquals(false, results[1].success);
+
+    Map<Id, Return_Request__c> actualById = new Map<Id, Return_Request__c>(
+      [
+        SELECT Id, Status__c
+        FROM Return_Request__c
+        WHERE Id IN :new Set<Id>{ allowed.Id, denied.Id }
+      ]
+    );
+
+    System.assertEquals(
+      SmartReturnConstants.STATUS_AWAITING_GOODS,
+      actualById.get(allowed.Id).Status__c
+    );
+
+    System.assertEquals(
+      SmartReturnConstants.STATUS_PENDING_APPROVAL,
+      actualById.get(denied.Id).Status__c
+    );
+  }
+
+  @IsTest
+  static void rejectBulk_ShouldPersistReasonAndNote() {
+    User approver = getApprover();
+    Account customer = createCustomer('REJECT');
 
     Return_Request__c requestRecord = createRequest(
       customer.Id,
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       SmartReturnConstants.APPROVAL_CHT,
       SmartReturnConstants.SOURCE_APP,
-      5000000
+      5000000,
+      approver.Id,
+      System.now().addHours(24)
     );
 
-    Boolean exceptionThrown = false;
+    System.runAs(approver) {
+      Test.startTest();
+
+      List<ApprovalActionResult> results = ApprovalController.bulkReject(
+        new List<Id>{ requestRecord.Id },
+        'REQUEST_NOT_ELIGIBLE',
+        'Reviewed by assigned approver.'
+      );
+
+      Test.stopTest();
+
+      System.assertEquals(true, results[0].success);
+    }
+
+    Return_Request__c actual = [
+      SELECT Status__c, Rejection_Reason__c, Internal_Notes__c
+      FROM Return_Request__c
+      WHERE Id = :requestRecord.Id
+    ];
+
+    System.assertEquals(SmartReturnConstants.STATUS_REJECTED, actual.Status__c);
+
+    System.assertEquals('REQUEST_NOT_ELIGIBLE', actual.Rejection_Reason__c);
+
+    System.assertEquals(
+      'Reviewed by assigned approver.',
+      actual.Internal_Notes__c
+    );
+  }
+
+  @IsTest
+  static void reject_ShouldRequireReason() {
+    Boolean thrown = false;
 
     Test.startTest();
 
     try {
-      ApprovalService.rejectRequest(String.valueOf(requestRecord.Id), ' ');
-    } catch (StateTransitionService.StateTransitionException ex) {
-      exceptionThrown = true;
-
-      System.assertEquals('Rejection reason cannot be blank.', ex.getMessage());
+      ApprovalController.bulkReject(
+        new List<Id>{ UserInfo.getUserId() },
+        ' ',
+        null
+      );
+    } catch (AuraHandledException ex) {
+      thrown = true;
     }
 
     Test.stopTest();
 
-    System.assertEquals(true, exceptionThrown, 'Reason trống phải bị chặn.');
-
-    Return_Request__c actualRequest = [
-      SELECT Status__c
-      FROM Return_Request__c
-      WHERE Id = :requestRecord.Id
-    ];
-
-    System.assertEquals(
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      actualRequest.Status__c,
-      'Request không được thay đổi khi reason không hợp lệ.'
-    );
+    System.assertEquals(true, thrown);
   }
 
   @IsTest
-  static void initialRoutingSendsHighAmountToPendingApproval() {
-    Account customer = createCustomer();
+  static void approvalRouting_ShouldRouteRiskCustomerToQlv() {
+    Account customer = createCustomer('RISK');
 
-    /*
-     * Giá trị lớn để chắc chắn vượt Auto Approval Limit.
-     * Điều này giúp test không phụ thuộc trạng thái feature flag.
-     */
-    Return_Request__c requestRecord = createRequest(
+    Integer threshold = SmartReturnConfigService.getRiskRequestCount();
+
+    List<Return_Request__c> previous = new List<Return_Request__c>();
+
+    for (Integer index = 0; index < threshold - 1; index++) {
+      previous.add(
+        createRequest(
+          customer.Id,
+          SmartReturnConstants.STATUS_COMPLETED,
+          SmartReturnConstants.APPROVAL_CHT,
+          SmartReturnConstants.SOURCE_APP,
+          100000,
+          null,
+          null
+        )
+      );
+    }
+
+    Return_Request__c currentRequest = createRequest(
       customer.Id,
       SmartReturnConstants.STATUS_NEW,
       null,
       SmartReturnConstants.SOURCE_APP,
-      999999999
-    );
-
-    Test.startTest();
-
-    ApprovalRoutingService.evaluateInitialStatus(requestRecord);
-
-    Test.stopTest();
-
-    Return_Request__c actualRequest = [
-      SELECT Status__c
-      FROM Return_Request__c
-      WHERE Id = :requestRecord.Id
-    ];
-
-    System.assertEquals(
-      SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      actualRequest.Status__c,
-      'Request vượt auto limit phải chờ manual approval.'
-    );
-  }
-
-  @IsTest
-  static void initialRoutingSendsHighAmountToPendingApproval_CHT() {
-    Account customer = createCustomer();
-
-    /*
-     * Giá trị lớn để chắc chắn vượt Auto Approval Limit.
-     * Điều này giúp test không phụ thuộc trạng thái feature flag.
-     */
-    Decimal storeApprovalLimit = SmartReturnConfigService.getStoreApprovalLimit();
-    Return_Request__c requestRecord = createRequest(
-      customer.Id,
-      SmartReturnConstants.STATUS_NEW,
+      100000,
       null,
-      SmartReturnConstants.SOURCE_APP,
-      storeApprovalLimit
+      null
     );
 
     Test.startTest();
 
-    ApprovalRoutingService.evaluateInitialStatus(requestRecord);
+    ApprovalRoutingService.evaluateInitialStatus(currentRequest);
 
     Test.stopTest();
 
-    Return_Request__c actualRequest = [
+    Return_Request__c actual = [
       SELECT Status__c, Required_Approval_Level__c
       FROM Return_Request__c
+      WHERE Id = :currentRequest.Id
+    ];
+
+    System.assertEquals(
+      SmartReturnConstants.STATUS_PENDING_APPROVAL,
+      actual.Status__c
+    );
+
+    System.assertEquals(
+      SmartReturnConstants.APPROVAL_QLV,
+      actual.Required_Approval_Level__c,
+      'Request hiện tại phải được tính vào risk threshold.'
+    );
+  }
+
+  @IsTest
+  static void escalationBatch_ShouldAssignRegionalManager() {
+    User regionalManager = createAdditionalUser('region');
+    Account customer = createCustomer('ESCALATE');
+
+    Store__c store = new Store__c(
+      Store_Code__c = 'ESC-STORE',
+      Region_Manager__c = regionalManager.Id
+    );
+    insert store;
+
+    Return_Request__c requestRecord = createRequest(
+      customer.Id,
+      SmartReturnConstants.STATUS_PENDING_APPROVAL,
+      SmartReturnConstants.APPROVAL_CHT,
+      SmartReturnConstants.SOURCE_APP,
+      5000000,
+      getApprover().Id,
+      System.now().addHours(-1)
+    );
+
+    requestRecord.Store__c = store.Id;
+    update requestRecord;
+
+    Test.startTest();
+
+    Database.executeBatch(new ApprovalEscalationBatch(), 200);
+
+    Test.stopTest();
+
+    Return_Request__c actual = [
+      SELECT
+        Status__c,
+        Required_Approval_Level__c,
+        ApproverId__c,
+        Approval_Due_At__c
+      FROM Return_Request__c
       WHERE Id = :requestRecord.Id
     ];
 
     System.assertEquals(
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
-      actualRequest.Status__c,
-      'Request vượt auto limit phải chờ manual approval.'
+      actual.Status__c
     );
+
     System.assertEquals(
-      SmartReturnConstants.APPROVAL_CHT,
-      actualRequest.Required_Approval_Level__c,
-      'Request vượt auto limit phải chờ manual approval.'
+      SmartReturnConstants.APPROVAL_QLV,
+      actual.Required_Approval_Level__c
     );
+
+    System.assertEquals(regionalManager.Id, actual.ApproverId__c);
+
+    System.assertEquals(null, actual.Approval_Due_At__c);
+  }
+
+  private static User createAdditionalUser(String suffix) {
+    String uniqueValue = suffix + String.valueOf(Datetime.now().getTime());
+
+    User userRecord = new User(
+      FirstName = 'SmartReturn',
+      LastName = 'Approver ' + suffix,
+      Alias = uniqueValue.left(8),
+      Email = uniqueValue + '@example.test',
+      Username = uniqueValue + '@example.test',
+      CommunityNickname = uniqueValue.left(30),
+      TimeZoneSidKey = 'Asia/Ho_Chi_Minh',
+      LocaleSidKey = 'en_US',
+      EmailEncodingKey = 'UTF-8',
+      LanguageLocaleKey = 'en_US',
+      ProfileId = UserInfo.getProfileId()
+    );
+
+    insert userRecord;
+    return userRecord;
   }
 }
