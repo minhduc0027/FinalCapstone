@@ -96,7 +96,7 @@ private class InspectionModuleTests {
     return new Return_Request_Line__c(
       Id = lineId,
       Is_Eligible__c = false,
-      Eligibility_Code__c = 'NOT_ELIGIBLE',
+      Eligibility_Code__c = 'CATEGORY_NOT_RETURNABLE',
       Eligibility_Reason__c = 'DAMAGED'
     );
   }
@@ -232,7 +232,10 @@ private class InspectionModuleTests {
     for (Return_Request_Line__c updatedLine : updatedLines) {
       System.assertEquals(false, updatedLine.Is_Eligible__c);
 
-      System.assertEquals('NOT_ELIGIBLE', updatedLine.Eligibility_Code__c);
+      System.assertEquals(
+        'CATEGORY_NOT_RETURNABLE',
+        updatedLine.Eligibility_Code__c
+      );
 
       System.assertEquals('DAMAGED', updatedLine.Eligibility_Reason__c);
     }
@@ -318,7 +321,7 @@ private class InspectionModuleTests {
         new List<Return_Request_Line__c>{
           new Return_Request_Line__c(
             Is_Eligible__c = false,
-            Eligibility_Code__c = 'NOT_ELIGIBLE',
+            Eligibility_Code__c = 'CATEGORY_NOT_RETURNABLE',
             Eligibility_Reason__c = 'DAMAGED'
           )
         }
