@@ -130,7 +130,8 @@ public with sharing class InspectionService {
       StateTransitionService.transition(
         requestId,
         SmartReturnConstants.STATUS_REJECTED,
-        null
+        null,
+        'All lines rejected'
       );
 
       logInspection(
