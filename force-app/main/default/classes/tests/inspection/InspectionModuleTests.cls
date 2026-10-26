@@ -109,7 +109,7 @@ private class InspectionModuleTests {
     Return_Request__c requestRecord = createInspectionRequest();
 
     Return_Request_Line__c line = [
-      SELECT Id
+      SELECT Id, Return_Request__c
       FROM Return_Request_Line__c
       WHERE Return_Request__c = :requestRecord.Id
       LIMIT 1
