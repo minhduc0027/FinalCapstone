@@ -59,7 +59,7 @@ private class InspectionModuleTests {
       Purchased_Quantity__c = 2,
       Requested_Quantity__c = 1,
       Unit_Price_Paid__c = 1000000,
-      Return_Reason__c = 'TECHNICAL_DEFECT',
+      Return_Reason__c = 'DEFECT',
       Reported_Condition__c = 'SEALED'
     );
 
