@@ -20,9 +20,8 @@ public with sharing class InspectionService {
     Map<Id, Return_Request_Line__c> inputById = validateAndBuildInputMap(
       inputLines
     );
-    Id requestId = inputLines[0].Return_Request__c;
-    List<Return_Request_Line__c> storedLines = ReturnRequestSelector.getReturnRequestLines(
-      requestId,
+    List<Return_Request_Line__c> storedLines = ReturnRequestSelector.getReturnRequestLinesByIds(
+      inputById.keySet(),
       true
     );
 
@@ -32,12 +31,12 @@ public with sharing class InspectionService {
       );
     }
 
-    Id requestId2 = validateSameRequest(storedLines);
+    Id requestId = validateSameRequest(storedLines);
     Return_Request__c requestRecord = [
       SELECT Id, Status__c, Required_Approval_Level__c, Actual_Refund_Amount__c
       //ApproverId__c
       FROM Return_Request__c
-      WHERE Id = :requestId2
+      WHERE Id = :requestId
       LIMIT 1
       FOR UPDATE
     ];

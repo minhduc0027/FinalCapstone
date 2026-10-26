@@ -57,6 +57,27 @@ public with sharing class ReturnRequestSelector {
     );
   }
 
+  public static Map<Id, Return_Request_Line__c> getReturnRequestLinesByIds(
+    Set<Id> lineIds,
+    Boolean lockRows
+  ) {
+    if (lineIds == null || lineIds.isEmpty()) {
+      return new Map<Id, Return_Request_Line__c>();
+    }
+
+    List<Return_Request_Line__c> lines = (List<Return_Request_Line__c>) selectRows(
+      RETURN_REQUEST_LINE_OBJECT,
+      INSPECTION_LINE_FIELDS,
+      'Id IN :lineIds',
+      new Map<String, Object>{ 'lineIds' => lineIds },
+      lockRows,
+      lineIds.size(),
+      'Id'
+    );
+
+    return new Map<Id, Return_Request_Line__c>(lines);
+  }
+
   private static List<SObject> selectRows(
     String objectName,
     List<String> fields,
