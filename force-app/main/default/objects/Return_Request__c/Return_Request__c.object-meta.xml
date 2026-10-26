@@ -148,7 +148,6 @@
     <enableActivities>true</enableActivities>
     <enableBulkApi>true</enableBulkApi>
     <enableFeeds>false</enableFeeds>
-    <!-- REFUND INTEGRATION: native history audits committed refund status changes. -->
     <enableHistory>true</enableHistory>
     <enableLicensing>false</enableLicensing>
     <enableReports>true</enableReports>
@@ -160,6 +159,7 @@
     <nameField>
         <displayFormat>RR-{YY}{MM}-{00000}</displayFormat>
         <label>Return Request Name</label>
+        <trackHistory>false</trackHistory>
         <type>AutoNumber</type>
     </nameField>
     <pluralLabel>Return Requests</pluralLabel>
