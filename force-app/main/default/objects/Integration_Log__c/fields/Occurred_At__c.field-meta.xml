@@ -8,6 +8,5 @@
   >Time the outbound exchange started or callback arrived. Populate the captured event time when persistence happens later.</inlineHelpText>
     <label>Occurred At</label>
     <required>true</required>
-    <trackTrending>false</trackTrending>
     <type>DateTime</type>
 </CustomField>

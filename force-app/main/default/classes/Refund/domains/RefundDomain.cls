@@ -70,11 +70,6 @@ public with sharing class RefundDomain {
   }
 
   public static Integer timeoutMilliseconds(Integer seconds) {
-    validateTimeoutSeconds(seconds);
-    return seconds * 1000;
-  }
-
-  public static void validateTimeoutSeconds(Integer seconds) {
     if (
       seconds == null ||
       seconds < MIN_PAYHUB_TIMEOUT_SECONDS ||
@@ -84,6 +79,7 @@ public with sharing class RefundDomain {
         'PayHub timeout must be between 1 and 120 seconds.'
       );
     }
+    return seconds * 1000;
   }
 
   public class Decision {

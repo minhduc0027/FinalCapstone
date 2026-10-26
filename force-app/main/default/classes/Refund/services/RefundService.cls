@@ -177,9 +177,7 @@ public with sharing class RefundService {
           row.Next_Retry_At__c = null;
           exhausted.add(row);
         } else {
-          RefundDomain.validateTimeoutSeconds(
-            SmartReturnConfigService.getPayHubMaxTimeoutSecond()
-          );
+          PayHubClient.configuredTimeoutMs();
           row.Status__c = RefundDomain.Status.PROCESSING.name();
           row.Attempt_Count__c++;
           row.Last_Attempt_At__c = nowValue;
@@ -241,12 +239,9 @@ public with sharing class RefundService {
       return;
     }
 
-    Integer timeoutMs;
     try {
-      timeoutMs = RefundDomain.timeoutMilliseconds(
-        SmartReturnConfigService.getPayHubMaxTimeoutSecond()
-      );
-    } catch (Exception e) {
+      PayHubClient.configuredTimeoutMs();
+    } catch (PayHubClient.ConfigurationException e) {
       for (Refund_Transaction__c sent : snapshots) {
         releaseUnsentClaim(sent, jobId, sent.Attempt_Count__c.intValue());
       }
@@ -268,8 +263,7 @@ public with sharing class RefundService {
           sent.Merchant_Reference__c,
           sent.Order_Number__c,
           sent.Refund_Amount__c,
-          sent.Idempotency_Key__c,
-          timeoutMs
+          sent.Idempotency_Key__c
         )
       );
     }

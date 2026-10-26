@@ -59,8 +59,7 @@ private class PayHubClientTest {
       'RR-2610-00015',
       '00012345',
       1992000,
-      'RR-2610-00015',
-      5000
+      'RR-2610-00015'
     );
   }
   @IsTest
@@ -155,7 +154,7 @@ private class PayHubClientTest {
   static void invalidPayloadBeforeCallout() {
     Test.startTest();
     try {
-      PayHubClient.send('RR-1', 'O-1', 1.5, 'RR-1', 5000);
+      PayHubClient.send('RR-1', 'O-1', 1.5, 'RR-1');
       Assert.fail('Fractional VND must not be sent.');
     } catch (PayHubClient.ClientException e) {
       Assert.isTrue(
@@ -165,5 +164,53 @@ private class PayHubClientTest {
     }
     Test.stopTest();
     Assert.areEqual(0, Limits.getCallouts(), 'No HTTP for invalid input.');
+  }
+
+  @IsTest
+  static void configuredTimeoutConvertsSecondsToMilliseconds() {
+    PayHubClient.timeoutSecondsOverride = 5;
+
+    Test.startTest();
+    Integer timeoutMs = PayHubClient.configuredTimeoutMs();
+    Test.stopTest();
+    Assert.areEqual(
+      5000,
+      timeoutMs,
+      'Convert configured seconds to milliseconds.'
+    );
+  }
+
+  @IsTest
+  static void zeroTimeoutIsRejected() {
+    PayHubClient.timeoutSecondsOverride = 0;
+
+    Test.startTest();
+    try {
+      PayHubClient.configuredTimeoutMs();
+      Assert.fail('Zero timeout must be rejected.');
+    } catch (PayHubClient.ConfigurationException e) {
+      Assert.isTrue(
+        e.getMessage().contains('between 1 and 120'),
+        'Explain the valid range.'
+      );
+    }
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void excessiveTimeoutIsRejected() {
+    PayHubClient.timeoutSecondsOverride = 121;
+
+    Test.startTest();
+    try {
+      PayHubClient.configuredTimeoutMs();
+      Assert.fail('Timeout above the platform limit must be rejected.');
+    } catch (PayHubClient.ConfigurationException e) {
+      Assert.isTrue(
+        e.getMessage().contains('between 1 and 120'),
+        'Explain the valid range.'
+      );
+    }
+    Test.stopTest();
   }
 }

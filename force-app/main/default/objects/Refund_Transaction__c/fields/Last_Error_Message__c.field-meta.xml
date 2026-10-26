@@ -7,7 +7,6 @@
   >Most recent sanitized error summary. Detailed individual exchanges remain in Integration Logs; exclude credentials and authorization data.</inlineHelpText>
     <label>Last Error Message</label>
     <length>32768</length>
-    <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
     <visibleLines>5</visibleLines>
 </CustomField>

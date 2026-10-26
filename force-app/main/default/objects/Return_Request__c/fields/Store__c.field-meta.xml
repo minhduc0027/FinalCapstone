@@ -10,8 +10,7 @@
     <referenceTo>Store__c</referenceTo>
     <relationshipLabel>Return Requests</relationshipLabel>
     <relationshipName>Return_Requests</relationshipName>
-    <required>false</required>
-    <trackHistory>false</trackHistory>
+    <required>true</required>
     <trackTrending>false</trackTrending>
     <type>Lookup</type>
 </CustomField>

@@ -7,7 +7,6 @@
   >Sanitized outbound request or incoming callback body. Preserve correlation identifiers for reconciliation; never store credentials or tokens.</inlineHelpText>
     <label>Request Body</label>
     <length>131072</length>
-    <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
     <visibleLines>5</visibleLines>
 </CustomField>

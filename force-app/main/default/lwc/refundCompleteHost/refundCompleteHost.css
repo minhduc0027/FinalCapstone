@@ -1,6 +1,23 @@
+.dialog-container {
+  width: min(40rem, calc(100vw - 2rem));
+  max-width: 40rem;
+}
+
 .dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
   background-color: var(--slds-g-color-accent-container-1, #066afe);
   color: var(--slds-g-color-on-accent-1, #fff);
+}
+
+.dialog-content {
+  overflow-y: auto;
+}
+
+.reference-value {
+  overflow-wrap: anywhere;
 }
 
 .dialog-modal {
