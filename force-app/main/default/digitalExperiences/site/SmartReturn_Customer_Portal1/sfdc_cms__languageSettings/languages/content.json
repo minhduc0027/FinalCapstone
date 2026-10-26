@@ -1,0 +1,16 @@
+{
+  "type": "sfdc_cms__languageSettings",
+  "title": "LanguageContent",
+  "contentBody": {
+    "languages": [
+      {
+        "locale": "vi",
+        "label": "Tiếng Việt",
+        "isActive": true,
+        "isAuthoringOnly": false
+      }
+    ],
+    "defaultLocale": "vi"
+  },
+  "urlName": "languagecontent"
+}

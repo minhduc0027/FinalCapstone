@@ -12,3 +12,6 @@ package.xml
 **/__tests__/**
 
 node_modules/
+
+# Ignore profile metadata files
+force-app/main/default/profiles/SmartReturn Customer Portal Profile.profile-meta.xml

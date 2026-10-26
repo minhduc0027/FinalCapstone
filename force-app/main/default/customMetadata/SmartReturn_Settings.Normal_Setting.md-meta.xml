@@ -55,4 +55,13 @@
         <field>Store_Approval_Limit__c</field>
         <value xsi:type="xsd:double">2.0E7</value>
     </values>
+    <values><field>Portal_Max_Failures__c</field><value
+      xsi:type="xsd:double"
+    >5</value></values>
+    <values><field>Portal_Window_Minutes__c</field><value
+      xsi:type="xsd:double"
+    >15</value></values>
+    <values><field>Portal_Lock_Minutes__c</field><value
+      xsi:type="xsd:double"
+    >15</value></values>
 </CustomMetadata>

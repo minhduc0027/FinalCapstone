@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <classAccesses><apexClass>PortalGuestRest</apexClass><enabled
+    >true</enabled></classAccesses>
+    <customPermissions><enabled>true</enabled><name
+    >SmartReturn_Portal_Guest_Lookup</name></customPermissions>
+    <description
+  >Lookup entry-point grants without direct access to return records. The site guest profile must receive these same grants because permission sets cannot be assigned to guest users.</description>
+    <label>SmartReturn Portal Guest Access</label>
+</PermissionSet>

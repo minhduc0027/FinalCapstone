@@ -1,0 +1,12 @@
+{
+  "type": "sfdc_cms__route",
+  "title": "Yêu cầu của tôi",
+  "contentBody": {
+    "activeViewId": "myReturns",
+    "configurationTags": [],
+    "pageAccess": "RequiresLogin",
+    "routeType": "custom-my-returns",
+    "urlPrefix": "my-returns"
+  },
+  "urlName": "my-returns"
+}

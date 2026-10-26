@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion><isExposed>true</isExposed><masterLabel
+  >SmartReturn - Yêu cầu của tôi</masterLabel>
+    <targets><target>lightningCommunity__Page</target><target
+    >lightningCommunity__Default</target></targets>
+    <targetConfigs><targetConfig targets="lightningCommunity__Default">
+        <property
+        name="pageSize"
+        type="Integer"
+        label="Số yêu cầu mỗi trang"
+        default="10"
+        min="1"
+        max="50"
+      />
+        <property
+        name="showProducts"
+        type="Boolean"
+        label="Hiển thị sản phẩm"
+        default="true"
+      />
+    </targetConfig></targetConfigs>
+</LightningComponentBundle>
