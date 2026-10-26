@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Store_Code__c</fullName>
+    <description
+  >Store assigned to a SmartReturn store employee or manager. Blank for regional managers, Accounting, and Customer Service.</description>
+    <externalId>false</externalId>
+    <inlineHelpText
+  >Admin-maintained store code used to grant access to return requests for this store.</inlineHelpText>
+    <label>Store Code</label>
+    <length>80</length>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

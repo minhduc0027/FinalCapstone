@@ -8,7 +8,5 @@
     <referenceTo>User</referenceTo>
     <relationshipLabel>Manually Completed Refunds</relationshipLabel>
     <relationshipName>Manually_Completed_Refunds</relationshipName>
-    <required>false</required>
-    <trackTrending>false</trackTrending>
     <type>Lookup</type>
 </CustomField>

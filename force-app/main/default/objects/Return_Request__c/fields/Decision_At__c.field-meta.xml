@@ -6,8 +6,6 @@
     <inlineHelpText
   >Audit time of the latest human approval decision.</inlineHelpText>
     <label>Decision At</label>
-    <required>false</required>
     <trackHistory>true</trackHistory>
-    <trackTrending>false</trackTrending>
     <type>DateTime</type>
 </CustomField>

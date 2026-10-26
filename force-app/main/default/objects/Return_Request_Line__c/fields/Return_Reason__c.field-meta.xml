@@ -35,12 +35,6 @@
                 <isActive>false</isActive>
                 <label>CUSTOMER_DAMAGE</label>
             </value>
-            <value>
-                <fullName>TECHNICAL_DEFECT</fullName>
-                <default>false</default>
-                <isActive>false</isActive>
-                <label>TECHNICAL_DEFECT</label>
-            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

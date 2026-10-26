@@ -91,6 +91,7 @@ public with sharing class RefundTestDataFactory {
           Order__c = orderRecord.Id,
           Customer__c = customer.Id,
           Store__c = store.Id,
+          Source_Channel__c = SmartReturnConstants.SOURCE_STORE,
           Status__c = status,
           Actual_Refund_Amount__c = 1992000,
           Estimated_Refund_Amount__c = 2490000,

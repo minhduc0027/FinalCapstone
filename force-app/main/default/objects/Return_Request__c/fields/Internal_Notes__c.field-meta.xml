@@ -7,8 +7,6 @@
   >For internal staff only. Do not include this field in customer or partner responses.</inlineHelpText>
     <label>Internal Notes</label>
     <length>32768</length>
-    <trackHistory>false</trackHistory>
-    <trackTrending>false</trackTrending>
     <type>LongTextArea</type>
     <visibleLines>4</visibleLines>
 </CustomField>

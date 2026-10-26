@@ -5,13 +5,12 @@
     <description
   >Original order whose purchased items are being returned.</description>
     <inlineHelpText
-  >Select the customer&apos;s original order before creating a return request.</inlineHelpText>
+  >Select the customer's original order before creating a return request.</inlineHelpText>
     <label>Original Order</label>
     <referenceTo>Order</referenceTo>
     <relationshipLabel>Return Requests</relationshipLabel>
     <relationshipName>Return_Requests</relationshipName>
     <required>true</required>
-    <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
     <type>Lookup</type>
 </CustomField>

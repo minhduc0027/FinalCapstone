@@ -3,13 +3,9 @@
     <fullName>Endpoint__c</fullName>
     <description
   >Endpoint path or sanitized URL. Exclude credentials, tokens, signed query parameters, and authorization headers.</description>
-    <externalId>false</externalId>
     <inlineHelpText
   >Endpoint path or sanitized URL. Exclude credentials, tokens, signed query parameters, and authorization headers.</inlineHelpText>
     <label>Endpoint</label>
     <length>255</length>
-    <required>false</required>
-    <trackTrending>false</trackTrending>
     <type>Text</type>
-    <unique>false</unique>
 </CustomField>

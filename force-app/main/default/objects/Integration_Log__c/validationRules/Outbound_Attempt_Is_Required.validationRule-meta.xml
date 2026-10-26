@@ -5,7 +5,7 @@
     <description
   >Every outbound exchange must identify its refund and attempt; unmatched inbound callbacks may remain unlinked.</description>
     <errorConditionFormula
-  >AND(ISPICKVAL(Direction__c, &quot;OUTBOUND&quot;), OR(ISBLANK(Refund_Transaction__c), ISBLANK(Attempt_Number__c)))</errorConditionFormula>
+  >AND(ISPICKVAL(Direction__c, "OUTBOUND"), OR(ISBLANK(Refund_Transaction__c), ISBLANK(Attempt_Number__c)))</errorConditionFormula>
     <errorMessage
   >Outbound exchanges require a Refund Transaction and Attempt Number.</errorMessage>
 </ValidationRule>

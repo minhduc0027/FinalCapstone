@@ -2,12 +2,11 @@
 private class StateTransitionTests {
   @testSetup
   static void setupData() {
-    List<Return_Request__c> requests = new List<Return_Request__c>{
-      new Return_Request__c(Status__c = SmartReturnConstants.STATUS_NEW),
-      new Return_Request__c(Status__c = SmartReturnConstants.STATUS_NEW),
-      new Return_Request__c(Status__c = SmartReturnConstants.STATUS_NEW)
-    };
-    insert requests;
+    List<Return_Request__c> requests = ReturnRequestTestDataFactory.requests(
+      3,
+      null
+    );
+    insert as system requests;
   }
 
   // ==========================================
@@ -185,18 +184,12 @@ private class StateTransitionTests {
 
   @IsTest
   static void transitionBulk_ShouldUpdateMultipleRecords() {
-    List<Return_Request__c> requests = new List<Return_Request__c>();
-
-    for (Integer i = 0; i < 2; i++) {
-      requests.add(
-        new Return_Request__c(
-          Status__c = SmartReturnConstants.STATUS_NEW,
-          Source_Channel__c = 'STORE'
-        )
-      );
-    }
-
-    insert requests;
+    List<Return_Request__c> requests = [
+      SELECT Id
+      FROM Return_Request__c
+      ORDER BY Id
+      LIMIT 2
+    ];
 
     List<TransitionRequest> transitionRequests = new List<TransitionRequest>();
 

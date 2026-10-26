@@ -6,7 +6,6 @@
   >External system participating in this exchange.</inlineHelpText>
     <label>System</label>
     <required>true</required>
-    <trackTrending>false</trackTrending>
     <type>Picklist</type>
     <valueSet>
         <restricted>true</restricted>

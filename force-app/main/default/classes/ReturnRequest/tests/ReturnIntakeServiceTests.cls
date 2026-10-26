@@ -13,7 +13,13 @@ private class ReturnIntakeServiceTests {
   }
 
   private static Store__c createStore() {
-    Store__c store = new Store__c(Store_Code__c = nextCode('STORE'));
+    Store__c store = new Store__c(
+      Name = 'Return Intake Store',
+      Store_Code__c = nextCode('STORE'),
+      Region__c = 'Nam',
+      Store_Manager__c = UserInfo.getUserId(),
+      Region_Manager__c = UserInfo.getUserId()
+    );
     insert store;
 
     return store;

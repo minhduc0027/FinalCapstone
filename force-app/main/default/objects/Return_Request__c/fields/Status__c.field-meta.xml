@@ -3,8 +3,9 @@
     <fullName>Status__c</fullName>
     <label>Status</label>
     <required>false</required>
-    <trackHistory>true</trackHistory>
     <trackTrending>false</trackTrending>
+    <!-- REFUND INTEGRATION: retain old/new refund status, actor, and timestamp. -->
+    <trackHistory>true</trackHistory>
     <type>Picklist</type>
     <valueSet>
         <restricted>true</restricted>

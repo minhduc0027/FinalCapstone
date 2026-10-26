@@ -6,8 +6,5 @@
     <inlineHelpText
   >After this date, an Awaiting Goods request is eligible for cancellation.</inlineHelpText>
     <label>Goods Deadline</label>
-    <required>false</required>
-    <trackHistory>false</trackHistory>
-    <trackTrending>false</trackTrending>
     <type>Date</type>
 </CustomField>

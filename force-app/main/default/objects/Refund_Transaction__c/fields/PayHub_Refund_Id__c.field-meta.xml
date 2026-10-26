@@ -3,13 +3,9 @@
     <fullName>PayHub_Refund_Id__c</fullName>
     <description
   >PayHub refund identifier returned in a response or callback; blank until known. Correlate using the stable merchant reference when unavailable.</description>
-    <externalId>false</externalId>
     <inlineHelpText
   >PayHub refund identifier returned in a response or callback; blank until known. Correlate using the stable merchant reference when unavailable.</inlineHelpText>
     <label>PayHub Refund ID</label>
     <length>80</length>
-    <required>false</required>
-    <trackTrending>false</trackTrending>
     <type>Text</type>
-    <unique>false</unique>
 </CustomField>

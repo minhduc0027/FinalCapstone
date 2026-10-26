@@ -142,12 +142,15 @@
     </actionOverrides>
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <description
+  >Tracks customer returns against an order, their store, approval and inspection milestones, and final refund status. Records estimated and actual refund amounts, assigned and deciding approvers, deadlines, rejection reasons, and internal notes. Status history supports audit and customer progress.</description>
     <deploymentStatus>Deployed</deploymentStatus>
     <description
   >Tracks customer returns against an order, their store, approval and inspection milestones, and final refund status. Records estimated and actual refund amounts, assigned and deciding approvers, deadlines, rejection reasons, and internal notes. Status history supports audit and customer progress.</description>
     <enableActivities>true</enableActivities>
     <enableBulkApi>true</enableBulkApi>
     <enableFeeds>false</enableFeeds>
+    <!-- REFUND INTEGRATION: native history audits committed refund status changes. -->
     <enableHistory>true</enableHistory>
     <enableLicensing>false</enableLicensing>
     <enableReports>true</enableReports>
@@ -159,7 +162,6 @@
     <nameField>
         <displayFormat>RR-{YY}{MM}-{00000}</displayFormat>
         <label>Return Request Name</label>
-        <trackHistory>false</trackHistory>
         <type>AutoNumber</type>
     </nameField>
     <pluralLabel>Return Requests</pluralLabel>

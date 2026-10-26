@@ -196,12 +196,19 @@ private class ApprovalModuleTests {
       FROM Return_Request__c
       WHERE Id = :requestRecord.Id
     ];
+    System.runAs(actor) {
+      Assert.isTrue(
+        Return_Request__c.Rejection_Reason__c.getDescribe().isUpdateable(),
+        'The rejecting actor must have explicit write access to the reason.'
+      );
+      Account customer = createCustomer();
 
-    System.assertEquals(
-      SmartReturnConstants.STATUS_REFUND_PROCESSING,
-      actualRequest.Status__c,
-      'RE_CONFIRMING sau khi được duyệt phải sang ' + 'REFUND_PROCESSING.'
-    );
+      System.assertEquals(
+        SmartReturnConstants.STATUS_REFUND_PROCESSING,
+        actualRequest.Status__c,
+        'RE_CONFIRMING sau khi được duyệt phải sang ' + 'REFUND_PROCESSING.'
+      );
+    }
   }
 
   @IsTest
