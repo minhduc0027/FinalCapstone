@@ -145,8 +145,6 @@
     <description
   >Tracks customer returns against an order, their store, approval and inspection milestones, and final refund status. Records estimated and actual refund amounts, assigned and deciding approvers, deadlines, rejection reasons, and internal notes. Status history supports audit and customer progress.</description>
     <deploymentStatus>Deployed</deploymentStatus>
-    <description
-  >Tracks customer returns against an order, their store, approval and inspection milestones, and final refund status. Records estimated and actual refund amounts, assigned and deciding approvers, deadlines, rejection reasons, and internal notes. Status history supports audit and customer progress.</description>
     <enableActivities>true</enableActivities>
     <enableBulkApi>true</enableBulkApi>
     <enableFeeds>false</enableFeeds>
