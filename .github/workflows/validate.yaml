@@ -32,6 +32,7 @@ jobs:
           sf sgd source delta \
             --from "${{ github.event.pull_request.base.sha }}" \
             --to HEAD \
+            --ignore-file .forceignore \
             --output-dir delta
 
       - name: Install Node Dependencies
