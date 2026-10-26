@@ -77,6 +77,7 @@ public inherited sharing class StateTransitionService {
   public static void transition(
     Id requestId,
     String targetStatus,
+    String requiredApprovalLevel,
     String reason,
     String staffInternalNote
   ) {

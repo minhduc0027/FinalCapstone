@@ -95,6 +95,7 @@ public with sharing class ApprovalService {
     StateTransitionService.transition(
       requestId,
       SmartReturnConstants.STATUS_REJECTED,
+      null,
       reason,
       staffNote
     );
