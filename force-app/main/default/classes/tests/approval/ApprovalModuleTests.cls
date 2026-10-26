@@ -52,7 +52,7 @@ private class ApprovalModuleTests {
 
   private static Store__c createStore(Id storeManagerId, Id regionalManagerId) {
     Store__c storeRecord = new Store__c(
-      Name = 'Approval Test Store ' + suffix,
+      Name = 'Approval Test Store ',
       Store_Code__c = 'STORE123456789TEST',
       Store_Manager__c = storeManagerId,
       Region_Manager__c = regionalManagerId
