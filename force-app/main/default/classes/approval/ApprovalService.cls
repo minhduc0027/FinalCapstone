@@ -325,6 +325,7 @@ public with sharing class ApprovalService {
       'Customer__r.Name',
       'Store__c',
       'Store__r.Store_Code__c',
+      'Store__r.Name',
       'Approval_Due_At__c',
       'CreatedDate'
     };
