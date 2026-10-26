@@ -5,9 +5,9 @@ public with sharing class ApprovalController {
   }
 
   @AuraEnabled
-  public static void bulkApprove(List<Id> requestIds, String sourchChannel) {
+  public static void bulkApprove(List<Id> requestIds) {
     validateRequestIds(requestIds);
-    ApprovalService.approveRequestBulk(requestIds, sourchChannel);
+    ApprovalService.approveRequestBulk(requestIds);
   }
 
   @AuraEnabled

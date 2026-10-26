@@ -60,6 +60,47 @@ public inherited sharing class StateTransitionService {
     }
   }
 
+  public static void transition(
+    Id requestId,
+    String targetStatus,
+    String reason,
+    String staffInternalNote
+  ) {
+    if (requestId == null) {
+      throw new StateTransitionException('Return Request Id is required.');
+    }
+    Return_Request__c requestRecord = [
+      SELECT Id, Status__c
+      FROM Return_Request__c
+      WHERE Id = :requestId
+      LIMIT 1
+      FOR UPDATE
+    ];
+    String oldStatus = requestRecord.Status__c;
+    StateTransitionValidator.validate(oldStatus, targetStatus);
+    requestRecord.Status__c = targetStatus;
+
+    if (String.isNotBlank(reason)) {
+      requestRecord.Rejection_Reason__c = reason;
+    }
+    if (String.isNotBlank(staffInternalNote)) {
+      requestRecord.Internal_Notes__c = staffInternalNote;
+    }
+
+    try {
+      update requestRecord;
+      LogService.info(
+        new List<Return_Request__c>{ requestRecord },
+        'Status updated from ' + oldStatus + ' to ' + targetStatus,
+        'StateTransitionService',
+        'UPDATE'
+      );
+      LogService.insertLogs();
+    } catch (Exception ex) {
+      throw new StateTransitionException(ex.getMessage());
+    }
+  }
+
   public static List<TransitionResult> transitionBulk(
     List<TransitionRequest> requests
   ) {
@@ -131,6 +172,12 @@ public inherited sharing class StateTransitionService {
 
         if (String.isNotBlank(transitionRequest.requiredApprovalLevel)) {
           requestRecord.Required_Approval_Level__c = transitionRequest.requiredApprovalLevel;
+        }
+        if (String.isNotBlank(transitionRequest.rejectReason)) {
+          requestRecord.Reject_Reason__c = transitionRequest.rejectReason;
+        }
+        if (String.isNotBlank(transitionRequest.internalStaffNote)) {
+          requestRecord.Internal_Notes__c = transitionRequest.internalStaffNote;
         }
         requestsToUpdate.add(requestRecord);
       } catch (Exception ex) {

@@ -16,7 +16,7 @@ public with sharing class ApprovalEscalationBatch implements Database.Batchable<
         WHERE
           Status__c = :SmartReturnConstants.STATUS_PENDING_APPROVAL
           AND Required_Approval_Level__c = :SmartReturnConstants.APPROVAL_CHT
-          AND CreatedDate <= :System.now().addHours(-approvalTimeoutHours)
+          AND Approval_Due_At__c <= :System.now()
       ]
     );
   }
@@ -25,7 +25,7 @@ public with sharing class ApprovalEscalationBatch implements Database.Batchable<
     List<Return_Request__c> requestsToUpdate = (List<Return_Request__c>) scope;
     for (Return_Request__c request : requestsToUpdate) {
       request.Required_Approval_Level__c = SmartReturnConstants.APPROVAL_QLV;
-      //request.ApproverId__c = request.Store__r.Region_Manager__c;
+      request.ApproverId__c = request.Store__r.Region_Manager__c;
     }
     LogService.warn(
       requestsToUpdate,

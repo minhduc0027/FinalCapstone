@@ -6,7 +6,6 @@ public with sharing class ApprovalService {
   // - Pending Approval -> Rejected
   //===================================================
   public static void approveRequest(String requestId, String sourceChannel) {
-    // TODO: add validation approverId match currentUserId
     if (sourceChannel == 'APP') {
       StateTransitionService.transition(
         requestId,
@@ -22,51 +21,125 @@ public with sharing class ApprovalService {
     }
   }
 
-  public static void approveRequestBulk(
-    List<Id> requestIds,
-    String sourceChannel
-  ) {
-    // TODO: add validation approverId match currentUserId
+  public static void approveRequestBulk(List<Id> requestIds) {
+    List<Return_Request__c> returnRequests = [
+      SELECT
+        Id,
+        Status__c,
+        Source_Channel__c,
+        ApproverId__c,
+        Required_Approver_Level__c,
+        CreatedById
+      FROM Return_Request__c
+      WHERE Id IN :requestIds
+      FOR UPDATE
+    ];
+    // validation approverId match currentUserId
+    checkApprover(returnRequests);
 
     List<TransitionRequest> transitionRequests = new List<TransitionRequest>();
-    for (Id requestId : requestIds) {
-      transitionRequests.add(
-        new TransitionRequest(
-          requestId,
-          sourceChannel == 'APP'
-            ? SmartReturnConstants.STATUS_AWAITING_GOODS
-            : SmartReturnConstants.STATUS_INSPECTING,
-          null
-        )
-      );
+    for (Return_Request__c request : returnRequests) {
+      if (request.Status__c != SmartReturnConstants.STATUS_RE_CONFIRMING) {
+        transitionRequests.add(
+          new TransitionRequest(
+            requestId,
+            request.Source_Channel__c == SmartReturnConstants.SOURCE_APP
+              ? SmartReturnConstants.STATUS_AWAITING_GOODS
+              : SmartReturnConstants.STATUS_INSPECTING,
+            request.Required_Approver_Level__c,
+            null,
+            null
+          )
+        );
+      } else {
+        transitionRequests.add(
+          new TransitionRequest(
+            requestId,
+            SmartReturnConstants.STATUS_REFUND_PROCESSING,
+            request.Required_Approver_Level__c,
+            null,
+            null
+          )
+        );
+      }
     }
     StateTransitionService.transitionBulk(transitionRequests);
   }
 
-  public static void rejectRequest(String requestId, String reason) {
+  public static void rejectRequest(
+    String requestId,
+    String reason,
+    String staffNote
+  ) {
     if (String.isBlank(reason)) {
       throw new StateTransitionService.StateTransitionException(
         'Rejection reason cannot be blank.'
       );
     }
+
+    Return_Request__c returnRequest = [
+      SELECT
+        Id,
+        Status__c,
+        Source_Channel__c,
+        ApproverId__c,
+        Required_Approver_Level__c,
+        CreatedById
+      FROM Return_Request__c
+      WHERE Id = :requestId
+      FOR UPDATE
+    ];
+    // validation approverId match currentUserId
+    checkApprover(new List<Return_Request__c>{ returnRequest });
+
     StateTransitionService.transition(
       requestId,
       SmartReturnConstants.STATUS_REJECTED,
-      null
+      reason,
+      staffNote
     );
   }
-  public static void rejectRequestBulk(List<Id> requestIds) {
+  public static void rejectRequestBulk(
+    List<Id> requestIds,
+    String reason,
+    String staffNote
+  ) {
     List<TransitionRequest> transitionRequests = new List<TransitionRequest>();
+
+    List<Return_Request__c> returnRequests = [
+      SELECT
+        Id,
+        Status__c,
+        Source_Channel__c,
+        ApproverId__c,
+        Required_Approver_Level__c,
+        CreatedById
+      FROM Return_Request__c
+      WHERE Id IN :requestIds
+      FOR UPDATE
+    ];
+    // validation approverId match currentUserId
+    checkApprover(returnRequests);
     for (Id requestId : requestIds) {
       transitionRequests.add(
         new TransitionRequest(
           requestId,
           SmartReturnConstants.STATUS_REJECTED,
-          null
+          null,
+          reason,
+          staffNote
         )
       );
     }
     StateTransitionService.transitionBulk(transitionRequests);
+  }
+
+  private static void checkApprover(List<Return_Request__c> returnRequests) {
+    for (Return_Request__c returnRequest : returnRequests) {
+      if (returnRequest.ApproverId__c != UserInfo.getUserId()) {
+        throw new Exception('Only assigned approver can process this request');
+      }
+    }
   }
 
   private static final Integer DEFAULT_PAGE_SIZE = 20;
