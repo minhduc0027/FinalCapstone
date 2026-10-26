@@ -9,5 +9,6 @@
     <relationshipLabel>Refund Transactions</relationshipLabel>
     <relationshipName>Refund_Transactions</relationshipName>
     <required>true</required>
+    <trackTrending>false</trackTrending>
     <type>Lookup</type>
 </CustomField>

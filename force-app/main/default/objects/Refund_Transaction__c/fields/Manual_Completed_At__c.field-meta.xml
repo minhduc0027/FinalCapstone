@@ -4,5 +4,7 @@
     <description
   >Time Accounting confirmed an external/manual payment. Preserves the original provider outcome.</description>
     <label>Manual Completed At</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
     <type>DateTime</type>
 </CustomField>

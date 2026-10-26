@@ -4,9 +4,10 @@
     <description
   >Identifies failed PayHub refunds without a recorded manual completion so Accounting can work from an accurate native list view.</description>
     <formula
-  ><![CDATA[AND(ISPICKVAL(Status__c, "FAILED"), ISBLANK(Manual_Completed_At__c))]]></formula>
+  >AND(ISPICKVAL(Status__c, &quot;FAILED&quot;), ISBLANK(Manual_Completed_At__c))</formula>
     <inlineHelpText
   >Checked while a failed refund still needs Accounting reconciliation.</inlineHelpText>
     <label>Needs Reconciliation</label>
+    <trackTrending>false</trackTrending>
     <type>Checkbox</type>
 </CustomField>

@@ -3,10 +3,14 @@
     <fullName>Duration_Ms__c</fullName>
     <description
   >Elapsed exchange duration in whole milliseconds, when measured. Leave blank when unavailable.</description>
+    <externalId>false</externalId>
     <inlineHelpText
   >Elapsed exchange duration in whole milliseconds, when measured. Leave blank when unavailable.</inlineHelpText>
     <label>Duration (ms)</label>
     <precision>12</precision>
+    <required>false</required>
     <scale>0</scale>
+    <trackTrending>false</trackTrending>
     <type>Number</type>
+    <unique>false</unique>
 </CustomField>
