@@ -32,8 +32,10 @@ private class ApprovalModuleTests {
     Id approverId,
     Datetime dueAt
   ) {
-    Return_Request__c requestRecord = ReturnRequestTestDataFactory
-      .requests(1, customerId)[0];
+    Return_Request__c requestRecord = ReturnRequestTestDataFactory.requests(
+      1,
+      customerId
+    )[0];
 
     requestRecord.Status__c = status;
     requestRecord.Required_Approval_Level__c = approvalLevel;
