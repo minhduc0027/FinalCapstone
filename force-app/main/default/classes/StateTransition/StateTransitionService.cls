@@ -78,7 +78,7 @@ public inherited sharing class StateTransitionService {
     Id requestId,
     String targetStatus,
     String requiredApprovalLevel,
-    String reason,
+    String rejectionReason,
     String staffInternalNote
   ) {
     if (requestId == null) {
