@@ -87,15 +87,21 @@ private class InspectionModuleTests {
 
   @IsTest
   static void getReturnRequestLines_ShouldReturnEmpty() {
+    Boolean exceptionThrow = false;
+
     Test.startTest();
 
-    List<Return_Request_Line__c> lines = InspectionController.getReturnRequestLines(
-      null
-    );
+    try {
+      List<Return_Request_Line__c> lines = InspectionController.getReturnRequestLines(
+        null
+      );
+    } catch (AuraException ex) {
+      exceptionThrow = true;
+    }
 
     Test.stopTest();
 
-    System.assertEquals(0, lines.size());
+    System.assertEquals(true, exceptionThrow);
   }
 
   @IsTest
