@@ -18,6 +18,66 @@ public with sharing class ReturnRequestSelector {
     'Inspection_Result__c'
   };
 
+  private static final List<String> INSPECTION_LINE_FIELDS = new List<String>{
+    'Id',
+    'Return_Request__c',
+    'Product__c',
+    'Product__r.Name',
+    'Order_Item__c',
+    'Order_Item__r.UnitPrice',
+    'Purchased_Quantity__c',
+    'Requested_Quantity__c',
+    'Unit_Price_Paid__c',
+    'Reported_Condition__c',
+    'Return_Reason__c',
+    'Inspection_Result__c',
+    'Is_Eligible__c',
+    'Eligibility_Code__c',
+    'Eligibility_Reason__c',
+    'Estimated_Refund_Rate__c',
+    'Estimated_Refund_Amount__c'
+  };
+
+  public static List<Return_Request_Line__c> getReturnRequestLines(
+    Id returnRequestId,
+    Boolean lockRows
+  ) {
+    if (returnRequestId == null) {
+      return new List<Return_Request_Line__c>();
+    }
+
+    return (List<Return_Request_Line__c>) selectRows(
+      RETURN_REQUEST_LINE_OBJECT,
+      INSPECTION_LINE_FIELDS,
+      'Return_Request__c = :requestId',
+      new Map<String, Object>{ 'requestId' => returnRequestId },
+      lockRows,
+      1000,
+      'Id'
+    );
+  }
+
+  public static List<Return_Request_Line__c> getReturnRequestLinesByIds(
+    Set<Id> lineIds,
+    Boolean lockRows
+  ) {
+    if (lineIds == null || lineIds.isEmpty()) {
+      return new List<Return_Request_Line__c>();
+    }
+
+    List<Return_Request_Line__c> lines = (List<Return_Request_Line__c>) selectRows(
+      RETURN_REQUEST_LINE_OBJECT,
+      INSPECTION_LINE_FIELDS,
+      'Id IN :lineIds',
+      new Map<String, Object>{ 'lineIds' => lineIds },
+      lockRows,
+      lineIds.size(),
+      'Id'
+    );
+
+    return new List<Return_Request_Line__c>(lines);
+  }
+
   private static List<SObject> selectRows(
     String objectName,
     List<String> fields,

@@ -28,7 +28,8 @@ public inherited sharing class StateTransitionValidator {
       },
       SmartReturnConstants.STATUS_INSPECTING => new Set<String>{
         SmartReturnConstants.STATUS_REFUND_PROCESSING,
-        SmartReturnConstants.STATUS_REJECTED
+        SmartReturnConstants.STATUS_REJECTED,
+        SmartReturnConstants.STATUS_RE_CONFIRMING
       },
       SmartReturnConstants.STATUS_REFUND_PROCESSING => new Set<String>{
         SmartReturnConstants.STATUS_COMPLETED,
@@ -36,6 +37,10 @@ public inherited sharing class StateTransitionValidator {
       },
       SmartReturnConstants.STATUS_REFUND_FAILED => new Set<String>{
         SmartReturnConstants.STATUS_COMPLETED
+      },
+      SmartReturnConstants.STATUS_RE_CONFIRMING => new Set<String>{
+        SmartReturnConstants.STATUS_REJECTED,
+        SmartReturnConstants.STATUS_REFUND_PROCESSING
       }
     };
   }
