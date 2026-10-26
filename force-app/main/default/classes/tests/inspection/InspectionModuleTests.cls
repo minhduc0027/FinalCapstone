@@ -37,8 +37,7 @@ private class InspectionModuleTests {
       OrderId = orderRecord.Id,
       PricebookEntryId = pbe.Id,
       Quantity = 2,
-      UnitPrice = 1000000,
-      Store__c = store.Id
+      UnitPrice = 1000000
     );
     insert orderItem;
 
