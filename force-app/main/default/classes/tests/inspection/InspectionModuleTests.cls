@@ -110,8 +110,9 @@ private class InspectionModuleTests {
 
     Test.startTest();
 
-    List<Return_Request_Line__c> lines = InspectionController
-      .getReturnRequestLines(data.requestRecord.Id);
+    List<Return_Request_Line__c> lines = InspectionController.getReturnRequestLines(
+      data.requestRecord.Id
+    );
 
     Test.stopTest();
 
@@ -342,11 +343,10 @@ private class InspectionModuleTests {
 
     Decimal amount = Math.min(autoLimit + 1, storeLimit);
 
-    String result = InspectionService
-      .determineRequiredApprovalLevel(
-        SmartReturnConstants.APPROVAL_AUTO,
-        amount
-      );
+    String result = InspectionService.determineRequiredApprovalLevel(
+      SmartReturnConstants.APPROVAL_AUTO,
+      amount
+    );
 
     System.assertEquals(SmartReturnConstants.APPROVAL_CHT, result);
   }
@@ -355,19 +355,20 @@ private class InspectionModuleTests {
   static void determineApprovalLevel_ShouldEscalateToQlv() {
     Decimal storeLimit = SmartReturnConfigService.getStoreApprovalLimit();
 
-    String result = InspectionService
-      .determineRequiredApprovalLevel(
-        SmartReturnConstants.APPROVAL_CHT,
-        storeLimit + 1
-      );
+    String result = InspectionService.determineRequiredApprovalLevel(
+      SmartReturnConstants.APPROVAL_CHT,
+      storeLimit + 1
+    );
 
     System.assertEquals(SmartReturnConstants.APPROVAL_QLV, result);
   }
 
   @IsTest
   static void determineApprovalLevel_ShouldNotDowngradeQlv() {
-    String result = InspectionService
-      .determineRequiredApprovalLevel(SmartReturnConstants.APPROVAL_QLV, 0);
+    String result = InspectionService.determineRequiredApprovalLevel(
+      SmartReturnConstants.APPROVAL_QLV,
+      0
+    );
 
     System.assertEquals(SmartReturnConstants.APPROVAL_QLV, result);
   }
@@ -400,13 +401,12 @@ private class InspectionModuleTests {
     Boolean exceptionThrown = false;
 
     try {
-      InspectionService
-        .calculateActualRefundAmount(
-          new Return_Request_Line__c(
-            Purchased_Quantity__c = 1,
-            Requested_Quantity__c = 1
-          )
-        );
+      InspectionService.calculateActualRefundAmount(
+        new Return_Request_Line__c(
+          Purchased_Quantity__c = 1,
+          Requested_Quantity__c = 1
+        )
+      );
     } catch (InspectionService.InspectionException ex) {
       exceptionThrown = true;
     }
