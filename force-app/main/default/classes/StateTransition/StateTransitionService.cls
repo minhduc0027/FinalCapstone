@@ -95,8 +95,8 @@ public inherited sharing class StateTransitionService {
     StateTransitionValidator.validate(oldStatus, targetStatus);
     requestRecord.Status__c = targetStatus;
 
-    if (String.isNotBlank(reason)) {
-      requestRecord.Rejection_Reason__c = reason;
+    if (String.isNotBlank(rejectionReason)) {
+      requestRecord.Rejection_Reason__c = rejectionReason;
     }
     if (String.isNotBlank(staffInternalNote)) {
       requestRecord.Internal_Notes__c = staffInternalNote;
