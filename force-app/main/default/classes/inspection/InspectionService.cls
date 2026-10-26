@@ -32,12 +32,12 @@ public with sharing class InspectionService {
       );
     }
 
-    Id requestId = validateSameRequest(storedLines);
+    Id requestId2 = validateSameRequest(storedLines);
     Return_Request__c requestRecord = [
       SELECT Id, Status__c, Required_Approval_Level__c, Actual_Refund_Amount__c
       //ApproverId__c
       FROM Return_Request__c
-      WHERE Id = :requestId
+      WHERE Id = :requestId2
       LIMIT 1
       FOR UPDATE
     ];
