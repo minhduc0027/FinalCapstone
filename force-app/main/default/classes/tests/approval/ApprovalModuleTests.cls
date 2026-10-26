@@ -50,10 +50,14 @@ private class ApprovalModuleTests {
     return customer;
   }
 
-  private static Store__c createStore(Id storeManagerId, Id regionalManagerId) {
+  private static Store__c createStore(
+    Id storeManagerId,
+    Id regionalManagerId,
+    String suffix
+  ) {
     Store__c storeRecord = new Store__c(
-      Name = 'Approval Test Store ',
-      Store_Code__c = 'STORE123456789TEST',
+      Name = 'Approval Test Store ' + suffix,
+      Store_Code__c = 'ST_' + suffix,
       Store_Manager__c = storeManagerId,
       Region_Manager__c = regionalManagerId
     );
@@ -99,7 +103,8 @@ private class ApprovalModuleTests {
 
     Store__c storeRecord = createStore(
       effectiveStoreManagerId,
-      effectiveRegionalManagerId
+      effectiveRegionalManagerId,
+      suffix
     );
 
     Order orderRecord = createOrder(customerId, storeRecord.Id);
