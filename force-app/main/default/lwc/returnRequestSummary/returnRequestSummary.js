@@ -1,6 +1,20 @@
 import { LightningElement, api } from "lwc";
 import { statusLabel, amountLabel } from "c/portalPresentation";
 
+const HISTORY_ICONS = {
+  CREATED: "utility:add",
+  NEW: "utility:record",
+  PENDING_APPROVAL: "utility:clock",
+  AWAITING_GOODS: "utility:package",
+  INSPECTING: "utility:search",
+  RE_CONFIRMING: "utility:refresh",
+  REFUND_PROCESSING: "utility:sync",
+  COMPLETED: "utility:success",
+  REFUND_FAILED: "utility:warning",
+  REJECTED: "utility:error",
+  CANCELLED: "utility:close"
+};
+
 export default class ReturnRequestSummary extends LightningElement {
   @api request;
   @api showProducts = false;
@@ -32,7 +46,8 @@ export default class ReturnRequestSummary extends LightningElement {
     return (this.request?.history || []).map((change, index) => ({
       ...change,
       key: String(index),
-      label: statusLabel(change.status)
+      label: statusLabel(change.status),
+      iconName: HISTORY_ICONS[change.status] || "utility:record"
     }));
   }
 
