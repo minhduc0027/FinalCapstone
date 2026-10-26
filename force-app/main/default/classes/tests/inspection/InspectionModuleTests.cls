@@ -75,8 +75,9 @@ private class InspectionModuleTests {
 
     Test.startTest();
 
-    List<Return_Request_Line__c> lines = InspectionController
-      .getReturnRequestLines(requestRecord.Id);
+    List<Return_Request_Line__c> lines = InspectionController.getReturnRequestLines(
+      requestRecord.Id
+    );
 
     Test.stopTest();
 
@@ -89,8 +90,9 @@ private class InspectionModuleTests {
   static void getReturnRequestLines_ShouldReturnEmpty() {
     Test.startTest();
 
-    List<Return_Request_Line__c> lines = InspectionController
-      .getReturnRequestLines(null);
+    List<Return_Request_Line__c> lines = InspectionController.getReturnRequestLines(
+      null
+    );
 
     Test.stopTest();
 
