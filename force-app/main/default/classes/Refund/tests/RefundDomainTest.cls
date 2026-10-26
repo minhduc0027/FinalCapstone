@@ -401,4 +401,63 @@ private class RefundDomainTest {
     );
     Assert.isFalse(decision.retryable, 'Do not retry a provider rejection.');
   }
+  @IsTest
+  static void timeoutConvertsSecondsToMilliseconds() {
+    Test.startTest();
+    RefundDomain.validateTimeoutSeconds(5);
+    Integer timeoutMs = RefundDomain.timeoutMilliseconds(5);
+    Test.stopTest();
+    Assert.areEqual(
+      5000,
+      timeoutMs,
+      'Convert configured seconds to milliseconds.'
+    );
+  }
+
+  @IsTest
+  static void zeroTimeoutIsRejected() {
+    Test.startTest();
+    try {
+      RefundDomain.validateTimeoutSeconds(0);
+      Assert.fail('Zero timeout must be rejected.');
+    } catch (RefundDomain.RuleException e) {
+      Assert.isTrue(
+        e.getMessage().contains('between 1 and 120'),
+        'Explain the valid range.'
+      );
+    }
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void invalidTimeoutCannotBeConverted() {
+    Test.startTest();
+    try {
+      Integer timeoutMs = RefundDomain.timeoutMilliseconds(0);
+      Assert.fail(
+        'Invalid timeout must not produce milliseconds: ' + timeoutMs
+      );
+    } catch (RefundDomain.RuleException e) {
+      Assert.isTrue(
+        e.getMessage().contains('between 1 and 120'),
+        'Conversion must reject an invalid timeout.'
+      );
+    }
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void excessiveTimeoutIsRejected() {
+    Test.startTest();
+    try {
+      RefundDomain.validateTimeoutSeconds(121);
+      Assert.fail('Timeout above the platform limit must be rejected.');
+    } catch (RefundDomain.RuleException e) {
+      Assert.isTrue(
+        e.getMessage().contains('between 1 and 120'),
+        'Explain the valid range.'
+      );
+    }
+    Test.stopTest();
+  }
 }

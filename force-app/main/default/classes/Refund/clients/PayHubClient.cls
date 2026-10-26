@@ -2,9 +2,6 @@ public with sharing class PayHubClient {
   public static final String REFUND_PATH = '/v1/refunds';
   public static final String ENDPOINT = 'callout:PayHub' + REFUND_PATH;
 
-  @TestVisible
-  private static Integer timeoutSecondsOverride;
-
   public class Result {
     public Integer httpStatus;
     public String status;
@@ -22,7 +19,8 @@ public with sharing class PayHubClient {
     String merchantRef,
     String orderNumber,
     Decimal amount,
-    String key
+    String key,
+    Integer timeoutMs
   ) {
     if (
       String.isBlank(merchantRef) ||
@@ -51,7 +49,7 @@ public with sharing class PayHubClient {
     request.setMethod('POST');
     request.setHeader('Content-Type', 'application/json');
     request.setHeader('Idempotency-Key', key);
-    request.setTimeout(configuredTimeoutMs());
+    request.setTimeout(timeoutMs);
     request.setBody(result.requestBody);
 
     try {
@@ -99,23 +97,6 @@ public with sharing class PayHubClient {
       Pattern.matches('[A-Za-z0-9_\\-]+', code)
       ? code
       : null;
-  }
-
-  public static Integer configuredTimeoutMs() {
-    try {
-      Integer seconds = timeoutSecondsOverride == null
-        ? SmartReturnConfigService.getPayHubMaxTimeoutSecond()
-        : timeoutSecondsOverride;
-      return RefundDomain.timeoutMilliseconds(seconds);
-    } catch (Exception e) {
-      throw new ConfigurationException(
-        'PayHub timeout configuration must be between 1 and 120 seconds.',
-        e
-      );
-    }
-  }
-
-  public class ConfigurationException extends Exception {
   }
 
   public class ClientException extends Exception {
