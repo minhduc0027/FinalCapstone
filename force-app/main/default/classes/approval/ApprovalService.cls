@@ -208,11 +208,11 @@ public with sharing class ApprovalService {
   // Result mapping
   //===================================================
   private static List<ApprovalActionResult> convertTransitionResults(
-    List<StateTransitionService.TransitionResult> transitionResults
+    List<TransitionResult> transitionResults
   ) {
     List<ApprovalActionResult> results = new List<ApprovalActionResult>();
 
-    for (StateTransitionService.TransitionResult item : transitionResults) {
+    for (TransitionResult item : transitionResults) {
       results.add(
         new ApprovalActionResult(item.requestId, item.success, item.message)
       );
