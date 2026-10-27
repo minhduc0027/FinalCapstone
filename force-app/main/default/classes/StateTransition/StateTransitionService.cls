@@ -203,6 +203,179 @@ public inherited sharing class StateTransitionService {
     return results;
   }
 
+  public static List<TransitionResult> transitionApprovalBulk(
+    List<ApprovalTransitionRequest> requests
+  ) {
+    List<TransitionResult> results = new List<TransitionResult>();
+
+    if (requests == null || requests.isEmpty()) {
+      return results;
+    }
+
+    Set<Id> requestIds = new Set<Id>();
+    Map<Id, ApprovalTransitionRequest> inputById = new Map<Id, ApprovalTransitionRequest>();
+
+    for (ApprovalTransitionRequest input : requests) {
+      if (input == null || input.requestId == null) {
+        results.add(
+          new TransitionResult(null, false, 'Return Request Id is required.')
+        );
+        continue;
+      }
+
+      if (inputById.containsKey(input.requestId)) {
+        results.add(
+          new TransitionResult(
+            input.requestId,
+            false,
+            'Duplicate Return Request Id.'
+          )
+        );
+        continue;
+      }
+
+      requestIds.add(input.requestId);
+      inputById.put(input.requestId, input);
+    }
+
+    if (requestIds.isEmpty()) {
+      return results;
+    }
+
+    Map<Id, Return_Request__c> recordsById = new Map<Id, Return_Request__c>(
+      [
+        SELECT Id, Status__c, Required_Approval_Level__c
+        FROM Return_Request__c
+        WHERE Id IN :requestIds
+        FOR UPDATE
+      ]
+    );
+
+    List<Return_Request__c> recordsToUpdate = new List<Return_Request__c>();
+
+    List<Id> updateOrder = new List<Id>();
+
+    for (Id requestId : inputById.keySet()) {
+      ApprovalTransitionRequest input = inputById.get(requestId);
+
+      Return_Request__c storedRecord = recordsById.get(requestId);
+
+      if (storedRecord == null) {
+        results.add(
+          new TransitionResult(requestId, false, 'Return Request not found.')
+        );
+        continue;
+      }
+
+      try {
+        StateTransitionValidator.validate(
+          storedRecord.Status__c,
+          input.targetStatus
+        );
+
+        Return_Request__c sparseUpdate = new Return_Request__c(
+          Id = requestId,
+          Status__c = input.targetStatus
+        );
+
+        if (String.isNotBlank(input.requiredApprovalLevel)) {
+          sparseUpdate.Required_Approval_Level__c = input.requiredApprovalLevel;
+        }
+
+        if (String.isNotBlank(input.rejectionReason)) {
+          sparseUpdate.Rejection_Reason__c = input.rejectionReason;
+        }
+
+        if (String.isNotBlank(input.internalNote)) {
+          sparseUpdate.Internal_Notes__c = input.internalNote;
+        }
+
+        if (
+          input.targetStatus == SmartReturnConstants.STATUS_PENDING_APPROVAL
+        ) {
+          sparseUpdate.Approval_Due_At__c = System.now()
+            .addHours(SmartReturnConfigService.getApprovalTimeoutHours());
+        }
+
+        recordsToUpdate.add(sparseUpdate);
+        updateOrder.add(requestId);
+      } catch (Exception ex) {
+        results.add(new TransitionResult(requestId, false, ex.getMessage()));
+      }
+    }
+
+    if (recordsToUpdate.isEmpty()) {
+      return results;
+    }
+
+    Database.SaveResult[] saveResults = Database.update(recordsToUpdate, false);
+
+    List<SObject> successfulRecords = new List<SObject>();
+
+    for (Integer index = 0; index < saveResults.size(); index++) {
+      Id requestId = updateOrder[index];
+
+      if (saveResults[index].isSuccess()) {
+        results.add(new TransitionResult(requestId, true, 'SUCCESS'));
+
+        successfulRecords.add(recordsToUpdate[index]);
+      } else {
+        results.add(
+          new TransitionResult(
+            requestId,
+            false,
+            joinApprovalErrors(saveResults[index].getErrors())
+          )
+        );
+      }
+    }
+
+    if (!successfulRecords.isEmpty()) {
+      LogService.info(
+        successfulRecords,
+        'Approval bulk state transition completed.',
+        'StateTransitionService',
+        'APPROVAL_BULK_UPDATE'
+      );
+
+      LogService.insertLogs();
+    }
+
+    return results;
+  }
+
+  private static String joinApprovalErrors(Database.Error[] errors) {
+    List<String> messages = new List<String>();
+
+    for (Database.Error errorValue : errors) {
+      messages.add(errorValue.getMessage());
+    }
+
+    return String.join(messages, '; ');
+  }
+
+  public class ApprovalTransitionRequest {
+    public Id requestId;
+    public String targetStatus;
+    public String requiredApprovalLevel;
+    public String rejectionReason;
+    public String internalNote;
+
+    public ApprovalTransitionRequest(
+      Id requestId,
+      String targetStatus,
+      String requiredApprovalLevel,
+      String rejectionReason,
+      String internalNote
+    ) {
+      this.requestId = requestId;
+      this.targetStatus = targetStatus;
+      this.requiredApprovalLevel = requiredApprovalLevel;
+      this.rejectionReason = rejectionReason;
+      this.internalNote = internalNote;
+    }
+  }
+
   public class StateTransitionException extends Exception {
   }
 }
