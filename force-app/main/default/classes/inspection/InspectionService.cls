@@ -162,7 +162,7 @@ public with sharing class InspectionService {
     /*
      * Input từ LWC chỉ được tin cậy ở:
      * - Id
-     * - Is_Eligible__c
+     * - Inspection_Result__c
      * - Eligibility_Code__c
      * - Eligibility_Reason__c
      */
@@ -220,7 +220,7 @@ public with sharing class InspectionService {
       );
     }
 
-    Integer eligibleLineCount = 0;
+    Integer passedLineCount = 0;
     Decimal totalActualRefund = 0;
 
     List<Return_Request_Line__c> linesToUpdate = new List<Return_Request_Line__c>();
@@ -232,8 +232,8 @@ public with sharing class InspectionService {
 
       validateInspectionResult(storedLine);
 
-      if (storedLine.Is_Eligible__c == true) {
-        eligibleLineCount++;
+      if (storedLine.Inspection_Result__c == 'PASSED') {
+        passedLineCount++;
 
         totalActualRefund += calculateActualRefundAmount(storedLine);
       }
@@ -241,7 +241,7 @@ public with sharing class InspectionService {
       linesToUpdate.add(
         new Return_Request_Line__c(
           Id = storedLine.Id,
-          Is_Eligible__c = storedLine.Is_Eligible__c,
+          Inspection_Result__c = storedLine.Inspection_Result__c,
           Eligibility_Code__c = storedLine.Eligibility_Code__c,
           Eligibility_Reason__c = storedLine.Eligibility_Reason__c
         )
@@ -283,7 +283,7 @@ public with sharing class InspectionService {
     //===================================================
     // All lines rejected
     //===================================================
-    if (eligibleLineCount == 0) {
+    if (passedLineCount == 0) {
       StateTransitionService.transition(
         requestId,
         SmartReturnConstants.STATUS_REJECTED,
@@ -523,7 +523,7 @@ public with sharing class InspectionService {
     Return_Request_Line__c storedLine,
     Return_Request_Line__c inputLine
   ) {
-    storedLine.Is_Eligible__c = inputLine.Is_Eligible__c;
+    storedLine.Inspection_Result__c = inputLine.Inspection_Result__c;
 
     storedLine.Eligibility_Code__c = inputLine.Eligibility_Code__c;
 
@@ -531,7 +531,10 @@ public with sharing class InspectionService {
   }
 
   private static void validateInspectionResult(Return_Request_Line__c line) {
-    if (line.Is_Eligible__c == null) {
+    if (
+      line.Inspection_Result__c != 'PASSED' &&
+      line.Inspection_Result__c != 'FAILED'
+    ) {
       throw new InspectionException(
         'Phải chọn chấp nhận hoặc từ chối cho line ' + line.Id + '.'
       );

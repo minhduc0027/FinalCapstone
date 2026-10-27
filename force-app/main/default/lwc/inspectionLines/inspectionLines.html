@@ -67,27 +67,27 @@
                   <lightning-combobox
                     required
                     label="Inspection result"
-                    placeholder="Select result"
-                    value={row.isEligible}
-                    options={eligibilityOptions}
+                    value={row.inspectionResult}
+                    options={inspectionResultOptions}
                     data-id={row.id}
-                    data-field="isEligible"
+                    data-field="inspectionResult"
                     onchange={handleFieldChange}
                   >
                   </lightning-combobox>
                 </div>
 
                 <div class="field field-code">
-                  <lightning-input
+                  <lightning-combobox
                     required
-                    type="text"
                     label="Eligibility code"
+                    placeholder="Select code"
                     value={row.eligibilityCode}
+                    options={eligibilityCodeOptions}
                     data-id={row.id}
                     data-field="eligibilityCode"
                     onchange={handleFieldChange}
                   >
-                  </lightning-input>
+                  </lightning-combobox>
                 </div>
 
                 <div class="field field-reason">
