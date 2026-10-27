@@ -1,0 +1,43 @@
+<template>
+  <lightning-card title="Status Timeline" icon-name="utility:trail">
+    <template if:true={timelineItems}>
+      <ul class="timeline">
+        <template for:each={timelineItems} for:item="item">
+          <li key={item.changedAt} class="timeline-item">
+            <div class={item.dotClass}></div>
+
+            <div class="timeline-content">
+              <div class="status-label">{item.label}</div>
+
+              <div class="timeline-meta">
+                <template if:true={item.previousStatus}>
+                  From: {item.previousStatus} →
+                </template>
+
+                {item.currentStatus}
+              </div>
+
+              <div class="timeline-meta">{item.changedByName}</div>
+
+              <div class="timeline-meta">
+                <lightning-formatted-date-time
+                  value={item.changedAt}
+                  year="numeric"
+                  month="2-digit"
+                  day="2-digit"
+                  hour="2-digit"
+                  minute="2-digit"
+                >
+                </lightning-formatted-date-time>
+              </div>
+            </div>
+          </li>
+        </template>
+      </ul>
+    </template>
+
+    <template if:true={error}>
+      <div class="slds-p-around_medium slds-text-color_error">{error}</div>
+    </template>
+  </lightning-card>
+</template>
