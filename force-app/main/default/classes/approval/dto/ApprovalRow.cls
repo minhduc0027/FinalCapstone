@@ -53,7 +53,7 @@ public with sharing class ApprovalRow {
 
     if (requestRecord.Approval_Due_At__c != null) {
       row.approvalDueAt = requestRecord.Approval_Due_At__c;
-      row.overdue = requestRecord.Approval_Due_At__c > System.now();
+      row.overdue = requestRecord.Approval_Due_At__c < System.now();
     }
 
     if (requestRecord.Customer__r != null) {
