@@ -65,6 +65,8 @@ public with sharing class ReturnPortalService {
       );
     Return_Request__c request = rows[0];
     PortalReturn result = ReturnPortalDomain.project(request, true);
+    if (request.Status__c == SmartReturnConstants.STATUS_REJECTED)
+      result.rejectionReason = request.Rejection_Reason__c;
     ReturnPortalDomain.addDetails(
       result,
       ReturnRequestSelector.portalLines(request.Id),

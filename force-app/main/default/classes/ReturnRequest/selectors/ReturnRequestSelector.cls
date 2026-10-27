@@ -239,7 +239,7 @@ public with sharing class ReturnRequestSelector {
     return (List<Return_Request__c>) Database.queryWithBinds(
       'SELECT ' +
         PORTAL_FIELDS +
-        ' FROM Return_Request__c ' +
+        ', Rejection_Reason__c FROM Return_Request__c ' +
         'WHERE Customer__c = :accountId AND Name = :requestNumber LIMIT 1',
       new Map<String, Object>{
         'accountId' => accountId,

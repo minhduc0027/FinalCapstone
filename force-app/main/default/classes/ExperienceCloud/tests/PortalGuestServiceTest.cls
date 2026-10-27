@@ -10,7 +10,9 @@ private class PortalGuestServiceTest {
     Return_Request__c request = [
       SELECT Id, Name
       FROM Return_Request__c
-      WHERE Customer__r.Name = 'Portal Customer A'
+      WHERE
+        Customer__r.Name = 'Portal Customer A'
+        AND Status__c = :SmartReturnConstants.STATUS_REJECTED
       LIMIT 1
     ];
     User visitor = [
@@ -48,6 +50,11 @@ private class PortalGuestServiceTest {
       'D.4 permits the product name.'
     );
     Assert.areEqual(2, detail.lines[0].quantity, 'D.4 permits the quantity.');
+    Assert.areEqual(
+      'Sản phẩm đã quá thời hạn đổi trả.',
+      detail.rejectionReason,
+      'Verified guests may read the customer-facing rejection reason.'
+    );
     String payload = JSON.serialize(result, true);
     for (
       String forbidden : new List<String>{
@@ -64,6 +71,45 @@ private class PortalGuestServiceTest {
         'Guest payload must exclude ' + forbidden
       );
     }
+  }
+
+  @IsTest
+  static void nonRejectedLookupDoesNotExposeStaleReason() {
+    Return_Request__c request = [
+      SELECT Id, Name
+      FROM Return_Request__c
+      WHERE
+        Customer__r.Name = 'Portal Customer A'
+        AND Status__c = :SmartReturnConstants.STATUS_NEW
+      LIMIT 1
+    ];
+    request.Rejection_Reason__c = 'Stale reason';
+    update as system request;
+    User visitor = [
+      SELECT Id
+      FROM User
+      WHERE LastName = 'Portal Guest Actor'
+      LIMIT 1
+    ];
+    Test.startTest();
+    System.runAs(visitor) {
+      Map<String, Object> response = PortalGuestService.lookup(
+        request.Name,
+        '4567',
+        '203.0.113.7'
+      );
+      Assert.areEqual(
+        'FOUND',
+        response.get('outcome'),
+        'Valid proof must match.'
+      );
+      PortalReturn detail = (PortalReturn) response.get('request');
+      Assert.isNull(
+        detail.rejectionReason,
+        'A non-rejected request must not expose a stale rejection reason.'
+      );
+    }
+    Test.stopTest();
   }
 
   @IsTest
@@ -89,6 +135,10 @@ private class PortalGuestServiceTest {
         wrongCode,
         wrongPhone,
         'Neither response may reveal whether the code exists.'
+      );
+      Assert.isFalse(
+        wrongPhone.contains('rejectionReason'),
+        'Incorrect proof must not expose the rejection reason.'
       );
     }
     Test.stopTest();

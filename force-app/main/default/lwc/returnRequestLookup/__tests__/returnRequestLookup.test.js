@@ -47,7 +47,8 @@ describe("guest return lookup", () => {
         outcome: "FOUND",
         request: {
           requestNumber: "RR-2610-00001",
-          status: "REFUND_FAILED",
+          status: "REJECTED",
+          rejectionReason: "Sản phẩm đã quá thời hạn đổi trả.",
           lines: [{ productName: "Nồi chiên", quantity: 1 }],
           history: []
         }
@@ -70,6 +71,9 @@ describe("guest return lookup", () => {
     const result = element.shadowRoot.querySelector("c-return-request-summary");
     expect(result).not.toBeNull();
     expect(result.showAmount).toBe(false);
+    expect(result.request.rejectionReason).toBe(
+      "Sản phẩm đã quá thời hạn đổi trả."
+    );
     expect(element.shadowRoot.querySelector("lightning-input").value).toBe("");
   });
 
