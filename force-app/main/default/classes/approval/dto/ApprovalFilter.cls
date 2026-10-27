@@ -9,9 +9,6 @@ public with sharing class ApprovalFilter {
   public Id storeId { get; set; }
 
   @AuraEnabled
-  public Boolean assignedToMe { get; set; }
-
-  @AuraEnabled
   public Date fromDate { get; set; }
 
   @AuraEnabled
