@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Return Request Selected</masterLabel>
+    <isExposed>true</isExposed>
+    <description
+  >Shares the selected Return Request and inspection refresh events.</description>
+    <lightningMessageFields>
+        <fieldName>requestId</fieldName>
+        <description>Selected Return_Request__c Id</description>
+    </lightningMessageFields>
+    <lightningMessageFields>
+        <fieldName>action</fieldName>
+        <description>SELECTED or INSPECTION_SAVED</description>
+    </lightningMessageFields>
+    <lightningMessageFields>
+        <fieldName>source</fieldName>
+        <description>Publishing component</description>
+    </lightningMessageFields>
+</LightningMessageChannel>

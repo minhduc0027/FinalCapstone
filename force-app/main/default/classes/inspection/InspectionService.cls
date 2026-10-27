@@ -1,4 +1,154 @@
 public with sharing class InspectionService {
+  private static final Integer DEFAULT_PAGE_SIZE = 20;
+  private static final Integer MAX_PAGE_SIZE = 50;
+
+  private static final Set<String> ALLOWED_WORKLIST_SORT_FIELDS = new Set<String>{
+    'CreatedDate',
+    'Estimated_Refund_Amount__c',
+    'Source_Channel__c'
+  };
+  //===================================================
+  // Inspection Worklist
+  //===================================================
+  public static InspectionPageResult getWorklist(InspectionFilter filter) {
+    InspectionFilter safeFilter = filter == null
+      ? new InspectionFilter()
+      : filter;
+
+    DbQueryRequest request = buildWorklistQuery(safeFilter);
+    DbQueryResult result = DbQueryService.execute(request, MAX_PAGE_SIZE);
+    InspectionPageResult pageResult = new InspectionPageResult();
+    pageResult.hasNext = result.hasNext;
+    pageResult.bindCount = result.bindCount;
+
+    for (SObject recordValue : result.records) {
+      pageResult.records.add(
+        InspectionRow.fromRecord((Return_Request__c) recordValue)
+      );
+    }
+
+    return pageResult;
+  }
+
+  private static DbQueryRequest buildWorklistQuery(InspectionFilter filter) {
+    DbQueryRequest request = new DbQueryRequest();
+
+    request.objectName = 'Return_Request__c';
+
+    request.fields = new List<String>{
+      'Id',
+      'Name',
+      'Status__c',
+      'Source_Channel__c',
+      'Customer__c',
+      'Customer__r.Name',
+      'Store__c',
+      'Store__r.Store_Code__c',
+      'Estimated_Refund_Amount__c',
+      'Inspection_Completed_At__c',
+      'CreatedDate'
+    };
+
+    request.filters = buildWorklistFilters(filter);
+
+    request.orderBy = resolveWorklistSortField(filter.sortBy);
+
+    request.orderDesc = filter.sortDescending == null
+      ? false
+      : filter.sortDescending;
+
+    request.pageSize = filter.pageSize == null ||
+      filter.pageSize <= 0
+      ? DEFAULT_PAGE_SIZE
+      : Math.min(filter.pageSize, MAX_PAGE_SIZE);
+
+    request.page = filter.page == null
+      ? buildDefaultWorklistPage()
+      : filter.page;
+
+    /*
+     * Inspection page hiện dùng OFFSET pagination.
+     * Không cho client đổi strategy.
+     */
+    request.page.strategy = DbPageRequest.OFFSET;
+
+    return request;
+  }
+  private static List<FilterCondition> buildWorklistFilters(
+    InspectionFilter filter
+  ) {
+    List<FilterCondition> filters = new List<FilterCondition>();
+
+    /*
+     * Server-owned constraints.
+     */
+    filters.add(
+      new FilterCondition(
+        'Status__c',
+        '=',
+        SmartReturnConstants.STATUS_INSPECTING
+      )
+    );
+
+    filters.add(new FilterCondition('Inspection_Completed_At__c', '=', null));
+
+    if (filter.storeId != null) {
+      filters.add(new FilterCondition('Store__c', '=', filter.storeId));
+    }
+
+    if (String.isNotBlank(filter.sourceChannel)) {
+      filters.add(
+        new FilterCondition('Source_Channel__c', '=', filter.sourceChannel)
+      );
+    }
+
+    if (filter.fromDate != null) {
+      filters.add(
+        new FilterCondition(
+          'CreatedDate',
+          '>=',
+          Datetime.newInstance(filter.fromDate, Time.newInstance(0, 0, 0, 0))
+        )
+      );
+    }
+
+    if (filter.toDate != null) {
+      filters.add(
+        new FilterCondition(
+          'CreatedDate',
+          '<',
+          Datetime.newInstance(
+            filter.toDate.addDays(1),
+            Time.newInstance(0, 0, 0, 0)
+          )
+        )
+      );
+    }
+
+    return filters;
+  }
+
+  private static String resolveWorklistSortField(String requestedSortField) {
+    if (
+      String.isBlank(requestedSortField) ||
+      !ALLOWED_WORKLIST_SORT_FIELDS.contains(requestedSortField)
+    ) {
+      return 'CreatedDate';
+    }
+
+    return requestedSortField;
+  }
+
+  private static DbPageRequest buildDefaultWorklistPage() {
+    DbPageRequest page = new DbPageRequest();
+
+    page.strategy = DbPageRequest.OFFSET;
+
+    page.offsetSize = 0;
+
+    return page;
+  }
+
   //===================================================
   // Main entry point
   //===================================================
@@ -52,7 +202,12 @@ public with sharing class InspectionService {
     validateAllLinesSubmitted(storedLines, inputById);
 
     Return_Request__c requestRecord = [
-      SELECT Id, Status__c, Required_Approval_Level__c, Actual_Refund_Amount__c
+      SELECT
+        Id,
+        Status__c,
+        Required_Approval_Level__c,
+        Actual_Refund_Amount__c,
+        Inspection_Completed_At__c
       FROM Return_Request__c
       WHERE Id = :requestId
       LIMIT 1

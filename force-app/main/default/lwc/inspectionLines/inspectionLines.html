@@ -1,0 +1,78 @@
+<template
+  ><template if:true={hasSelection}
+    ><div class="header">
+      <div>
+        <h2 class="slds-text-heading_small">Inspection Results</h2>
+        <p class="slds-text-body_small slds-text-color_weak">
+          Complete all request lines before submitting.
+        </p>
+      </div>
+    </div>
+    <template if:true={hasRows}
+      ><div class="line-list slds-m-top_small">
+        <template for:each={rows} for:item="row"
+          ><article key={row.id} class="line-card">
+            <div class="summary">
+              <h3>{row.productName}</h3>
+              <p>
+                Requested {row.requestedQuantity} of {row.purchasedQuantity}
+              </p>
+              <lightning-formatted-number
+                value={row.unitPrice}
+                format-style="currency"
+                currency-code="VND"
+                maximum-fraction-digits="0"
+              ></lightning-formatted-number>
+              <p>Reported: {row.reportedCondition}</p>
+              <p>Reason: {row.returnReason}</p>
+            </div>
+            <div class="fields">
+              <lightning-combobox
+                required
+                label="Inspection result"
+                value={row.isEligible}
+                options={eligibilityOptions}
+                data-id={row.id}
+                data-field="isEligible"
+                onchange={handleFieldChange}
+              ></lightning-combobox
+              ><lightning-input
+                required
+                label="Eligibility code"
+                value={row.eligibilityCode}
+                data-id={row.id}
+                data-field="eligibilityCode"
+                onchange={handleFieldChange}
+              ></lightning-input
+              ><lightning-textarea
+                required
+                label="Eligibility reason"
+                value={row.eligibilityReason}
+                data-id={row.id}
+                data-field="eligibilityReason"
+                onchange={handleFieldChange}
+              ></lightning-textarea>
+            </div></article
+        ></template>
+      </div>
+      <div class="actions slds-m-top_medium">
+        <lightning-button
+          label="Submit Inspection"
+          variant="brand"
+          disabled={disableSubmit}
+          onclick={handleSubmit}
+        ></lightning-button></div></template
+    ><template if:false={hasRows}
+      ><div class="empty slds-m-top_small">
+        No return lines found for this request.
+      </div></template
+    ></template
+  ><template if:false={hasSelection}
+    ><div class="empty">
+      Select a request from the worklist to inspect its lines.
+    </div></template
+  ><template if:true={isLoading}
+    ><lightning-spinner
+      alternative-text="Loading inspection lines"
+    ></lightning-spinner></template
+></template>

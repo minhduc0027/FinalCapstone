@@ -1,0 +1,38 @@
+<template
+  ><div class="filters slds-m-top_small">
+    <lightning-combobox
+      label="Channel"
+      value={sourceChannel}
+      options={channelOptions}
+      data-field="sourceChannel"
+      onchange={handleInput}
+    ></lightning-combobox
+    ><lightning-record-picker
+      label="Store"
+      object-api-name="Store__c"
+      value={storeId}
+      onchange={handleStore}
+    ></lightning-record-picker
+    ><lightning-input
+      type="date"
+      label="From"
+      value={fromDate}
+      data-field="fromDate"
+      onchange={handleInput}
+    ></lightning-input
+    ><lightning-input
+      type="date"
+      label="To"
+      value={toDate}
+      data-field="toDate"
+      onchange={handleInput}
+    ></lightning-input>
+  </div>
+  <div class="actions slds-m-top_x-small">
+    <lightning-button label="Reset" onclick={reset}></lightning-button
+    ><lightning-button
+      label="Apply"
+      variant="brand-outline"
+      onclick={apply}
+    ></lightning-button></div
+></template>
