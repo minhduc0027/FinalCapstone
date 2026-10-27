@@ -7,7 +7,7 @@ import {
   unsubscribe,
   APPLICATION_SCOPE
 } from "lightning/messageService";
-import RETURN_REQUEST_SELECTED from "@salesforce/messageChannel/ReturnRequestSelected";
+import RETURN_REQUEST_SELECTED from "@salesforce/messageChannel/ReturnRequestSelected__c";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
 const OFFSET = "OFFSET";
