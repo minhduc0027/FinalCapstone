@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>PayHub_Refund_Id__c</fullName>
+    <description
+  >PayHub refund identifier returned in a response or callback; blank until known. Correlate using the stable merchant reference when unavailable.</description>
+    <inlineHelpText
+  >PayHub refund identifier returned in a response or callback; blank until known. Correlate using the stable merchant reference when unavailable.</inlineHelpText>
+    <label>PayHub Refund ID</label>
+    <length>80</length>
+    <type>Text</type>
+</CustomField>

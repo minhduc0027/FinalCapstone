@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion><isExposed>true</isExposed><masterLabel
+  >SmartReturn - Tra cứu yêu cầu</masterLabel>
+    <targets><target>lightningCommunity__Page</target><target
+    >lightningCommunity__Default</target></targets>
+    <targetConfigs><targetConfig targets="lightningCommunity__Default">
+        <property
+        name="heading"
+        type="String"
+        label="Tiêu đề"
+        default="Mã yêu cầu"
+      />
+        <property
+        name="subtitle"
+        type="String"
+        label="Mô tả dưới tiêu đề"
+        default="Gồm mã yêu cầu và 4 chữ số cuối của số điện thoại gửi yêu cầu, cách nhau bằng dấu cách. Ví dụ: RR-2610-00001 4567."
+      />
+        <property
+        name="showProducts"
+        type="Boolean"
+        label="Hiển thị sản phẩm"
+        default="true"
+      />
+        <property
+        name="guestSitePath"
+        type="String"
+        label="Đường dẫn CustomSite cho tra cứu"
+        description="Lấy urlPathPrefix từ CustomSite metadata; đường dẫn này khác URL trang LWR."
+        required="true"
+        default="/smartreturnvforcesite"
+      />
+    </targetConfig></targetConfigs>
+</LightningComponentBundle>

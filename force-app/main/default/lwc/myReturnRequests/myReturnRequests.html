@@ -1,0 +1,114 @@
+<template>
+  <main class="portal">
+    <header class="page-header">
+      <h1 class="slds-text-heading_medium">Yêu cầu của tôi</h1>
+      <template lwc:if={isGuest}></template>
+      <template lwc:else
+        ><lightning-button
+          label="Làm mới"
+          onclick={handleRefresh}
+          disabled={isLoading}
+        ></lightning-button
+      ></template>
+    </header>
+    <template lwc:if={isGuest}>
+      <p class="message" role="status">
+        Vui lòng đăng nhập để xem các yêu cầu của bạn.
+      </p>
+    </template>
+    <template lwc:elseif={selectedNumber}>
+      <div class="back-action">
+        <lightning-button
+          variant="base"
+          label="Quay lại danh sách"
+          onclick={handleBack}
+        ></lightning-button>
+      </div>
+      <template lwc:if={isDetailLoading}
+        ><p class="message" role="status">Đang tải yêu cầu…</p></template
+      >
+      <template lwc:if={detailError}
+        ><p class="message" role="alert">{detailError}</p></template
+      >
+      <template lwc:if={detail}
+        ><c-return-request-summary
+          request={detail}
+          show-products={showProducts}
+          show-amount
+        ></c-return-request-summary
+      ></template>
+    </template>
+    <template lwc:else>
+      <template lwc:if={isLoading}
+        ><p class="message" role="status">Đang tải danh sách…</p></template
+      >
+      <template lwc:if={listError}
+        ><p class="message" role="alert">{listError}</p></template
+      >
+      <template lwc:if={isEmpty}
+        ><p class="message" role="status">
+          Bạn chưa có yêu cầu đổi trả nào.
+        </p></template
+      >
+      <ul
+        class="requests"
+        aria-label="Danh sách yêu cầu đổi trả"
+        aria-busy={isLoading}
+      >
+        <template for:each={rows} for:item="request">
+          <li key={request.requestNumber} class="request-row">
+            <div>
+              <p class="slds-text-title_bold">Mã yêu cầu</p>
+              <lightning-button
+                variant="base"
+                label={request.requestNumber}
+                data-number={request.requestNumber}
+                onclick={handleSelect}
+                disabled={isLoading}
+              ></lightning-button>
+            </div>
+            <div>
+              <p class="slds-text-title_bold">Ngày tạo</p>
+              <lightning-formatted-date-time
+                value={request.createdAt}
+                day="2-digit"
+                month="2-digit"
+                year="numeric"
+              ></lightning-formatted-date-time>
+            </div>
+            <div>
+              <p class="slds-text-title_bold">Trạng thái</p>
+              <span>{request.statusText}</span>
+            </div>
+            <div>
+              <p class="slds-text-title_bold">{request.amountTitle}</p>
+              <template lwc:if={request.hasAmount}
+                ><lightning-formatted-number
+                  value={request.refundAmount}
+                  format-style="currency"
+                  currency-code="VND"
+                  maximum-fraction-digits="0"
+                ></lightning-formatted-number
+              ></template>
+              <template lwc:else>Chưa xác định</template>
+            </div>
+          </li>
+        </template>
+      </ul>
+      <template lwc:if={page}>
+        <nav class="pagination" aria-label="Phân trang yêu cầu">
+          <lightning-button
+            label="Trang trước"
+            onclick={handlePrevious}
+            disabled={previousDisabled}
+          ></lightning-button>
+          <lightning-button
+            label="Trang sau"
+            onclick={handleNext}
+            disabled={nextDisabled}
+          ></lightning-button>
+        </nav>
+      </template>
+    </template>
+  </main>
+</template>

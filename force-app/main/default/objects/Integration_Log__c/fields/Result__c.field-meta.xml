@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Result__c</fullName>
+    <description
+  >Outcome of this exchange, not the overall return. PENDING means awaiting a final result; TIMEOUT means no response was received.</description>
+    <inlineHelpText
+  >Outcome of this exchange, not the overall return. PENDING means awaiting a final result; TIMEOUT means no response was received.</inlineHelpText>
+    <label>Result</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>SUCCESS</fullName>
+                <default>false</default>
+                <label>SUCCESS</label>
+            </value>
+            <value>
+                <fullName>PENDING</fullName>
+                <default>false</default>
+                <label>PENDING</label>
+            </value>
+            <value>
+                <fullName>FAILED</fullName>
+                <default>false</default>
+                <label>FAILED</label>
+            </value>
+            <value>
+                <fullName>TIMEOUT</fullName>
+                <default>false</default>
+                <label>TIMEOUT</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

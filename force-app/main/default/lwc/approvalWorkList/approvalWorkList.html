@@ -1,0 +1,116 @@
+<template>
+  <lightning-card title="Approval Worklist" icon-name="standard:approval">
+    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+      <div class="header-row">
+        <div class="tabs" role="tablist" aria-label="Approval status">
+          <button
+            type="button"
+            class={pendingTabClass}
+            data-status="PENDING_APPROVAL"
+            onclick={handleTabClick}
+          >
+            Pending Approval
+          </button>
+          <button
+            type="button"
+            class={reconfirmTabClass}
+            data-status="RE_CONFIRMING"
+            onclick={handleTabClick}
+          >
+            Re-confirm
+          </button>
+        </div>
+        <lightning-button-icon
+          icon-name="utility:refresh"
+          alternative-text="Refresh"
+          title="Refresh"
+          onclick={handleRefresh}
+        ></lightning-button-icon>
+      </div>
+
+      <c-approval-filters
+        onfilterchange={handleFilterChange}
+      ></c-approval-filters>
+
+      <div class="action-bar slds-m-top_medium">
+        <span class="selection-label">{selectedCountLabel}</span>
+        <lightning-button
+          label="Approve Selected"
+          variant="brand"
+          disabled={hasSelectionInverse}
+          onclick={handleBulkApprove}
+        ></lightning-button>
+        <lightning-button
+          label="Reject Selected"
+          variant="destructive"
+          disabled={hasSelectionInverse}
+          onclick={handleOpenReject}
+        ></lightning-button>
+      </div>
+
+      <template if:true={failures.length}>
+        <section
+          class="failure-panel slds-m-top_medium"
+          aria-label="Action failures"
+        >
+          <h3 class="slds-text-heading_small">Items requiring attention</h3>
+          <template for:each={failures} for:item="failure">
+            <p key={failure.requestId}>
+              <strong>{failure.requestId}</strong>: {failure.message}
+            </p>
+          </template>
+        </section>
+      </template>
+
+      <div class="slds-m-top_medium">
+        <c-approval-table
+          rows={rows}
+          onselectionchange={handleSelectionChange}
+          onrowapprove={handleRowApprove}
+          onrowreject={handleRowReject}
+        >
+        </c-approval-table>
+      </div>
+      <div class="paging-bar">
+        <lightning-button
+          label="Previous"
+          onclick={handlePrevious}
+          disabled={disablePrevious}
+        >
+        </lightning-button>
+
+        <span class="page-label"> {pageLabel} </span>
+
+        <lightning-button
+          label="Next"
+          onclick={handleNext}
+          disabled={disableNext}
+        >
+        </lightning-button>
+      </div>
+
+      <template if:true={hasNext}>
+        <p class="slds-text-body_small slds-text-color_weak slds-m-top_small">
+          More matching requests exist. Refine the filters or increase page size
+          up to 50.
+        </p>
+      </template>
+    </div>
+
+    <template if:true={isLoading}>
+      <lightning-spinner
+        alternative-text="Loading approvals"
+        size="medium"
+      ></lightning-spinner>
+    </template>
+  </lightning-card>
+
+  <template if:true={showRejectModal}>
+    <c-approval-reject-modal
+      selected-count={selectedIds.length}
+      oncancel={handleCloseReject}
+      onsubmit={handleRejectSubmit}
+    >
+    </c-approval-reject-modal>
+  </template>
+</template>

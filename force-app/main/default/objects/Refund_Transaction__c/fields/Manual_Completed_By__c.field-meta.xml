@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Manual_Completed_By__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description
+  >Accounting user who confirmed external/manual completion.</description>
+    <label>Manual Completed By</label>
+    <referenceTo>User</referenceTo>
+    <relationshipLabel>Manually Completed Refunds</relationshipLabel>
+    <relationshipName>Manually_Completed_Refunds</relationshipName>
+    <type>Lookup</type>
+</CustomField>

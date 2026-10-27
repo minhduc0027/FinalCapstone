@@ -1,0 +1,58 @@
+<template>
+  <section
+    role="dialog"
+    tabindex="-1"
+    aria-modal="true"
+    aria-labelledby="reject-heading"
+    class="slds-modal slds-fade-in-open"
+    onkeydown={handleKeydown}
+  >
+    <div class="slds-modal__container">
+      <header class="slds-modal__header">
+        <lightning-button-icon
+          class="slds-modal__close"
+          icon-name="utility:close"
+          alternative-text="Close"
+          title="Close"
+          onclick={handleCancel}
+        ></lightning-button-icon>
+        <h2 id="reject-heading" class="slds-text-heading_medium">{title}</h2>
+      </header>
+      <div class="slds-modal__content slds-p-around_medium">
+        <lightning-textarea
+          data-field="reason"
+          label="Rejection reason"
+          required
+          value={reason}
+          maxlength="255"
+          onchange={handleChange}
+        ></lightning-textarea>
+        <lightning-textarea
+          class="slds-m-top_medium"
+          data-field="staffNote"
+          label="Internal staff note"
+          value={staffNote}
+          maxlength="32768"
+          onchange={handleChange}
+        ></lightning-textarea>
+        <p class="slds-text-body_small slds-text-color_weak slds-m-top_small">
+          The internal note is intended for staff and is submitted with every
+          selected request.
+        </p>
+      </div>
+      <footer class="slds-modal__footer">
+        <lightning-button
+          label="Cancel"
+          onclick={handleCancel}
+        ></lightning-button>
+        <lightning-button
+          class="slds-m-left_small"
+          label="Reject Requests"
+          variant="destructive"
+          onclick={handleSubmit}
+        ></lightning-button>
+      </footer>
+    </div>
+  </section>
+  <div class="slds-backdrop slds-backdrop_open"></div>
+</template>

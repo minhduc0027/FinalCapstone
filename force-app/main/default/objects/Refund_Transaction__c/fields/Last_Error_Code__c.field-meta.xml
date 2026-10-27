@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last_Error_Code__c</fullName>
+    <description
+  >Most recent sanitized PayHub or transport error code used for retry classification and accounting review.</description>
+    <inlineHelpText
+  >Most recent sanitized PayHub or transport error code used for retry classification and accounting review.</inlineHelpText>
+    <label>Last Error Code</label>
+    <length>100</length>
+    <type>Text</type>
+</CustomField>

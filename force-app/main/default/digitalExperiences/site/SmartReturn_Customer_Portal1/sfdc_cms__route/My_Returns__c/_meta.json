@@ -1,0 +1,5 @@
+{
+  "apiName": "My_Returns__c",
+  "type": "sfdc_cms__route",
+  "path": "routes"
+}

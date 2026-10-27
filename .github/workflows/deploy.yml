@@ -1,42 +1,42 @@
 name: Deploy Production
- 
+
 on:
   push:
     branches:
       - main
- 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
- 
+
     environment: production
- 
+
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
- 
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
- 
+
       - name: Install Salesforce CLI
         run: |
           npm install -g @salesforce/cli@latest
           sf --version
- 
+
       - name: Install SFDX Git Delta
         run: |
           echo y | sf plugins install sfdx-git-delta
- 
+
       - name: Create JWT Key
         run: |
           cat << 'EOF' > server.key
           ${{ secrets.SF_JWT_KEY }}
           EOF
- 
+
       - name: Authenticate Salesforce
         run: |
           sf org login jwt \
@@ -45,50 +45,51 @@ jobs:
             --username "${{ secrets.SF_USERNAME }}" \
             --instance-url "${{ secrets.SF_INSTANCE_URL }}" \
             --alias prod
- 
+
       - name: Verify Connection
         run: |
           sf org display --target-org prod
- 
+
       #################################################################
       # Generate Delta Package
       #################################################################
- 
+
       - name: Generate Delta
         run: |
           mkdir delta
- 
+
           sf sgd source delta \
             --from "${{ github.event.before }}" \
             --to "${{ github.sha }}" \
-            --output-dir delta
- 
+            --output-dir delta \
+            --ignore-file .sgdignore
+
       - name: Display Generated Files
         run: |
           find delta -type f
- 
+
       #################################################################
       # Deploy Changed Metadata
       #################################################################
- 
+
       - name: Deploy Delta Metadata
         run: |
           if [ -f delta/package/package.xml ]; then
- 
+
             sf project deploy start \
               --target-org prod \
               --manifest delta/package/package.xml \
               --test-level RunLocalTests \
               --wait 120
- 
+
           else
             echo "No metadata changes found."
           fi
- 
+
       #################################################################
       # Deploy Destructive Changes
       #################################################################
- 
+
       - name: Check Destructive Changes
         id: destructive_check
         run: |
@@ -97,7 +98,7 @@ jobs:
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
- 
+
       - name: Deploy Destructive Changes
         if: steps.destructive_check.outputs.exists == 'true'
         run: |
@@ -106,8 +107,7 @@ jobs:
             --manifest delta/package/package.xml \
             --post-destructive-changes delta/destructiveChanges/destructiveChanges.xml \
             --wait 120
- 
+
       - name: Cleanup
         if: always()
         run: rm -f server.key
- 

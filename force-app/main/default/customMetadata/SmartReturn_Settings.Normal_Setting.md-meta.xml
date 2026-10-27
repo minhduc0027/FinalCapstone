@@ -4,6 +4,7 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 >
+    <!-- REFUND INTEGRATION: the default PayHub timeout is 10 seconds per BR-12. -->
     <label>Normal Setting</label>
     <protected>false</protected>
     <values>
@@ -24,7 +25,7 @@
     </values>
     <values>
         <field>PayHub_Max_Timeout_Second__c</field>
-        <value xsi:type="xsd:double">20.0</value>
+        <value xsi:type="xsd:double">10.0</value>
     </values>
     <values>
         <field>PayHub_Retry_Interval__c</field>
@@ -33,6 +34,10 @@
     <values>
         <field>Refund_Rounding__c</field>
         <value xsi:type="xsd:double">1000.0</value>
+    </values>
+    <values>
+        <field>Refund_Scan_Interval_Minutes__c</field>
+        <value xsi:type="xsd:double">5.0</value>
     </values>
     <values>
         <field>Risk_Refund_Amount__c</field>
@@ -50,4 +55,13 @@
         <field>Store_Approval_Limit__c</field>
         <value xsi:type="xsd:double">2.0E7</value>
     </values>
+    <values><field>Portal_Max_Failures__c</field><value
+      xsi:type="xsd:double"
+    >5</value></values>
+    <values><field>Portal_Window_Minutes__c</field><value
+      xsi:type="xsd:double"
+    >15</value></values>
+    <values><field>Portal_Lock_Minutes__c</field><value
+      xsi:type="xsd:double"
+    >15</value></values>
 </CustomMetadata>

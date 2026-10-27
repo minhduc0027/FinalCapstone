@@ -66,4 +66,15 @@ public with sharing class ReturnRequestController {
 
     return ReturnIntakeService.createReturn(input);
   }
+
+  @AuraEnabled
+  public static List<ReturnRequestStatusTimelineService.StatusTimelineItem> getStatusTimeline(
+    Id requestId
+  ) {
+    try {
+      return ReturnRequestStatusTimelineService.getStatusTimeline(requestId);
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
+    }
+  }
 }

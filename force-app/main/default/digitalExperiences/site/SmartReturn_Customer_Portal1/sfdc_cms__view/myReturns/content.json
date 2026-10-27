@@ -1,0 +1,81 @@
+{
+  "type": "sfdc_cms__view",
+  "title": "Yêu cầu của tôi",
+  "contentBody": {
+    "component": {
+      "children": [
+        {
+          "children": [
+            {
+              "attributes": {
+                "backgroundImageConfig": "",
+                "backgroundImageOverlay": "rgba(0,0,0,0)",
+                "componentSpacerSize": "",
+                "layoutDirectionDesktop": "row",
+                "layoutDirectionMobile": "column",
+                "layoutDirectionTablet": "column",
+                "maxContentWidth": "",
+                "sectionColumnGutterWidth": "",
+                "sectionConfig": "{\"UUID\":\"3e8d52bf-cee4-4245-ba81-994be555241f\",\"columns\":[{\"UUID\":\"07ca7cb1-5a87-4a17-a970-510b4ebb6a39\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+                "sectionMinHeight": "",
+                "sectionVerticalAlign": "flex-start"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "attributes": {
+                        "pageSize": 10,
+                        "showProducts": true
+                      },
+                      "definition": "c:myReturnRequests",
+                      "id": "652a6c8f-afc4-48f0-886d-21bef9b7ed90",
+                      "type": "component"
+                    }
+                  ],
+                  "id": "07ca7cb1-5a87-4a17-a970-510b4ebb6a39",
+                  "name": "col1",
+                  "title": "Column 1",
+                  "type": "region"
+                }
+              ],
+              "definition": "community_layout:section",
+              "id": "3e8d52bf-cee4-4245-ba81-994be555241f",
+              "type": "component"
+            }
+          ],
+          "id": "4b1537b9-7225-4252-a0cd-f19e7385806c",
+          "name": "content",
+          "title": "Content",
+          "type": "region"
+        },
+        {
+          "children": [
+            {
+              "attributes": {
+                "customHeadTags": "",
+                "description": "",
+                "pageTitle": "Yêu cầu của tôi",
+                "recordId": "{!recordId}"
+              },
+              "definition": "community_builder:seoAssistant",
+              "id": "c33ecec9-74b7-45a7-b071-1b3fa4031ff2",
+              "type": "component"
+            }
+          ],
+          "id": "d7e1be89-b9b7-4a09-b3de-61eefbf6eb7f",
+          "name": "sfdcHiddenRegion",
+          "title": "sfdcHiddenRegion",
+          "type": "region"
+        }
+      ],
+      "definition": "community_layout:sldsFlexibleLayout",
+      "id": "9308a096-3964-4e8a-9058-75fcf6d08cdc",
+      "type": "component"
+    },
+    "dataProviders": [],
+    "themeLayoutType": "Inner",
+    "viewType": "custom-my-returns"
+  },
+  "urlName": "my-returns"
+}

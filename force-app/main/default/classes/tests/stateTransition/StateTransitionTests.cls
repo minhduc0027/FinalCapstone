@@ -2,12 +2,11 @@
 private class StateTransitionTests {
   @testSetup
   static void setupData() {
-    List<Return_Request__c> requests = new List<Return_Request__c>{
-      new Return_Request__c(Status__c = SmartReturnConstants.STATUS_NEW),
-      new Return_Request__c(Status__c = SmartReturnConstants.STATUS_NEW),
-      new Return_Request__c(Status__c = SmartReturnConstants.STATUS_NEW)
-    };
-    insert requests;
+    List<Return_Request__c> requests = ReturnRequestTestDataFactory.requests(
+      3,
+      null
+    );
+    insert as system requests;
   }
 
   // ==========================================
@@ -108,6 +107,32 @@ private class StateTransitionTests {
     Test.stopTest();
   }
 
+  @IsTest
+  static void triggerRoutesStatusValidationToStateTransitionService() {
+    List<Return_Request__c> requests = [
+      SELECT Id, Status__c
+      FROM Return_Request__c
+      ORDER BY Id
+      LIMIT 2
+    ];
+    requests[0].Status__c = SmartReturnConstants.STATUS_PENDING_APPROVAL;
+    requests[1].Status__c = SmartReturnConstants.STATUS_COMPLETED;
+
+    Test.startTest();
+    Database.SaveResult[] results = Database.update(requests, false);
+    Test.stopTest();
+
+    Assert.isTrue(results[0].isSuccess(), 'The valid transition must save.');
+    Assert.isFalse(
+      results[1].isSuccess(),
+      'The invalid transition must be rejected.'
+    );
+    Assert.isTrue(
+      results[1].getErrors()[0].getMessage().contains('Không thể chuyển'),
+      'The status validator must explain the rejected transition.'
+    );
+  }
+
   // ==========================================
   // 2. TEST STATE TRANSITION SERVICE (SINGLE)
   // ==========================================
@@ -159,18 +184,12 @@ private class StateTransitionTests {
 
   @IsTest
   static void transitionBulk_ShouldUpdateMultipleRecords() {
-    List<Return_Request__c> requests = new List<Return_Request__c>();
-
-    for (Integer i = 0; i < 2; i++) {
-      requests.add(
-        new Return_Request__c(
-          Status__c = SmartReturnConstants.STATUS_NEW,
-          Source_Channel__c = 'STORE'
-        )
-      );
-    }
-
-    insert requests;
+    List<Return_Request__c> requests = [
+      SELECT Id
+      FROM Return_Request__c
+      ORDER BY Id
+      LIMIT 2
+    ];
 
     List<TransitionRequest> transitionRequests = new List<TransitionRequest>();
 
@@ -211,5 +230,148 @@ private class StateTransitionTests {
         request.Required_Approval_Level__c
       );
     }
+  }
+
+  @IsTest
+  static void transitionBulkAllOrNoneUpdatesEveryRequest() {
+    List<Return_Request__c> requests = [
+      SELECT Id, Status__c
+      FROM Return_Request__c
+      ORDER BY Id
+      LIMIT 2
+    ];
+    List<TransitionRequest> changes = new List<TransitionRequest>();
+    for (Return_Request__c request : requests) {
+      changes.add(
+        new TransitionRequest(
+          request.Id,
+          SmartReturnConstants.STATUS_PENDING_APPROVAL,
+          null
+        )
+      );
+    }
+
+    Test.startTest();
+    List<TransitionResult> results = StateTransitionService.transitionBulk(
+      changes,
+      true
+    );
+    Test.stopTest();
+
+    Assert.areEqual(2, results.size(), 'Every transition must report success.');
+    String expectedStatus = SmartReturnConstants.STATUS_PENDING_APPROVAL;
+    Assert.areEqual(
+      2,
+      [
+        SELECT COUNT()
+        FROM Return_Request__c
+        WHERE Id IN :requests AND Status__c = :expectedStatus
+      ],
+      'Every valid request must transition.'
+    );
+  }
+
+  @IsTest
+  static void transitionBulkAllOrNoneRejectsEntireInvalidGroup() {
+    List<Return_Request__c> requests = [
+      SELECT Id, Status__c
+      FROM Return_Request__c
+      ORDER BY Id
+      LIMIT 2
+    ];
+    List<TransitionRequest> changes = new List<TransitionRequest>{
+      new TransitionRequest(
+        requests[0].Id,
+        SmartReturnConstants.STATUS_PENDING_APPROVAL,
+        null
+      ),
+      new TransitionRequest(
+        requests[1].Id,
+        SmartReturnConstants.STATUS_COMPLETED,
+        null
+      )
+    };
+
+    Test.startTest();
+    try {
+      StateTransitionService.transitionBulk(changes, true);
+      Assert.fail('An invalid transition must reject the entire group.');
+    } catch (StateTransitionValidator.StateTransitionException e) {
+      Assert.isTrue(
+        e.getMessage().contains('Không thể chuyển'),
+        'Explain the invalid transition.'
+      );
+    }
+    Test.stopTest();
+
+    String originalStatus = SmartReturnConstants.STATUS_NEW;
+    Assert.areEqual(
+      2,
+      [
+        SELECT COUNT()
+        FROM Return_Request__c
+        WHERE Id IN :requests AND Status__c = :originalStatus
+      ],
+      'No request may transition when another is invalid.'
+    );
+  }
+
+  @IsTest
+  static void transitionBulkAllOrNoneRejectsDuplicateRequest() {
+    Id requestId = [SELECT Id FROM Return_Request__c LIMIT 1].Id;
+    List<TransitionRequest> changes = new List<TransitionRequest>{
+      new TransitionRequest(
+        requestId,
+        SmartReturnConstants.STATUS_PENDING_APPROVAL,
+        null
+      ),
+      new TransitionRequest(
+        requestId,
+        SmartReturnConstants.STATUS_PENDING_APPROVAL,
+        null
+      )
+    };
+
+    Test.startTest();
+    try {
+      StateTransitionService.transitionBulk(changes, true);
+      Assert.fail('Duplicate request IDs must not be updated twice.');
+    } catch (StateTransitionService.StateTransitionException e) {
+      Assert.isTrue(
+        e.getMessage().contains('unique Id'),
+        'Explain duplicate request IDs.'
+      );
+    }
+    Test.stopTest();
+
+    Assert.areEqual(
+      SmartReturnConstants.STATUS_NEW,
+      [SELECT Status__c FROM Return_Request__c WHERE Id = :requestId].Status__c,
+      'A duplicate input must leave the request unchanged.'
+    );
+  }
+
+  @IsTest
+  static void transitionBulkAllOrNoneRejectsMissingRequest() {
+    List<TransitionRequest> changes = new List<TransitionRequest>{
+      new TransitionRequest(
+        UserInfo.getUserId(),
+        SmartReturnConstants.STATUS_PENDING_APPROVAL,
+        null
+      )
+    };
+
+    Test.startTest();
+    try {
+      StateTransitionService.transitionBulk(changes, true);
+      Assert.fail('A missing request must stop the whole transition.');
+    } catch (StateTransitionService.StateTransitionException e) {
+      Assert.areEqual(
+        'Request not found.',
+        e.getMessage(),
+        'Explain the missing request.'
+      );
+    }
+    Test.stopTest();
   }
 }

@@ -30,7 +30,13 @@ public with sharing class ApprovalRow {
   public Datetime createdDate { get; set; }
 
   @AuraEnabled
-  public Integer waitingHours { get; set; }
+  public Datetime approvalDueAt;
+
+  @AuraEnabled
+  public String sourceChannel;
+
+  @AuraEnabled
+  public Boolean overdue;
 
   public static ApprovalRow fromRecord(Return_Request__c requestRecord) {
     ApprovalRow row = new ApprovalRow();
@@ -43,6 +49,12 @@ public with sharing class ApprovalRow {
     row.estimatedRefundAmount = requestRecord.Estimated_Refund_Amount__c;
     row.actualRefundAmount = requestRecord.Actual_Refund_Amount__c;
     row.createdDate = requestRecord.CreatedDate;
+    row.sourceChannel = requestRecord.Source_Channel__c;
+
+    if (requestRecord.Approval_Due_At__c != null) {
+      row.approvalDueAt = requestRecord.Approval_Due_At__c;
+      row.overdue = requestRecord.Approval_Due_At__c < System.now();
+    }
 
     if (requestRecord.Customer__r != null) {
       row.customerName = requestRecord.Customer__r.Name;
@@ -50,15 +62,6 @@ public with sharing class ApprovalRow {
 
     if (requestRecord.Store__r != null) {
       row.storeName = requestRecord.Store__r.Name;
-    }
-
-    if (requestRecord.CreatedDate != null) {
-      Long elapsedMilliseconds =
-        System.now().getTime() - requestRecord.CreatedDate.getTime();
-
-      row.waitingHours = Integer.valueOf(
-        elapsedMilliseconds / (1000 * 60 * 60)
-      );
     }
 
     return row;

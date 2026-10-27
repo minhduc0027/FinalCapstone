@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <actionOverrides>
         <actionName>Accept</actionName>
@@ -142,11 +142,14 @@
     </actionOverrides>
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
+    <description
+  >Tracks customer returns against an order, their store, approval and inspection milestones, and final refund status. Records estimated and actual refund amounts, assigned and deciding approvers, deadlines, rejection reasons, and internal notes. Status history supports audit and customer progress.</description>
     <deploymentStatus>Deployed</deploymentStatus>
     <enableActivities>true</enableActivities>
     <enableBulkApi>true</enableBulkApi>
     <enableFeeds>false</enableFeeds>
-    <enableHistory>false</enableHistory>
+    <!-- REFUND INTEGRATION: native history audits committed refund status changes. -->
+    <enableHistory>true</enableHistory>
     <enableLicensing>false</enableLicensing>
     <enableReports>true</enableReports>
     <enableSearch>true</enableSearch>
@@ -155,12 +158,12 @@
     <externalSharingModel>Private</externalSharingModel>
     <label>Return Request</label>
     <nameField>
-        <displayFormat>RR-{000000}</displayFormat>
+        <displayFormat>RR-{YY}{MM}-{00000}</displayFormat>
         <label>Return Request Name</label>
         <type>AutoNumber</type>
     </nameField>
     <pluralLabel>Return Requests</pluralLabel>
-    <searchLayouts></searchLayouts>
-    <sharingModel>ReadWrite</sharingModel>
+    <searchLayouts />
+    <sharingModel>Private</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>

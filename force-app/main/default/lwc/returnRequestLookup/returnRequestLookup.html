@@ -1,0 +1,45 @@
+<template>
+  <main class="portal">
+    <h1 class="slds-text-title_bold">{heading}</h1>
+    <p class="intro" id="lookup-description">{subtitle}</p>
+    <form onsubmit={handleSubmit} aria-busy={isLoading}>
+      <div class="fields">
+        <lightning-input
+          name="lookupValue"
+          label={heading}
+          variant="label-hidden"
+          aria-describedby="lookup-description"
+          value={lookupValue}
+          maxlength="100"
+          autocomplete="off"
+          required
+          disabled={isLoading}
+          onchange={handleInput}
+          message-when-value-missing="Vui lòng nhập mã yêu cầu và 4 số cuối số điện thoại."
+        ></lightning-input>
+      </div>
+      <div class="actions">
+        <lightning-button
+          type="submit"
+          variant="brand"
+          label={submitLabel}
+          disabled={isLoading}
+        ></lightning-button>
+      </div>
+    </form>
+    <template lwc:if={isLoading}
+      ><p class="message" role="status">Đang tra cứu yêu cầu…</p></template
+    >
+    <template lwc:if={message}
+      ><p class="message" role="alert">{message}</p></template
+    >
+    <template lwc:if={request}>
+      <div class="result">
+        <c-return-request-summary
+          request={request}
+          show-products={showProducts}
+        ></c-return-request-summary>
+      </div>
+    </template>
+  </main>
+</template>

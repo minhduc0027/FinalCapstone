@@ -1,0 +1,4 @@
+.slds-modal__content {
+  max-height: 65vh;
+  overflow: auto;
+}

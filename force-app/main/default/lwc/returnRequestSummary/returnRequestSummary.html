@@ -1,0 +1,113 @@
+<template>
+  <template lwc:if={request}>
+    <section class="summary" aria-label="Chi tiết yêu cầu đổi trả">
+      <header
+        class="slds-grid slds-wrap slds-grid_align-spread slds-grid_vertical-align-center"
+      >
+        <div class="slds-var-m-right_medium">
+          <p class="slds-text-title_bold">Mã yêu cầu</p>
+          <h2 class="slds-text-heading_medium" tabindex="-1">
+            {request.requestNumber}
+          </h2>
+        </div>
+        <lightning-badge
+          class="slds-var-m-vertical_x-small"
+          label={statusText}
+        ></lightning-badge>
+      </header>
+      <dl class="slds-grid slds-wrap slds-gutters slds-m-vertical_medium">
+        <div
+          class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-vertical_x-small"
+        >
+          <dt class="slds-text-title_bold slds-m-bottom_xx-small">Ngày tạo</dt>
+          <dd class="slds-text-heading_small">
+            <lightning-formatted-date-time
+              value={request.createdAt}
+              day="2-digit"
+              month="2-digit"
+              year="numeric"
+              hour="2-digit"
+              minute="2-digit"
+            ></lightning-formatted-date-time>
+          </dd>
+        </div>
+        <template lwc:if={showAmount}>
+          <div
+            class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-p-vertical_x-small"
+            data-section="amount"
+          >
+            <dt class="slds-text-title_bold slds-m-bottom_xx-small">
+              {amountTitle}
+            </dt>
+            <dd class="slds-text-heading_small">
+              <template lwc:if={hasAmount}>
+                <lightning-formatted-number
+                  value={request.refundAmount}
+                  format-style="currency"
+                  currency-code="VND"
+                  maximum-fraction-digits="0"
+                ></lightning-formatted-number>
+              </template>
+              <template lwc:else>Chưa xác định</template>
+            </dd>
+          </div>
+        </template>
+      </dl>
+      <section class="slds-var-m-top_x-large" aria-label="Lịch sử trạng thái">
+        <h3 class="slds-text-heading_small">Lịch sử trạng thái</h3>
+        <ol class="slds-var-m-top_small">
+          <template for:each={history} for:item="change">
+            <li
+              key={change.key}
+              class="slds-grid slds-wrap slds-grid_align-spread slds-grid_vertical-align-center slds-p-vertical_small slds-border_bottom"
+            >
+              <span
+                class="slds-list_horizontal slds-grid_vertical-align-center slds-m-right_x-small"
+              >
+                <lightning-icon
+                  class="slds-shrink-none slds-var-m-right_small"
+                  icon-name={change.iconName}
+                  size="x-small"
+                  alternative-text=""
+                  aria-hidden="true"
+                ></lightning-icon>
+                <span>{change.label}</span>
+              </span>
+              <lightning-formatted-date-time
+                value={change.changedAt}
+                day="2-digit"
+                month="2-digit"
+                year="numeric"
+                hour="2-digit"
+                minute="2-digit"
+              ></lightning-formatted-date-time>
+            </li>
+          </template>
+        </ol>
+      </section>
+      <template lwc:if={hasProducts}>
+        <section class="slds-var-m-top_x-large" aria-label="Sản phẩm trả">
+          <h3 class="slds-text-heading_small">Sản phẩm trả</h3>
+          <ul class="slds-var-m-top_small">
+            <template for:each={products} for:item="product">
+              <li
+                key={product.key}
+                class="slds-grid slds-wrap slds-grid_align-spread slds-var-p-vertical_small slds-border_bottom"
+              >
+                <span class="slds-var-m-right_x-small"
+                  >{product.productName}</span
+                >
+                <span
+                  >Số lượng:&nbsp;
+                  <lightning-formatted-number
+                    value={product.quantity}
+                  ></lightning-formatted-number
+                ></span>
+              </li>
+            </template>
+          </ul>
+        </section>
+      </template>
+    </section>
+  </template>
+</template>

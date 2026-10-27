@@ -1,0 +1,63 @@
+<template>
+  <section class="filters slds-m-top_medium" aria-label="Approval filters">
+    <div class="filter-grid">
+      <lightning-combobox
+        label="Approval level"
+        value={approvalLevel}
+        options={levelOptions}
+        data-field="approvalLevel"
+        onchange={handleFieldChange}
+      ></lightning-combobox>
+      <lightning-record-picker
+        label="Store"
+        placeholder="Search stores"
+        object-api-name="Store__c"
+        value={storeId}
+        onchange={handleStoreChange}
+      ></lightning-record-picker>
+      <lightning-input
+        type="date"
+        label="From date"
+        value={fromDate}
+        data-field="fromDate"
+        onchange={handleFieldChange}
+      ></lightning-input>
+      <lightning-input
+        type="date"
+        label="To date"
+        value={toDate}
+        data-field="toDate"
+        onchange={handleFieldChange}
+      ></lightning-input>
+      <lightning-combobox
+        label="Sort by"
+        value={sortBy}
+        options={sortOptions}
+        data-field="sortBy"
+        onchange={handleFieldChange}
+      ></lightning-combobox>
+      <lightning-input
+        type="toggle"
+        label="Descending"
+        checked={sortDescending}
+        data-field="sortDescending"
+        onchange={handleFieldChange}
+      ></lightning-input>
+      <lightning-combobox
+        label="Rows"
+        value={pageSize}
+        options={pageSizeOptions}
+        data-field="pageSize"
+        onchange={handleFieldChange}
+      ></lightning-combobox>
+    </div>
+    <div class="filter-actions slds-m-top_small">
+      <lightning-button label="Reset" onclick={handleReset}></lightning-button>
+      <lightning-button
+        label="Apply Filters"
+        variant="brand-outline"
+        onclick={handleApply}
+      ></lightning-button>
+    </div>
+  </section>
+</template>
