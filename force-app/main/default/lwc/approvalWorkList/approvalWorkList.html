@@ -71,6 +71,23 @@
         >
         </c-approval-table>
       </div>
+      <div class="paging-bar">
+        <lightning-button
+          label="Previous"
+          onclick={handlePrevious}
+          disabled={disablePrevious}
+        >
+        </lightning-button>
+
+        <span class="page-label"> {pageLabel} </span>
+
+        <lightning-button
+          label="Next"
+          onclick={handleNext}
+          disabled={disableNext}
+        >
+        </lightning-button>
+      </div>
 
       <template if:true={hasNext}>
         <p class="slds-text-body_small slds-text-color_weak slds-m-top_small">

@@ -15,6 +15,9 @@ export default class ApprovalWorkList extends LightningElement {
   isLoading = false;
   showRejectModal = false;
   hasNext = false;
+  currentOffset = 0;
+  pageSize = 20;
+
   filter = {
     status: STATUS_PENDING,
     approvalLevel: null,
@@ -24,7 +27,10 @@ export default class ApprovalWorkList extends LightningElement {
     sortBy: "Approval_Due_At__c",
     sortDescending: false,
     pageSize: 20,
-    page: null
+    page: {
+      strategy: "OFFSET",
+      offsetSize: 0
+    }
   };
 
   connectedCallback() {
@@ -50,10 +56,49 @@ export default class ApprovalWorkList extends LightningElement {
   get reconfirmTabClass() {
     return this.activeStatus === STATUS_RECONFIRMING ? "tab active" : "tab";
   }
+  get disablePrevious() {
+    return this.currentOffset === 0;
+  }
+
+  handlePrevious() {
+    if (this.currentOffset < this.filter.pageSize) {
+      return;
+    }
+    this.currentOffset -= this.filter.pageSize;
+    this.loadWorklist();
+  }
+
+  get disableNext() {
+    return !this.hasNext;
+  }
+
+  handleNext() {
+    if (!this.hasNext) {
+      return;
+    }
+    this.currentOffset += this.filter.pageSize;
+    this.loadWorklist();
+  }
+
+  get pageLabel() {
+    if (!this.rows.length) {
+      return "0";
+    }
+    let start = this.currentOffset + 1;
+    let end = this.currentOffset + this.rows.length;
+    return `${start} - ${end}`;
+  }
 
   async loadWorklist() {
     this.isLoading = true;
     this.failures = [];
+    this.filter = {
+      ...this.filter,
+      page: {
+        strategy: "OFFSET",
+        offsetSize: this.currentOffset
+      }
+    };
     try {
       const result = await getWorklist({ filter: this.filter });
       this.rows = result?.records || [];
@@ -70,17 +115,19 @@ export default class ApprovalWorkList extends LightningElement {
   handleTabClick(event) {
     const status = event.currentTarget.dataset.status;
     if (!status || status === this.activeStatus) return;
+    this.currentOffset = 0;
     this.activeStatus = status;
-    this.filter = { ...this.filter, status, page: null };
+    this.filter = { ...this.filter, status };
     this.loadWorklist();
   }
 
   handleFilterChange(event) {
+    this.currentOffset = 0;
     this.filter = {
       ...this.filter,
       ...event.detail,
-      status: this.activeStatus,
-      page: null
+      status: this.activeStatus
+      //page: null
     };
     this.loadWorklist();
   }
@@ -125,7 +172,14 @@ export default class ApprovalWorkList extends LightningElement {
       });
       this.showRejectModal = false;
       this.processActionResults(results, "rejected");
-      await this.loadWorklist();
+      if (!this.rows.length && this.currentOffset > 0) {
+        this.currentOffset = Math.max(
+          0,
+          this.currentOffset - this.filter.pageSize
+        );
+
+        await this.loadWorklist();
+      }
     } catch (error) {
       this.showError("Reject failed", error);
     } finally {
@@ -139,7 +193,14 @@ export default class ApprovalWorkList extends LightningElement {
     try {
       const results = await bulkApprove({ requestIds });
       this.processActionResults(results, "approved");
-      await this.loadWorklist();
+      if (!this.rows.length && this.currentOffset > 0) {
+        this.currentOffset = Math.max(
+          0,
+          this.currentOffset - this.filter.pageSize
+        );
+
+        await this.loadWorklist();
+      }
     } catch (error) {
       this.showError("Approval failed", error);
     } finally {

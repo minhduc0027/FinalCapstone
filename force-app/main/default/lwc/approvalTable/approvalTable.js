@@ -68,7 +68,7 @@ export default class ApprovalTable extends LightningElement {
       ...row,
       requestUrl: `/lightning/r/Return_Request__c/${row.requestId}/view`,
       statusLabel: this.statusLabel(row.status),
-      overdueLabel: row.overdue ? "Overdue" : "",
+      overdueLabel: row.overdue ? "Overdue" : "Pending",
       overdueClass: row.overdue
         ? "slds-text-color_error slds-text-title_bold"
         : ""
