@@ -63,7 +63,6 @@ export default class ReturnRequestStatusTimeline extends LightningElement {
     if (!status) {
       return "";
     }
-
     return status
       .split("_")
       .filter(Boolean)
