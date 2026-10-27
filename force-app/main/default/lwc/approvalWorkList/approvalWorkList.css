@@ -47,6 +47,15 @@
 .failure-panel p {
   margin-top: 0.25rem;
 }
+
+.paging-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
 @media (max-width: 48rem) {
   .header-row {
     align-items: flex-start;
