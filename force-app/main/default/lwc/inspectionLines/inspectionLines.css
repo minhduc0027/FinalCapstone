@@ -1,47 +1,202 @@
-.header,
-.actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+:host {
+  display: block;
+  min-width: 0;
 }
+
+.inspection-lines {
+  position: relative;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.header-content {
+  min-width: 0;
+}
+
 .line-list {
   display: grid;
-  gap: 0.75rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.875rem;
+  margin-top: 0.75rem;
+  min-width: 0;
 }
+
 .line-card {
   display: grid;
-  grid-template-columns: minmax(12rem, 1fr) minmax(20rem, 2fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+
+  min-width: 0;
   padding: 1rem;
-  border: 1px solid #dddbda;
+
+  background: var(--slds-g-color-neutral-base-100, #ffffff);
+  border: 1px solid var(--slds-g-color-border-base-1, #dddbda);
   border-radius: 0.5rem;
 }
-.summary h3 {
+
+.summary {
+  min-width: 0;
+}
+
+.product-heading {
+  min-width: 0;
+  padding-bottom: 0.625rem;
+  margin-bottom: 0.625rem;
+  border-bottom: 1px solid var(--slds-g-color-border-base-1, #e5e5e5);
+}
+
+.product-name {
+  overflow-wrap: anywhere;
+  color: var(--slds-g-color-neutral-base-10, #181818);
+  font-size: 0.9375rem;
   font-weight: 700;
+  line-height: 1.35;
 }
-.summary p {
-  color: #706e6b;
-  margin-top: 0.2rem;
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  min-width: 0;
+  margin: 0;
 }
+
+.summary-item {
+  min-width: 0;
+}
+
+.summary-item-wide {
+  grid-column: span 2;
+}
+
+.summary-item dt {
+  margin: 0 0 0.125rem;
+  color: var(--slds-g-color-neutral-base-50, #706e6b);
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+.summary-item dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--slds-g-color-neutral-base-10, #181818);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .fields {
   display: grid;
-  grid-template-columns: minmax(7rem, 0.5fr) minmax(10rem, 1fr) minmax(
-      14rem,
-      2fr
-    );
+
+  /*
+   * Result khoảng 25%
+   * Code khoảng 25%
+   * Reason khoảng 50%
+   */
+  grid-template-columns:
+    minmax(9rem, 1fr)
+    minmax(10rem, 1fr)
+    minmax(16rem, 2fr);
+
+  align-items: start;
   gap: 0.75rem;
+  min-width: 0;
 }
+
+.field {
+  min-width: 0;
+}
+
+.field lightning-input,
+.field lightning-combobox,
+.field lightning-textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
 .empty {
+  padding: 2rem 1rem;
+  margin-top: 0.75rem;
+
   text-align: center;
-  padding: 2rem;
-  background: #fafaf9;
-  border: 1px dashed #c9c7c5;
+  overflow-wrap: anywhere;
+
+  color: var(--slds-g-color-neutral-base-50, #706e6b);
+  background: var(--slds-g-color-neutral-base-95, #fafaf9);
+  border: 1px dashed var(--slds-g-color-border-base-1, #c9c7c5);
   border-radius: 0.5rem;
-  color: #706e6b;
 }
-@media (max-width: 64rem) {
-  .line-card,
+
+/*
+ * Detail panel bắt đầu thiếu không gian:
+ * summary chuyển từ 4 cột thành 2 cột,
+ * input vẫn có thể giữ ngang nếu còn đủ width.
+ */
+@media (max-width: 75rem) {
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary-item-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+/*
+ * Khi component nằm trong vùng detail hẹp,
+ * không tiếp tục ép Eligibility reason vào một hàng.
+ */
+@media (max-width: 60rem) {
   .fields {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary-item-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+/*
+ * Mobile hoặc container rất hẹp.
+ */
+@media (max-width: 30rem) {
+  .line-card {
+    padding: 0.75rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .summary-item-wide {
+    grid-column: auto;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .actions lightning-button {
+    width: 100%;
   }
 }
