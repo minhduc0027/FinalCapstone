@@ -264,6 +264,8 @@ public with sharing class InspectionService {
 
     requestRecord.Required_Approval_Level__c = requiredApprovalLevel;
 
+    requestRecord.Inspection_Completed_At__c = System.now();
+
     /*
      * TODO khi field và resolver sẵn sàng:
      *
