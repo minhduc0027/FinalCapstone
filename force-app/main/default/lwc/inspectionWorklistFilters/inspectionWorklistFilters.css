@@ -1,0 +1,15 @@
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+@media (max-width: 48rem) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}

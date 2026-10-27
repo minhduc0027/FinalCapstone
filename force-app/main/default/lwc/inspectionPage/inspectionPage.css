@@ -1,0 +1,48 @@
+.inspection-layout {
+  display: grid;
+  grid-template-columns: minmax(18rem, 1fr) minmax(32rem, 2fr) minmax(
+      18rem,
+      1fr
+    );
+  gap: 1rem;
+  padding: 1rem;
+}
+.worklist-panel,
+.detail-panel,
+.timeline-panel {
+  min-width: 0;
+}
+.worklist-panel {
+  border-right: 1px solid #dddbda;
+  padding-right: 1rem;
+}
+.timeline-panel {
+  border-left: 1px solid #dddbda;
+  padding-left: 1rem;
+}
+@media (max-width: 80rem) {
+  .inspection-layout {
+    grid-template-columns: minmax(18rem, 1fr) minmax(30rem, 2fr);
+  }
+  .timeline-panel {
+    grid-column: 1/-1;
+    border-left: 0;
+    border-top: 1px solid #dddbda;
+    padding-left: 0;
+    padding-top: 1rem;
+  }
+}
+@media (max-width: 48rem) {
+  .inspection-layout {
+    grid-template-columns: 1fr;
+  }
+  .worklist-panel {
+    border-right: 0;
+    border-bottom: 1px solid #dddbda;
+    padding-right: 0;
+    padding-bottom: 1rem;
+  }
+  .timeline-panel {
+    grid-column: auto;
+  }
+}

@@ -1,0 +1,21 @@
+.header,
+.paging {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.table-wrap {
+  overflow: auto;
+}
+.paging {
+  justify-content: center;
+}
+.empty {
+  text-align: center;
+  padding: 2rem;
+  background: #fafaf9;
+  border: 1px dashed #c9c7c5;
+  border-radius: 0.5rem;
+  color: #706e6b;
+}

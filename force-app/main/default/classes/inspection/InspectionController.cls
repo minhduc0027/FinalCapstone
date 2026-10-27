@@ -1,4 +1,12 @@
 public with sharing class InspectionController {
+  @AuraEnabled
+  public static InspectionPageResult getWorklist(InspectionFilter filter) {
+    try {
+      return InspectionService.getWorklist(filter);
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
+    }
+  }
   //===================================================
   // Load inspection detail
   //===================================================

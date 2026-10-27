@@ -1,25 +1,18 @@
-<template>
-  <lightning-card title="Status Timeline" icon-name="utility:trail">
-    <template if:true={timelineItems}>
-      <ul class="timeline">
-        <template for:each={timelineItems} for:item="item">
-          <li key={item.changedAt} class="timeline-item">
+<template
+  ><section>
+    <h2 class="slds-text-heading_small">Status Timeline</h2>
+    <template if:true={hasItems}
+      ><ul class="timeline slds-m-top_small">
+        <template for:each={timelineItems} for:item="item"
+          ><li key={item.uniqueKey} class="timeline-item">
             <div class={item.dotClass}></div>
-
-            <div class="timeline-content">
-              <div class="status-label">{item.label}</div>
-
-              <div class="timeline-meta">
-                <template if:true={item.previousStatus}>
-                  From: {item.previousStatus} →
-                </template>
-
-                {item.currentStatus}
-              </div>
-
-              <div class="timeline-meta">{item.changedByName}</div>
-
-              <div class="timeline-meta">
+            <div>
+              <strong>{item.label}</strong
+              ><template if:true={item.previousStatus}
+                ><p class="meta">From {item.previousLabel}</p></template
+              >
+              <p class="meta">{item.changedByName}</p>
+              <p class="meta">
                 <lightning-formatted-date-time
                   value={item.changedAt}
                   year="numeric"
@@ -27,17 +20,25 @@
                   day="2-digit"
                   hour="2-digit"
                   minute="2-digit"
-                >
-                </lightning-formatted-date-time>
-              </div>
-            </div>
-          </li>
-        </template>
-      </ul>
-    </template>
-
-    <template if:true={error}>
-      <div class="slds-p-around_medium slds-text-color_error">{error}</div>
-    </template>
-  </lightning-card>
-</template>
+                ></lightning-formatted-date-time>
+              </p>
+            </div></li
+        ></template></ul></template
+    ><template if:false={hasItems}
+      ><div class="empty slds-m-top_small">
+        <template if:true={hasSelection}>No status history found.</template
+        ><template if:false={hasSelection}
+          >Select a request to view status history.</template
+        >
+      </div></template
+    ><template if:true={error}
+      ><div class="slds-text-color_error slds-m-top_small">
+        {error}
+      </div></template
+    ><template if:true={isLoading}
+      ><lightning-spinner
+        alternative-text="Loading status timeline"
+        size="small"
+      ></lightning-spinner
+    ></template></section
+></template>

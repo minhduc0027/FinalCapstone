@@ -1,0 +1,47 @@
+.header,
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.line-list {
+  display: grid;
+  gap: 0.75rem;
+}
+.line-card {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(20rem, 2fr);
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #dddbda;
+  border-radius: 0.5rem;
+}
+.summary h3 {
+  font-weight: 700;
+}
+.summary p {
+  color: #706e6b;
+  margin-top: 0.2rem;
+}
+.fields {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.5fr) minmax(10rem, 1fr) minmax(
+      14rem,
+      2fr
+    );
+  gap: 0.75rem;
+}
+.empty {
+  text-align: center;
+  padding: 2rem;
+  background: #fafaf9;
+  border: 1px dashed #c9c7c5;
+  border-radius: 0.5rem;
+  color: #706e6b;
+}
+@media (max-width: 64rem) {
+  .line-card,
+  .fields {
+    grid-template-columns: 1fr;
+  }
+}
