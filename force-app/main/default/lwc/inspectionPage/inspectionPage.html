@@ -3,16 +3,25 @@
     title="Inspection Workbench"
     icon-name="standard:work_order_item"
   >
-    <div class="inspection-layout">
-      <aside class="worklist-panel" aria-label="Inspection worklist">
-        <c-inspection-worklist></c-inspection-worklist>
-      </aside>
-      <main class="detail-panel" aria-label="Inspection details">
-        <c-inspection-lines></c-inspection-lines>
-      </main>
-      <aside class="timeline-panel" aria-label="Return request status timeline">
-        <c-return-request-status-timeline></c-return-request-status-timeline>
-      </aside>
+    <div class="inspection-page">
+      <!-- Timeline full width -->
+      <section
+        class="timeline-panel"
+        aria-label="Return request status timeline"
+      >
+        <c-return-request-status-timeline> </c-return-request-status-timeline>
+      </section>
+
+      <!-- Work area -->
+      <div class="inspection-layout">
+        <aside class="worklist-panel" aria-label="Inspection worklist">
+          <c-inspection-worklist> </c-inspection-worklist>
+        </aside>
+
+        <main class="detail-panel" aria-label="Inspection details">
+          <c-inspection-lines> </c-inspection-lines>
+        </main>
+      </div>
     </div>
   </lightning-card>
 </template>

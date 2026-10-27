@@ -1,42 +1,179 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
 .timeline {
+  display: flex;
+  align-items: flex-start;
+
   list-style: none;
   margin: 0;
   padding: 0;
+
+  width: 100%;
+  min-width: 0;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  padding-bottom: 0.5rem;
 }
+
 .timeline-item {
-  display: flex;
   position: relative;
-  gap: 0.75rem;
-  padding-bottom: 1.25rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  /*
+   * Cho các status chia đều chiều ngang.
+   * min-width ngăn timeline bị ép quá nhỏ khi có nhiều status.
+   */
+  flex: 1 0 12rem;
+  min-width: 12rem;
+
+  padding: 0 1rem;
+
+  text-align: center;
 }
-.timeline-item:not(:last-child):before {
+
+/*
+ * Horizontal connector.
+ *
+ * Dot nằm chính giữa item nên connector chạy:
+ * center item hiện tại -> center item tiếp theo.
+ */
+.timeline-item:not(:last-child)::before {
   content: "";
+
   position: absolute;
-  left: 5px;
-  top: 12px;
-  bottom: 0;
-  border-left: 2px solid #dddbda;
+
+  top: 5px;
+  left: 50%;
+  right: -50%;
+
+  height: 2px;
+
+  background: #dddbda;
 }
+
+/*
+ * Tạo khoảng connector từ item trước đến dot hiện tại.
+ */
+.timeline-item:not(:first-child)::after {
+  content: "";
+
+  position: absolute;
+
+  top: 5px;
+  left: -50%;
+  right: 50%;
+
+  height: 2px;
+
+  background: #dddbda;
+}
+
 .timeline-dot {
+  position: relative;
+  z-index: 2;
+
   width: 12px;
   height: 12px;
+
+  flex: 0 0 12px;
+
+  margin-bottom: 0.625rem;
+
   border-radius: 50%;
+
   background: #706e6b;
-  z-index: 1;
-  flex: 0 0 auto;
 }
+
+/*
+ * Current/latest status.
+ */
 .timeline-dot.current {
   background: #2e844a;
   box-shadow: 0 0 0 4px #e3f3e8;
 }
-.meta {
-  font-size: 0.8rem;
-  color: #706e6b;
-  margin-top: 0.2rem;
+
+/*
+ * Content container ngay sau dot.
+ */
+.timeline-dot + div {
+  width: 100%;
+  min-width: 0;
 }
+
+/*
+ * Status title.
+ */
+.timeline-item strong {
+  display: block;
+
+  min-width: 0;
+
+  color: #181818;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.35;
+
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin-top: 0.2rem;
+
+  color: #706e6b;
+
+  font-size: 0.75rem;
+  line-height: 1.35;
+
+  overflow-wrap: anywhere;
+}
+
 .empty {
   padding: 1rem;
+
   background: #fafaf9;
-  color: #706e6b;
+
+  border: 1px dashed #c9c7c5;
   border-radius: 0.5rem;
+
+  color: #706e6b;
+
+  text-align: center;
+}
+
+/*
+ * Scrollbar nhỏ hơn để timeline vẫn gọn khi có nhiều status.
+ */
+.timeline::-webkit-scrollbar {
+  height: 6px;
+}
+
+.timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.timeline::-webkit-scrollbar-thumb {
+  background: #c9c7c5;
+  border-radius: 999px;
+}
+
+/*
+ * Ở màn hình nhỏ không ép tất cả status vào một hàng quá hẹp.
+ * Timeline vẫn horizontal và user có thể scroll.
+ */
+@media (max-width: 48rem) {
+  .timeline-item {
+    flex: 0 0 10rem;
+    min-width: 10rem;
+
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
 }
