@@ -97,7 +97,8 @@ private class InspectionModuleTests {
       Id = lineId,
       Is_Eligible__c = false,
       Eligibility_Code__c = 'CATEGORY_NOT_RETURNABLE',
-      Eligibility_Reason__c = 'DAMAGED'
+      Eligibility_Reason__c = 'DAMAGED',
+      Inspection_Request__c = 'FAILED'
     );
   }
 
