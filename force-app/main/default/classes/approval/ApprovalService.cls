@@ -185,9 +185,9 @@ public with sharing class ApprovalService {
       return 'Only the assigned approver can process this request.';
     }
 
-    if (requestRecord.CreatedById == UserInfo.getUserId()) {
-      return 'Request creator cannot approve or reject ' + 'their own request.';
-    }
+    // if (requestRecord.CreatedById == UserInfo.getUserId()) {
+    //   return 'Request creator cannot approve or reject ' + 'their own request.';
+    // }
 
     return null;
   }
