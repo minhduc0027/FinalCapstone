@@ -55,6 +55,81 @@ public with sharing class RefundTestDataFactory {
     );
     return actor;
   }
+  public static void setupUserModeRefunds() {
+    User actor = grantProcessor();
+    actor.ProfileId = [
+      SELECT Id
+      FROM Profile
+      WHERE Name = 'Minimum Access - Salesforce'
+      LIMIT 1
+    ]
+    .Id;
+    update actor;
+    PermissionSet access = new PermissionSet(
+      Name = 'RefundWorkerTestAccess',
+      Label = 'Refund Worker Test Access'
+    );
+    // Activity permission fields vary with the target org's enabled features.
+    Map<String, Schema.SObjectField> permissionFields = Schema.SObjectType.PermissionSet.fields.getMap();
+    for (
+      String permission : new List<String>{
+        'PermissionsActivitiesAccess',
+        'PermissionsCreateTask',
+        'PermissionsEditTask'
+      }
+    ) {
+      if (permissionFields.containsKey(permission)) {
+        access.put(permission, true);
+      }
+    }
+    insert access;
+    insert new List<ObjectPermissions>{
+      new ObjectPermissions(
+        ParentId = access.Id,
+        SobjectType = 'Account',
+        PermissionsRead = true
+      ),
+      new ObjectPermissions(
+        ParentId = access.Id,
+        SobjectType = 'Order',
+        PermissionsRead = true
+      )
+    };
+    insert new List<FieldPermissions>{
+      new FieldPermissions(
+        ParentId = access.Id,
+        SobjectType = 'Task',
+        Field = 'Task.WhatId',
+        PermissionsRead = true,
+        PermissionsEdit = true
+      ),
+      new FieldPermissions(
+        ParentId = access.Id,
+        SobjectType = 'Task',
+        Field = 'Task.Description',
+        PermissionsRead = true,
+        PermissionsEdit = true
+      )
+    };
+    insert new PermissionSetAssignment(
+      AssigneeId = actor.Id,
+      PermissionSetId = access.Id
+    );
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      List<Return_Request__c> fixtureRequests = requests(
+        1,
+        SmartReturnConstants.STATUS_INSPECTING,
+        true
+      );
+      insert as system new Return_Request__Share(
+        ParentId = fixtureRequests[0].Id,
+        UserOrGroupId = actor.Id,
+        AccessLevel = 'Edit',
+        RowCause = Schema.Return_Request__Share.RowCause.SmartReturn_Access__c
+      );
+    }
+  }
+
   public static User processor() {
     return [
       SELECT Id

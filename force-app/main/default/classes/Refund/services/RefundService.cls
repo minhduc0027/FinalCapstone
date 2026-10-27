@@ -93,7 +93,7 @@ public with sharing class RefundService {
     Savepoint checkpoint = Database.setSavepoint();
     try {
       if (!inserts.isEmpty()) {
-        insert as system inserts;
+        insert as user inserts;
         for (Refund_Transaction__c row : inserts) {
           result.put(row.Return_Request__c, row.Id);
         }
@@ -211,7 +211,7 @@ public with sharing class RefundService {
         );
       }
       if (!updates.isEmpty()) {
-        update as system updates;
+        update as user updates;
       }
     } catch (Exception e) {
       Database.rollback(checkpoint);
@@ -295,7 +295,7 @@ public with sharing class RefundService {
       row.Worker_Job_Id__c = null;
       row.Attempt_Count__c--;
       row.Next_Retry_At__c = System.now().addMinutes(policy().intervalMinutes);
-      update as system row;
+      update as user row;
     }
   }
 
@@ -359,7 +359,7 @@ public with sharing class RefundService {
           );
         }
       }
-      update as system row;
+      update as user row;
     } catch (Exception e) {
       Database.rollback(checkpoint);
       IntegrationLogService.recordOutbound(
@@ -459,7 +459,7 @@ public with sharing class RefundService {
           ? SmartReturnConstants.STATUS_COMPLETED
           : SmartReturnConstants.STATUS_REFUND_FAILED
       );
-      update as system row;
+      update as user row;
       return 200;
     } catch (Exception e) {
       Database.rollback(checkpoint);
@@ -527,7 +527,7 @@ public with sharing class RefundService {
       for (Task task : tasks) {
         task.OwnerId = owner;
       }
-      insert as system tasks;
+      insert as user tasks;
       for (Integer i = 0; i < tasks.size(); i++) {
         taskRefunds[i].Accounting_Task_Id__c = tasks[i].Id;
       }
