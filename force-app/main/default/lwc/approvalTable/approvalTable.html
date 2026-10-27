@@ -1,0 +1,22 @@
+<template>
+  <template if:true={hasRows}>
+    <lightning-datatable
+      key-field="requestId"
+      data={rows}
+      columns={columns}
+      show-row-number-column
+      onrowselection={handleRowSelection}
+      onrowaction={handleRowAction}
+    ></lightning-datatable>
+  </template>
+  <template if:false={hasRows}>
+    <div class="empty-state">
+      <lightning-icon
+        icon-name="utility:check"
+        size="small"
+        alternative-text="No pending approvals"
+      ></lightning-icon>
+      <p>No approval requests match the current filters.</p>
+    </div>
+  </template>
+</template>
