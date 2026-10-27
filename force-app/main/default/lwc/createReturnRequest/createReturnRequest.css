@@ -1,0 +1,164 @@
+:host {
+  display: block;
+}
+
+.content {
+  padding: 0 1rem 1rem;
+}
+
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  margin-bottom: 0.75rem;
+  color: #181818;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.field-block {
+  display: flex;
+  flex-direction: column;
+  padding-top: 0.35rem;
+  padding-bottom: 0.75rem;
+}
+
+.field-label {
+  margin-bottom: 0.2rem;
+  color: #5c5c5c;
+  font-size: 0.75rem;
+}
+
+.field-value {
+  color: #181818;
+  font-weight: 600;
+}
+
+.error-banner {
+  margin-bottom: 1rem;
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.product-table {
+  min-width: 1120px;
+}
+
+.product-table th {
+  white-space: nowrap;
+  background: #f3f3f3;
+}
+
+.product-table td {
+  vertical-align: top;
+}
+
+.product-row_disabled {
+  opacity: 0.58;
+  background: #f7f7f7;
+}
+
+.product-name {
+  min-width: 150px;
+  color: #181818;
+  font-weight: 600;
+}
+
+.product-meta {
+  margin-top: 0.25rem;
+  color: #706e6b;
+  font-size: 0.75rem;
+}
+
+.input-cell {
+  min-width: 90px;
+}
+
+.combobox-cell {
+  min-width: 170px;
+}
+
+.refund-amount {
+  min-width: 105px;
+  color: #181818;
+  font-weight: 700;
+}
+
+.validation {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.validation_error {
+  color: #ba0517;
+}
+
+.summary {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 0.25rem;
+  background: #f3f3f3;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+}
+
+.summary-label {
+  margin-bottom: 0.25rem;
+  color: #5c5c5c;
+  font-size: 0.75rem;
+}
+
+.summary-value {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.total-refund {
+  color: #2e844a;
+  font-size: 1.15rem;
+}
+
+.approval-badge {
+  align-self: flex-start;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  color: #014486;
+  background: #eaf5fe;
+  font-weight: 700;
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.empty-state {
+  padding: 2rem;
+  color: #706e6b;
+  text-align: center;
+  background: #f7f7f7;
+}
+
+@media only screen and (max-width: 768px) {
+  .summary {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .summary-item {
+    min-width: 0;
+  }
+}

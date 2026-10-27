@@ -1,0 +1,106 @@
+{
+  "type": "sfdc_cms__view",
+  "title": "Đăng nhập",
+  "contentBody": {
+    "component": {
+      "children": [
+        {
+          "children": [
+            {
+              "attributes": {
+                "backgroundImageConfig": "",
+                "backgroundImageOverlay": "rgba(0,0,0,0)",
+                "componentSpacerSize": "",
+                "layoutDirectionDesktop": "row",
+                "layoutDirectionMobile": "column",
+                "layoutDirectionTablet": "column",
+                "maxContentWidth": "",
+                "sectionColumnGutterWidth": "",
+                "sectionConfig": "{\"UUID\":\"131201a8-3b52-43cf-9c89-737b7cc3b24d\",\"columns\":[{\"UUID\":\"c3e0c005-8047-41d1-9ed0-f2d26a52851f\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+                "sectionMinHeight": "",
+                "sectionVerticalAlign": "flex-start"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "attributes": {
+                        "alignment": "left",
+                        "imageInfo": "",
+                        "imageInfoMobile": "",
+                        "logoWidth": 250
+                      },
+                      "definition": "dxp_content_layout:siteLogo",
+                      "id": "34d98844-2cbf-4ea8-8600-8d1d018cf0c0",
+                      "type": "component"
+                    },
+                    {
+                      "attributes": {
+                        "forgotPasswordLabel": "Quên mật khẩu?",
+                        "forgotPasswordUrl": "/ForgotPassword",
+                        "loginButtonLabel": "Đăng nhập",
+                        "passwordLabel": "Mật khẩu",
+                        "selfRegisterLabel": "",
+                        "selfRegisterUrl": "/SelfRegister",
+                        "startUrl": "",
+                        "usernameLabel": "Tên đăng nhập"
+                      },
+                      "definition": "community_login:loginForm",
+                      "id": "216688d7-4a18-47cb-9f95-95aef36db1b0",
+                      "type": "component"
+                    },
+                    {
+                      "attributes": {
+                        "employeeLoginLinkLabel": ""
+                      },
+                      "definition": "community_login:employeeLoginLink",
+                      "id": "21f31c4b-9490-4208-af26-81dc53388639",
+                      "type": "component"
+                    }
+                  ],
+                  "id": "c3e0c005-8047-41d1-9ed0-f2d26a52851f",
+                  "name": "col1",
+                  "title": "Column 1",
+                  "type": "region"
+                }
+              ],
+              "definition": "community_layout:section",
+              "id": "131201a8-3b52-43cf-9c89-737b7cc3b24d",
+              "type": "component"
+            }
+          ],
+          "id": "e366e0fa-be3f-495d-be5f-9b093ebd9f18",
+          "name": "content",
+          "title": "Content",
+          "type": "region"
+        },
+        {
+          "children": [
+            {
+              "attributes": {
+                "customHeadTags": "",
+                "description": "",
+                "pageTitle": "Đăng nhập",
+                "recordId": "{!recordId}"
+              },
+              "definition": "community_builder:seoAssistant",
+              "id": "408e7d14-7ff3-4135-a4f6-6a60cbd9c725",
+              "type": "component"
+            }
+          ],
+          "id": "57821b9b-2351-47d5-ae9d-61f77cca3ee0",
+          "name": "sfdcHiddenRegion",
+          "title": "sfdcHiddenRegion",
+          "type": "region"
+        }
+      ],
+      "definition": "community_layout:sldsFlexibleLayout",
+      "id": "9681ac0d-6459-4b29-8605-9e343f19a720",
+      "type": "component"
+    },
+    "dataProviders": [],
+    "themeLayoutType": "Inner",
+    "viewType": "login-main"
+  },
+  "urlName": "login"
+}

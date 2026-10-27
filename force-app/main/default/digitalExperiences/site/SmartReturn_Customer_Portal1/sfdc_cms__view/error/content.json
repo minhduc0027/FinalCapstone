@@ -1,0 +1,81 @@
+{
+  "type": "sfdc_cms__view",
+  "title": "Không thể mở trang",
+  "contentBody": {
+    "component": {
+      "children": [
+        {
+          "children": [
+            {
+              "attributes": {
+                "backgroundImageConfig": "",
+                "backgroundImageOverlay": "rgba(0,0,0,0)",
+                "componentSpacerSize": "",
+                "layoutDirectionDesktop": "row",
+                "layoutDirectionMobile": "column",
+                "layoutDirectionTablet": "column",
+                "maxContentWidth": "",
+                "sectionColumnGutterWidth": "",
+                "sectionConfig": "{\"UUID\":\"88907668-2b77-47d1-99f7-391cb08b993b\",\"columns\":[{\"UUID\":\"be9563d4-6a5f-404f-96b7-2570b0eeca57\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":null}]}",
+                "sectionMinHeight": "",
+                "sectionVerticalAlign": "flex-start"
+              },
+              "children": [
+                {
+                  "children": [
+                    {
+                      "attributes": {
+                        "imageInfos": "",
+                        "richTextValue": "<h1 style=\"text-align: center;\">Invalid Page</h1>"
+                      },
+                      "definition": "community_builder:richTextEditor",
+                      "id": "0ebb8897-f845-455f-8015-76cf252cab4a",
+                      "type": "component"
+                    }
+                  ],
+                  "id": "be9563d4-6a5f-404f-96b7-2570b0eeca57",
+                  "name": "col1",
+                  "title": "Column 1",
+                  "type": "region"
+                }
+              ],
+              "definition": "community_layout:section",
+              "id": "88907668-2b77-47d1-99f7-391cb08b993b",
+              "type": "component"
+            }
+          ],
+          "id": "67f43416-7be3-4ecf-a7fe-03de2ff4713f",
+          "name": "content",
+          "title": "Content",
+          "type": "region"
+        },
+        {
+          "children": [
+            {
+              "attributes": {
+                "customHeadTags": "",
+                "description": "",
+                "pageTitle": "Không thể mở trang",
+                "recordId": "{!recordId}"
+              },
+              "definition": "community_builder:seoAssistant",
+              "id": "10a36f2f-3800-46de-abf4-0b05280da92f",
+              "type": "component"
+            }
+          ],
+          "id": "c525e151-1802-4d37-a37d-a45166250e2b",
+          "name": "sfdcHiddenRegion",
+          "title": "sfdcHiddenRegion",
+          "type": "region"
+        }
+      ],
+      "definition": "community_layout:sldsFlexibleLayout",
+      "id": "54e4e54c-9bd0-439b-82f9-f7ba2a0c90a3",
+      "type": "component"
+    },
+    "dataProviders": [],
+    "themeLayoutType": "Inner",
+    "viewType": "error"
+  },
+  "urlName": "error"
+}
