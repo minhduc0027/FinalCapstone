@@ -65,15 +65,46 @@ export default class InspectionLines extends LightningElement {
     this.load();
   }
 
-  get eligibilityOptions() {
+  get eligibilityCodeOptions() {
     return [
+      { label: "Eligible", value: "ELIGIBLE" },
       {
-        label: "Eligible",
-        value: "true"
+        label: "Return Period Expired",
+        value: "RETURN_PERIOD_EXPIRED"
       },
       {
-        label: "Not eligible",
-        value: "false"
+        label: "Category Not Returnable",
+        value: "CATEGORY_NOT_RETURNABLE"
+      },
+      {
+        label: "Quantity Exceeded",
+        value: "QUANTITY_EXCEEDED"
+      },
+      {
+        label: "Refund Rate Zero",
+        value: "REFUND_RATE_ZERO"
+      },
+      {
+        label: "Missing Policy",
+        value: "MISSING_POLICY"
+      },
+      {
+        label: "Missing Delivery Date",
+        value: "MISSING_DELIVERY_DATE"
+      }
+    ];
+  }
+
+  get inspectionResultOptions() {
+    return [
+      { label: "Not inspected", value: "NOT_INSPECTED" },
+      {
+        label: "Passed",
+        value: "PASSED"
+      },
+      {
+        label: "Failed",
+        value: "FAILED"
       }
     ];
   }
