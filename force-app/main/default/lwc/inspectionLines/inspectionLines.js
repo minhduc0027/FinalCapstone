@@ -8,7 +8,7 @@ import {
   unsubscribe,
   APPLICATION_SCOPE
 } from "lightning/messageService";
-import RETURN_REQUEST_SELECTED from "@salesforce/messageChannel/ReturnRequestSelected_c";
+import RETURN_REQUEST_SELECTED from "@salesforce/messageChannel/ReturnRequestSelected";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
 export default class InspectionLines extends LightningElement {

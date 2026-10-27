@@ -6,7 +6,7 @@ import {
   unsubscribe,
   APPLICATION_SCOPE
 } from "lightning/messageService";
-import RETURN_REQUEST_SELECTED from "@salesforce/messageChannel/ReturnRequestSelected_c";
+import RETURN_REQUEST_SELECTED from "@salesforce/messageChannel/ReturnRequestSelected";
 export default class ReturnRequestStatusTimeline extends LightningElement {
   recordId;
   timelineItems = [];
