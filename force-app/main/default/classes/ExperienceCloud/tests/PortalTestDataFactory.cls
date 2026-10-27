@@ -85,7 +85,14 @@ public class PortalTestDataFactory {
             Order__c = orders[customerIndex].Id,
             Store__c = store.Id,
             Source_Channel__c = SmartReturnConstants.SOURCE_APP,
-            Status__c = SmartReturnConstants.STATUS_NEW,
+            Status__c = (i == 0 ||
+              i == 3)
+              ? SmartReturnConstants.STATUS_REJECTED
+              : SmartReturnConstants.STATUS_NEW,
+            Rejection_Reason__c = (i == 0 ||
+              i == 3)
+              ? 'Sản phẩm đã quá thời hạn đổi trả.'
+              : null,
             Estimated_Refund_Amount__c = 2490000,
             Internal_Notes__c = 'PRIVATE STAFF NOTE'
           )

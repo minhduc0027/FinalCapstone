@@ -63,7 +63,9 @@ private class ReturnPortalServiceTest {
     String foreignNumber = [
       SELECT Name
       FROM Return_Request__c
-      WHERE Customer__r.Name = 'Portal Customer B'
+      WHERE
+        Customer__r.Name = 'Portal Customer B'
+        AND Status__c = :SmartReturnConstants.STATUS_REJECTED
       LIMIT 1
     ]
     .Name;
@@ -121,6 +123,64 @@ private class ReturnPortalServiceTest {
       Assert.isFalse(
         JSON.serialize(detail).contains('PRIVATE STAFF NOTE'),
         'Internal notes must not enter the DTO.'
+      );
+    }
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void ownRejectedRequestIncludesReadOnlyReason() {
+    User customer = [SELECT Id FROM User WHERE LastName = 'Portal A' LIMIT 1];
+    Return_Request__c request = [
+      SELECT Name, Rejection_Reason__c
+      FROM Return_Request__c
+      WHERE
+        Customer__r.Name = 'Portal Customer A'
+        AND Status__c = :SmartReturnConstants.STATUS_REJECTED
+      LIMIT 1
+    ];
+    Test.startTest();
+    System.runAs(customer) {
+      PortalReturn detail = ReturnPortalService.getRequest(request.Name);
+      Assert.areEqual(
+        request.Rejection_Reason__c,
+        detail.rejectionReason,
+        'Customers must understand why their request was rejected.'
+      );
+      Assert.isTrue(
+        Return_Request__c.Rejection_Reason__c.getDescribe().isAccessible(),
+        'The customer permission set must grant reason read access.'
+      );
+      Assert.isFalse(
+        Return_Request__c.Rejection_Reason__c.getDescribe().isUpdateable(),
+        'Customers must not edit the rejection reason.'
+      );
+      Assert.isFalse(
+        JSON.serialize(detail).contains('PRIVATE STAFF NOTE'),
+        'Publishing a reason must not publish internal notes.'
+      );
+    }
+    Test.stopTest();
+  }
+
+  @IsTest
+  static void nonRejectedRequestDoesNotExposeStaleReason() {
+    User customer = [SELECT Id FROM User WHERE LastName = 'Portal A' LIMIT 1];
+    Return_Request__c request = [
+      SELECT Id, Name
+      FROM Return_Request__c
+      WHERE
+        Customer__r.Name = 'Portal Customer A'
+        AND Status__c = :SmartReturnConstants.STATUS_NEW
+      LIMIT 1
+    ];
+    request.Rejection_Reason__c = 'Stale reason';
+    update as system request;
+    Test.startTest();
+    System.runAs(customer) {
+      Assert.isNull(
+        ReturnPortalService.getRequest(request.Name).rejectionReason,
+        'A stale reason must not appear before the request is rejected.'
       );
     }
     Test.stopTest();

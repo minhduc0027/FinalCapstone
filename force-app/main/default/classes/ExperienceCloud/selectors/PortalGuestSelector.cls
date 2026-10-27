@@ -6,7 +6,13 @@
 public without sharing class PortalGuestSelector {
   public static List<Return_Request__c> requestByNumber(String requestNumber) {
     return [
-      SELECT Id, Name, Status__c, CreatedDate, Customer__r.Phone
+      SELECT
+        Id,
+        Name,
+        Status__c,
+        CreatedDate,
+        Customer__r.Phone,
+        Rejection_Reason__c
       FROM Return_Request__c
       WHERE Name = :requestNumber
       WITH SYSTEM_MODE

@@ -20,6 +20,13 @@ export default class ReturnRequestSummary extends LightningElement {
   @api showProducts = false;
   @api showAmount = false;
 
+  get hasRejectionReason() {
+    return (
+      this.request?.status === "REJECTED" &&
+      Boolean(this.request?.rejectionReason?.trim())
+    );
+  }
+
   get statusText() {
     return statusLabel(this.request?.status);
   }

@@ -53,6 +53,18 @@
           </div>
         </template>
       </dl>
+      <template lwc:if={hasRejectionReason}>
+        <section
+          class="slds-var-m-top_medium"
+          aria-label="Lý do từ chối"
+          data-section="rejection-reason"
+        >
+          <h3 class="slds-text-heading_small">Lý do từ chối</h3>
+          <lightning-formatted-text
+            value={request.rejectionReason}
+          ></lightning-formatted-text>
+        </section>
+      </template>
       <section class="slds-var-m-top_x-large" aria-label="Lịch sử trạng thái">
         <h3 class="slds-text-heading_small">Lịch sử trạng thái</h3>
         <ol class="slds-var-m-top_small">

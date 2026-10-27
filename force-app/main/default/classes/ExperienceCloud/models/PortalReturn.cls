@@ -10,6 +10,8 @@ public class PortalReturn {
   @AuraEnabled
   public String amountKind;
   @AuraEnabled
+  public String rejectionReason;
+  @AuraEnabled
   public List<PortalReturnLine> lines = new List<PortalReturnLine>();
   @AuraEnabled
   public List<PortalStatusChange> history = new List<PortalStatusChange>();
