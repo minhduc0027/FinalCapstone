@@ -250,6 +250,8 @@ public with sharing class InspectionService {
 
     update linesToUpdate;
 
+    totalActualRefund = applyRefundRounding(totalActualRefund);
+
     String previousApprovalLevel = requestRecord.Required_Approval_Level__c;
 
     String requiredApprovalLevel = determineRequiredApprovalLevel(
@@ -353,6 +355,22 @@ public with sharing class InspectionService {
   //===================================================
   // Actual refund calculation
   //===================================================
+  private static Decimal applyRefundRounding(Decimal amount) {
+    if (amount == null || amount <= 0) {
+      return 0;
+    }
+
+    Decimal rounding = SmartReturnConfigService.getRefundRounding();
+
+    if (rounding == null || rounding <= 0) {
+      throw new InspectionException('Refund Rounding phải lớn hơn 0.');
+    }
+
+    Decimal units = (amount / rounding).setScale(0, RoundingMode.FLOOR);
+
+    return units * rounding;
+  }
+
   public static Decimal calculateActualRefundAmount(
     Return_Request_Line__c requestLine
   ) {
@@ -395,7 +413,7 @@ public with sharing class InspectionService {
       requestLine.Order_Item__r.UnitPrice * refundableQuantity;
     Decimal actualRefund = baseAmount * refundRate / 100;
 
-    return actualRefund.setScale(0);
+    return actualRefund;
   }
 
   //===================================================

@@ -128,29 +128,44 @@ export default class InspectionLines extends LightningElement {
         return;
       }
 
-      this.rows = (data || []).map((line) => ({
-        id: line.Id,
+      this.rows = (data || []).map((line) => {
+        const requestedQuantity = line.Requested_Quantity__c;
 
-        productName: line.Product__r?.Name || "",
+        const purchasedQuantity = line.Purchased_Quantity__c;
 
-        requestedQuantity: line.Requested_Quantity__c,
+        const unitPrice =
+          line.Order_Item__r?.UnitPrice ?? line.Unit_Price_Paid__c ?? null;
 
-        purchasedQuantity: line.Purchased_Quantity__c,
+        return {
+          id: line.Id,
 
-        unitPrice: line.Order_Item__r?.UnitPrice ?? line.Unit_Price_Paid__c,
+          productName: line.Product__r?.Name || "Product not available",
 
-        returnReason: line.Return_Reason__c || "",
+          requestedQuantity,
 
-        reportedCondition: line.Reported_Condition__c || "",
+          requestedQuantityDisplay: requestedQuantity ?? "—",
 
-        inspectionResult: this.normalizeInspectionResult(
-          line.Inspection_Result__c
-        ),
+          purchasedQuantity,
 
-        eligibilityCode: line.Eligibility_Code__c || "",
+          purchasedQuantityDisplay: purchasedQuantity ?? "—",
 
-        eligibilityReason: line.Eligibility_Reason__c || ""
-      }));
+          unitPrice,
+
+          hasUnitPrice: unitPrice !== null && unitPrice !== undefined,
+
+          returnReason: line.Return_Reason__c || "—",
+
+          reportedCondition: line.Reported_Condition__c || "—",
+
+          inspectionResult: this.normalizeInspectionResult(
+            line.Inspection_Result__c
+          ),
+
+          eligibilityCode: line.Eligibility_Code__c || "",
+
+          eligibilityReason: line.Eligibility_Reason__c || ""
+        };
+      });
     } catch (error) {
       if (selectedRequestId !== this.recordId) {
         return;
