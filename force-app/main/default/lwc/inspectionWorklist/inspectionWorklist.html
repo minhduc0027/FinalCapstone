@@ -1,56 +1,72 @@
 <template>
-  <section>
+  <section class="worklist">
     <div class="header">
       <div>
         <h2 class="slds-text-heading_small">Waiting for Inspection</h2>
+
         <p class="slds-text-body_small slds-text-color_weak">
           Inspecting requests not yet completed
         </p>
       </div>
+
       <lightning-button-icon
         icon-name="utility:refresh"
         alternative-text="Refresh"
+        title="Refresh"
         onclick={handleRefresh}
-      ></lightning-button-icon>
+      >
+      </lightning-button-icon>
     </div>
-    <c-inspection-worklist-filters
-      onfilterchange={handleFilterChange}
-    ></c-inspection-worklist-filters>
+
+    <c-inspection-worklist-filters onfilterchange={handleFilterChange}>
+    </c-inspection-worklist-filters>
+
     <template if:true={hasRows}>
       <div class="table-wrap slds-m-top_small">
-        <lightning-datatable
-          key-field="requestId"
-          data={rows}
-          columns={columns}
-          max-row-selection="1"
-          selected-rows={selectedRows}
-          onrowselection={handleRowSelection}
-        ></lightning-datatable>
+        <div class="table-scroll">
+          <lightning-datatable
+            key-field="requestId"
+            data={rows}
+            columns={columns}
+            max-row-selection="1"
+            selected-rows={selectedRows}
+            onrowselection={handleRowSelection}
+          >
+          </lightning-datatable>
+        </div>
       </div>
     </template>
-    <template if:false={hasRows}
-      ><div class="empty slds-m-top_small">
+
+    <template if:false={hasRows}>
+      <div class="empty slds-m-top_small">
         No requests are waiting for inspection.
-      </div></template
-    >
+      </div>
+    </template>
+
     <div class="paging slds-m-top_small">
       <lightning-button
         label="Previous"
         disabled={disablePrevious}
         onclick={handlePrevious}
-      ></lightning-button
-      ><span>{pageLabel}</span
-      ><lightning-button
+      >
+      </lightning-button>
+
+      <span>{pageLabel}</span>
+
+      <lightning-button
         label="Next"
         disabled={disableNext}
         onclick={handleNext}
-      ></lightning-button>
+      >
+      </lightning-button>
     </div>
-    <template if:true={isLoading}
-      ><lightning-spinner
+
+    <template if:true={isLoading}>
+      <lightning-spinner
         alternative-text="Loading inspection worklist"
         size="small"
-      ></lightning-spinner
-    ></template>
+      >
+      </lightning-spinner>
+    </template>
   </section>
 </template>
