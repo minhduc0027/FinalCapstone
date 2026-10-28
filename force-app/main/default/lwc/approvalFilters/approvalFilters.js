@@ -13,6 +13,10 @@ const LEVEL_OPTIONS = [
   { label: "Store Manager (CHT)", value: "CHT" },
   { label: "Regional Manager (QLV)", value: "QLV" }
 ];
+const SORT_DIRECTION = [
+  { label: "Ascending", value: "ASC" },
+  { label: "Descending", value: "DESC" }
+];
 
 export default class ApprovalFilters extends LightningElement {
   approvalLevel = "";
@@ -20,7 +24,7 @@ export default class ApprovalFilters extends LightningElement {
   fromDate = null;
   toDate = null;
   sortBy = "Approval_Due_At__c";
-  sortDescending = false;
+  sortDirection = "ASC";
   pageSize = "20";
 
   get sortOptions() {
@@ -28,6 +32,9 @@ export default class ApprovalFilters extends LightningElement {
   }
   get levelOptions() {
     return LEVEL_OPTIONS;
+  }
+  get sortDirections() {
+    return SORT_DIRECTION;
   }
   get pageSizeOptions() {
     return [
@@ -67,8 +74,7 @@ export default class ApprovalFilters extends LightningElement {
           fromDate: this.fromDate,
           toDate: this.toDate,
           sortBy: this.sortBy,
-          sortDescending:
-            this.sortDescending === true || this.sortDescending === "true",
+          sortDescending: this.sortDirection === "DESC",
           pageSize: Number(this.pageSize)
         }
       })
@@ -81,7 +87,7 @@ export default class ApprovalFilters extends LightningElement {
     this.fromDate = null;
     this.toDate = null;
     this.sortBy = "Approval_Due_At__c";
-    this.sortDescending = false;
+    this.sortDirection = "ASC";
     this.pageSize = "20";
     this.handleApply();
   }

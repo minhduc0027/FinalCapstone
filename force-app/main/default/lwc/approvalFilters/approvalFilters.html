@@ -36,13 +36,20 @@
         data-field="sortBy"
         onchange={handleFieldChange}
       ></lightning-combobox>
-      <lightning-input
+      <lightning-combobox
+        label="Sort direction"
+        value={sortDirection}
+        options={sortDirections}
+        data-field="sortDirection"
+        onchange={handleFieldChange}
+      ></lightning-combobox>
+      <!-- <lightning-input
         type="toggle"
         label="Descending"
         checked={sortDescending}
         data-field="sortDescending"
         onchange={handleFieldChange}
-      ></lightning-input>
+      ></lightning-input> -->
       <lightning-combobox
         label="Rows"
         value={pageSize}
