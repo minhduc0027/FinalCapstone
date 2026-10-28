@@ -41,9 +41,14 @@ private class RefundCallbackTest {
         'Preserve provider event time.'
       );
       Assert.areEqual(
-        1,
+        SmartReturnConfigService.isFeatureEnabled('Notify_POS_App') ? 1 : 0,
         RefundService.eventsPublished,
         'Publish once through PublishAfterCommit event.'
+      );
+      Assert.areEqual(
+        1,
+        RefundService.notificationEventsQueued,
+        'Queue the manager notification after commit.'
       );
     }
   }
@@ -66,9 +71,14 @@ private class RefundCallbackTest {
         'Do not update completed payment again.'
       );
       Assert.areEqual(
-        1,
+        SmartReturnConfigService.isFeatureEnabled('Notify_POS_App') ? 1 : 0,
         RefundService.eventsPublished,
         'No duplicate notification.'
+      );
+      Assert.areEqual(
+        1,
+        RefundService.notificationEventsQueued,
+        'Duplicate callbacks must not queue another manager notification.'
       );
       Assert.areEqual(
         2,
@@ -101,6 +111,11 @@ private class RefundCallbackTest {
         'Fail canonical request.'
       );
       Assert.areEqual(1, [SELECT COUNT() FROM Task], 'Create accounting work.');
+      Assert.areEqual(
+        1,
+        RefundService.notificationEventsQueued,
+        'Final failure notifies the store manager.'
+      );
     }
   }
   @IsTest
@@ -125,7 +140,7 @@ private class RefundCallbackTest {
         'Never reverse confirmed success.'
       );
       Assert.areEqual(
-        1,
+        SmartReturnConfigService.isFeatureEnabled('Notify_POS_App') ? 1 : 0,
         RefundService.eventsPublished,
         'Do not publish stale failure.'
       );
@@ -231,9 +246,14 @@ private class RefundCallbackTest {
         'Accounting completes return.'
       );
       Assert.areEqual(
-        2,
+        SmartReturnConfigService.isFeatureEnabled('Notify_POS_App') ? 2 : 0,
         RefundService.eventsPublished,
         'One failure event plus one manual completion event; no duplicate action.'
+      );
+      Assert.areEqual(
+        2,
+        RefundService.notificationEventsQueued,
+        'Notify failure and manual completion once each.'
       );
       Assert.areEqual(
         0,
@@ -400,6 +420,11 @@ private class RefundCallbackTest {
         0,
         RefundService.eventsPublished,
         'Never notify for rolled-back completion.'
+      );
+      Assert.areEqual(
+        0,
+        RefundService.notificationEventsQueued,
+        'Do not queue a manager notification for an unapplied result.'
       );
       Assert.areEqual(
         1,
