@@ -49,7 +49,7 @@ export default class ReturnRequestLookup extends LightningElement {
         `${siteRoot}/services/apexrest/smartreturn/v1/portal/lookup`,
         {
           method: "POST",
-          credentials: "same-origin",
+          credentials: "omit",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             requestNumber: proof[1],
