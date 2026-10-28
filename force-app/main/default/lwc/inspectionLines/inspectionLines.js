@@ -199,7 +199,7 @@ export default class InspectionLines extends LightningElement {
 
       return {
         ...row,
-        value
+        [field]: value
       };
     });
   }
