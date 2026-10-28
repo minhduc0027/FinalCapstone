@@ -329,11 +329,12 @@ public with sharing class InspectionService {
     // Ready for PayHub
     //===================================================
     if (SmartReturnConfigService.isFeatureEnabled('Send_PayHub')) {
-      StateTransitionService.transition(
-        requestId,
-        SmartReturnConstants.STATUS_REFUND_PROCESSING,
-        null
-      );
+      // StateTransitionService.transition(
+      //   requestId,
+      //   SmartReturnConstants.STATUS_REFUND_PROCESSING,
+      //   null
+      // );
+      RefundService.startRefund(requestId);
 
       logInspection(
         linesToUpdate,
