@@ -43,7 +43,7 @@ public with sharing class InspectionService {
       'Customer__c',
       'Customer__r.Name',
       'Store__c',
-      'Store__r.Store_Code__c',
+      'Store__r.Name',
       'Estimated_Refund_Amount__c',
       'Inspection_Completed_At__c',
       'CreatedDate'

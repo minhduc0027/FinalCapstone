@@ -1,3 +1,14 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.worklist {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
 .header,
 .paging {
   display: flex;
@@ -5,17 +16,87 @@
   justify-content: space-between;
   gap: 0.75rem;
 }
+
 .table-wrap {
-  overflow: auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
+
+/*
+ * Inspection Worklist:
+ * - horizontal scroll
+ * - vertical scroll
+ */
+.table-scroll {
+  width: 100%;
+  max-width: 100%;
+  max-height: 28rem;
+
+  overflow-x: auto;
+  overflow-y: auto;
+
+  border: 1px solid #dddbda;
+  border-radius: 0.25rem;
+
+  box-sizing: border-box;
+}
+
+/*
+ * Quan trọng:
+ * Không ép datatable thu nhỏ vào panel 40%.
+ * Khi không đủ chỗ sẽ xuất hiện horizontal scrollbar.
+ */
+.table-scroll lightning-datatable {
+  display: block;
+  min-width: 48rem;
+}
+
 .paging {
   justify-content: center;
+  margin-top: 0.75rem;
 }
+
 .empty {
   text-align: center;
+
   padding: 2rem;
+
   background: #fafaf9;
+
   border: 1px dashed #c9c7c5;
   border-radius: 0.5rem;
+
   color: #706e6b;
+}
+
+/*
+ * Scrollbar styling.
+ */
+.table-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+  background: #f3f3f3;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: #b0adab;
+  border-radius: 4px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #706e6b;
+}
+
+@media (max-width: 48rem) {
+  .table-scroll {
+    max-height: 24rem;
+  }
+
+  .table-scroll lightning-datatable {
+    min-width: 44rem;
+  }
 }

@@ -37,7 +37,7 @@ public with sharing class InspectionRow {
     }
 
     if (recordValue.Store__r != null) {
-      row.storeName = recordValue.Store__r.Store_Code__c;
+      row.storeName = recordValue.Store__r.Name;
     }
 
     return row;
