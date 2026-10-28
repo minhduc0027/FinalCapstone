@@ -13,6 +13,11 @@ import {
 import RETURN_REQUEST_SELECTED from "@salesforce/messageChannel/ReturnRequestSelected__c";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
+const RESULT_PASSED = "PASSED";
+const RESULT_FAILED = "FAILED";
+//const RESULT_NOT_INSPECTED = "NOT_INSPECTED";
+const CODE_ELIGIBLE = "ELIGIBLE";
+
 export default class InspectionLines extends LightningElement {
   recordId;
   rows = [];
@@ -22,52 +27,55 @@ export default class InspectionLines extends LightningElement {
   @wire(MessageContext)
   messageContext;
 
-  connectedCallback() {
-    this.subscribeToSelection();
+  renderedCallback() {
+    if (!this.subscription && this.messageContext) {
+      this.subscribeToSelection();
+    }
   }
 
   disconnectedCallback() {
-    this.unsubscribeFromSelection();
+    if (this.subscription) {
+      unsubscribe(this.subscription);
+      this.subscription = null;
+    }
   }
 
   subscribeToSelection() {
-    if (this.subscription || !this.messageContext) {
-      return;
-    }
-
     this.subscription = subscribe(
       this.messageContext,
       RETURN_REQUEST_SELECTED,
-      (message) => this.handleRequestSelection(message),
+      (message) => {
+        if (message?.action === "SELECTED" && message.requestId) {
+          this.recordId = message.requestId;
+          this.rows = [];
+          this.load();
+        }
+      },
       {
         scope: APPLICATION_SCOPE
       }
     );
   }
 
-  unsubscribeFromSelection() {
-    if (!this.subscription) {
-      return;
-    }
-
-    unsubscribe(this.subscription);
-    this.subscription = null;
-  }
-
-  handleRequestSelection(message) {
-    if (message?.action !== "SELECTED" || !message.requestId) {
-      return;
-    }
-
-    this.recordId = message.requestId;
-    this.rows = [];
-
-    this.load();
+  get inspectionResultOptions() {
+    return [
+      {
+        label: "Passed",
+        value: RESULT_PASSED
+      },
+      {
+        label: "Failed",
+        value: RESULT_FAILED
+      }
+    ];
   }
 
   get eligibilityCodeOptions() {
     return [
-      { label: "Eligible", value: "ELIGIBLE" },
+      {
+        label: "Eligible",
+        value: "ELIGIBLE"
+      },
       {
         label: "Return Period Expired",
         value: "RETURN_PERIOD_EXPIRED"
@@ -95,20 +103,6 @@ export default class InspectionLines extends LightningElement {
     ];
   }
 
-  get inspectionResultOptions() {
-    return [
-      { label: "Not inspected", value: "NOT_INSPECTED" },
-      {
-        label: "Passed",
-        value: "PASSED"
-      },
-      {
-        label: "Failed",
-        value: "FAILED"
-      }
-    ];
-  }
-
   get hasSelection() {
     return Boolean(this.recordId);
   }
@@ -117,21 +111,12 @@ export default class InspectionLines extends LightningElement {
     return this.rows.length > 0;
   }
 
-  get showNoRows() {
-    return this.hasSelection && !this.hasRows && !this.isLoading;
-  }
-
-  get showNoSelection() {
-    return !this.hasSelection && !this.isLoading;
-  }
-
   get disableSubmit() {
     return this.isLoading || !this.hasRows;
   }
 
   async load() {
     const selectedRequestId = this.recordId;
-
     this.isLoading = true;
 
     try {
@@ -139,17 +124,33 @@ export default class InspectionLines extends LightningElement {
         returnRequestId: selectedRequestId
       });
 
-      /*
-       * Nếu user chọn request khác khi promise cũ chưa hoàn tất,
-       * không ghi dữ liệu cũ đè lên request mới.
-       */
       if (selectedRequestId !== this.recordId) {
         return;
       }
 
-      this.rows = (data || [])
-        .filter((line) => Boolean(line?.Id))
-        .map((line) => this.mapLine(line));
+      this.rows = (data || []).map((line) => ({
+        id: line.Id,
+
+        productName: line.Product__r?.Name || "",
+
+        requestedQuantity: line.Requested_Quantity__c,
+
+        purchasedQuantity: line.Purchased_Quantity__c,
+
+        unitPrice: line.Order_Item__r?.UnitPrice ?? line.Unit_Price_Paid__c,
+
+        returnReason: line.Return_Reason__c || "",
+
+        reportedCondition: line.Reported_Condition__c || "",
+
+        inspectionResult: this.normalizeInspectionResult(
+          line.Inspection_Result__c
+        ),
+
+        eligibilityCode: line.Eligibility_Code__c || "",
+
+        eligibilityReason: line.Eligibility_Reason__c || ""
+      }));
     } catch (error) {
       if (selectedRequestId !== this.recordId) {
         return;
@@ -159,7 +160,7 @@ export default class InspectionLines extends LightningElement {
 
       this.toast(
         "Unable to load inspection lines",
-        this.getErrorMessage(error),
+        this.message(error),
         "error"
       );
     } finally {
@@ -169,115 +170,116 @@ export default class InspectionLines extends LightningElement {
     }
   }
 
-  mapLine(line) {
-    const requestedQuantity = line.Requested_Quantity__c;
-    const purchasedQuantity = line.Purchased_Quantity__c;
-
-    const unitPrice =
-      line.Order_Item__r?.UnitPrice ?? line.Unit_Price_Paid__c ?? null;
-
-    return {
-      id: line.Id,
-
-      productName: line.Product__r?.Name || "Product not available",
-
-      requestedQuantity,
-      requestedQuantityDisplay: this.displayValue(requestedQuantity),
-
-      purchasedQuantity,
-      purchasedQuantityDisplay: this.displayValue(purchasedQuantity),
-
-      unitPrice,
-      hasUnitPrice: unitPrice !== null && unitPrice !== undefined,
-
-      returnReason: line.Return_Reason__c || "—",
-      reportedCondition: line.Reported_Condition__c || "—",
-
-      isEligible: this.toEligibilityValue(line.Is_Eligible__c),
-
-      eligibilityCode: line.Eligibility_Code__c || "",
-      eligibilityReason: line.Eligibility_Reason__c || ""
-    };
-  }
-
-  toEligibilityValue(value) {
-    if (value === true) {
-      return "true";
+  normalizeInspectionResult(value) {
+    if (value === RESULT_PASSED || value === RESULT_FAILED) {
+      return value;
     }
 
-    if (value === false) {
-      return "false";
-    }
-
+    // NOT_INSPECTED và null đều hiển thị chưa chọn.
     return "";
-  }
-
-  displayValue(value) {
-    return value === null || value === undefined || value === "" ? "—" : value;
   }
 
   handleFieldChange(event) {
     const id = event.target.dataset.id;
     const field = event.target.dataset.field;
+    const value = event.detail?.value ?? event.target.value;
 
     if (!id || !field) {
       return;
     }
-
-    const value = event.detail?.value ?? event.target.value;
 
     this.rows = this.rows.map((row) => {
       if (row.id !== id) {
         return row;
       }
 
+      if (field === "inspectionResult") {
+        return this.applyInspectionResult(row, value);
+      }
+
       return {
         ...row,
-        [field]: value
+        value
       };
     });
   }
 
+  applyInspectionResult(row, result) {
+    if (result === RESULT_PASSED) {
+      return {
+        ...row,
+        inspectionResult: RESULT_PASSED,
+        eligibilityCode: CODE_ELIGIBLE
+      };
+    }
+
+    if (result === RESULT_FAILED) {
+      return {
+        ...row,
+        inspectionResult: RESULT_FAILED,
+        eligibilityCode:
+          row.eligibilityCode === CODE_ELIGIBLE ? "" : row.eligibilityCode
+      };
+    }
+
+    return {
+      ...row,
+      inspectionResult: ""
+    };
+  }
+
   validate() {
-    let isValid = true;
+    let valid = true;
 
-    const inputs = this.template.querySelectorAll(
-      "lightning-input, lightning-combobox, lightning-textarea"
-    );
+    this.template
+      .querySelectorAll(
+        "lightning-input, lightning-combobox, lightning-textarea"
+      )
+      .forEach((component) => {
+        component.reportValidity();
 
-    inputs.forEach((input) => {
-      input.reportValidity();
-
-      if (!input.checkValidity()) {
-        isValid = false;
-      }
-    });
+        if (!component.checkValidity()) {
+          valid = false;
+        }
+      });
 
     for (const row of this.rows) {
-      const hasInspectionResult =
-        row.isEligible === "true" || row.isEligible === "false";
+      const validResult =
+        row.inspectionResult === RESULT_PASSED ||
+        row.inspectionResult === RESULT_FAILED;
 
-      const hasEligibilityCode = Boolean(row.eligibilityCode?.trim());
-      const hasEligibilityReason = Boolean(row.eligibilityReason?.trim());
+      const hasCode = Boolean(row.eligibilityCode?.trim());
+
+      const hasReason = Boolean(row.eligibilityReason?.trim());
+
+      const validPassedCode =
+        row.inspectionResult !== RESULT_PASSED ||
+        row.eligibilityCode === CODE_ELIGIBLE;
+
+      const validFailedCode =
+        row.inspectionResult !== RESULT_FAILED ||
+        row.eligibilityCode !== CODE_ELIGIBLE;
 
       if (
-        !hasInspectionResult ||
-        !hasEligibilityCode ||
-        !hasEligibilityReason
+        !validResult ||
+        !hasCode ||
+        !hasReason ||
+        !validPassedCode ||
+        !validFailedCode
       ) {
-        isValid = false;
+        valid = false;
       }
     }
 
-    if (!isValid) {
+    if (!valid) {
       this.toast(
         "Complete all inspection results",
-        "Inspection result, eligibility code, and eligibility reason are required for every line.",
+        "Every line requires PASSED or FAILED, a compatible eligibility code, and a reason.",
         "error"
       );
     }
 
-    return isValid;
+    return valid;
   }
 
   async handleSubmit() {
@@ -287,16 +289,19 @@ export default class InspectionLines extends LightningElement {
 
     const currentRequestId = this.recordId;
 
+    const requestLines = this.rows.map((row) => ({
+      Id: row.id,
+
+      Inspection_Result__c: row.inspectionResult,
+
+      Eligibility_Code__c: row.eligibilityCode.trim(),
+
+      Eligibility_Reason__c: row.eligibilityReason.trim()
+    }));
+
     this.isLoading = true;
 
     try {
-      const requestLines = this.rows.map((row) => ({
-        Id: row.id,
-        Is_Eligible__c: row.isEligible === "true",
-        Eligibility_Code__c: row.eligibilityCode.trim(),
-        Eligibility_Reason__c: row.eligibilityReason.trim()
-      }));
-
       await submitInspection({
         requestLines
       });
@@ -316,37 +321,14 @@ export default class InspectionLines extends LightningElement {
       this.recordId = null;
       this.rows = [];
     } catch (error) {
-      this.toast(
-        "Inspection submission failed",
-        this.getErrorMessage(error),
-        "error"
-      );
+      this.toast("Inspection submission failed", this.message(error), "error");
     } finally {
       this.isLoading = false;
     }
   }
 
-  getErrorMessage(error) {
-    const pageError = error?.body?.pageErrors?.[0]?.message;
-    const fieldErrors = error?.body?.fieldErrors;
-
-    if (pageError) {
-      return pageError;
-    }
-
-    if (fieldErrors) {
-      const firstFieldError = Object.values(fieldErrors)
-        .flat()
-        .find((item) => item?.message);
-
-      if (firstFieldError?.message) {
-        return firstFieldError.message;
-      }
-    }
-
-    return (
-      error?.body?.message || error?.message || "An unexpected error occurred."
-    );
+  message(error) {
+    return error?.body?.message || error?.message || "Unexpected error";
   }
 
   toast(title, message, variant) {

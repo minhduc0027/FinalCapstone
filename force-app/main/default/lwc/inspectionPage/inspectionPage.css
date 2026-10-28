@@ -1,48 +1,87 @@
-.inspection-layout {
-  display: grid;
-  grid-template-columns: minmax(18rem, 1fr) minmax(32rem, 2fr) minmax(
-      18rem,
-      1fr
-    );
-  gap: 1rem;
-  padding: 1rem;
-}
-.worklist-panel,
-.detail-panel,
-.timeline-panel {
+:host {
+  display: block;
+  width: 100%;
   min-width: 0;
 }
-.worklist-panel {
-  border-right: 1px solid #dddbda;
-  padding-right: 1rem;
+
+.inspection-page {
+  width: 100%;
+  min-width: 0;
+  padding: 1rem;
+  box-sizing: border-box;
 }
+
+/* Timeline full width */
 .timeline-panel {
-  border-left: 1px solid #dddbda;
-  padding-left: 1rem;
+  width: 100%;
+  min-width: 0;
+
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+
+  border-bottom: 1px solid #dddbda;
+
+  box-sizing: border-box;
 }
+
+/* Worklist 40% | Inspection detail 60% */
+.inspection-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(24rem, 2fr)
+    minmax(0, 3fr);
+
+  width: 100%;
+  min-width: 0;
+
+  gap: 1rem;
+}
+
+/* Left */
+.worklist-panel {
+  min-width: 0;
+
+  padding-right: 1rem;
+
+  border-right: 1px solid #dddbda;
+
+  box-sizing: border-box;
+}
+
+/* Right */
+.detail-panel {
+  min-width: 0;
+
+  box-sizing: border-box;
+}
+
+/*
+ * Medium screen:
+ * vẫn giữ hai cột nhưng cho worklist nhỏ hơn một chút.
+ */
 @media (max-width: 80rem) {
   .inspection-layout {
-    grid-template-columns: minmax(18rem, 1fr) minmax(30rem, 2fr);
-  }
-  .timeline-panel {
-    grid-column: 1/-1;
-    border-left: 0;
-    border-top: 1px solid #dddbda;
-    padding-left: 0;
-    padding-top: 1rem;
+    grid-template-columns:
+      minmax(21rem, 2fr)
+      minmax(0, 3fr);
   }
 }
-@media (max-width: 48rem) {
+
+/*
+ * Không đủ chiều ngang nữa thì stack.
+ */
+@media (max-width: 60rem) {
   .inspection-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
+
   .worklist-panel {
-    border-right: 0;
-    border-bottom: 1px solid #dddbda;
     padding-right: 0;
     padding-bottom: 1rem;
-  }
-  .timeline-panel {
-    grid-column: auto;
+    margin-bottom: 1rem;
+
+    border-right: 0;
+    border-bottom: 1px solid #dddbda;
   }
 }
