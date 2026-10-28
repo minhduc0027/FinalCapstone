@@ -1,0 +1,153 @@
+@instanceUrl =
+@accessToken =
+# ============================================================
+# DATA FROM SALESFORCE
+# ============================================================
+@orderNumber = 00000101
+@customerPhone = 0900111111
+@storeCode = STORE-QLV-001
+@sku = QLV-LAPTOP-001
+# External ID đã dùng để tạo RR-2610-00004.
+@externalRequestId = POS-REQ16-TEST-001
+# Return Request Number trả về từ POST.
+@requestNumber = RR-2610-00004
+
+###
+# ============================================================
+# 1. CREATE RETURN REQUEST
+#
+# Nếu External Request ID chưa tồn tại:
+# Expected: HTTP 201 Created
+#
+# Nếu External Request ID đã tồn tại:
+# Expected: HTTP 200 OK và trả lại request cũ
+# ============================================================
+# @name createReturn
+POST {{instanceUrl}}/services/apexrest/smartreturn/v1/return-requests
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+ "externalRequestId": "{{externalRequestId}}",
+ "channel": "POS",
+ "orderNumber": "{{orderNumber}}",
+ "customerPhone": "{{customerPhone}}",
+ "storeCode": "{{storeCode}}",
+ "lines": [
+  {
+   "sku": "{{sku}}",
+   "quantity": 5,
+   "reason": "DEFECT",
+   "condition": "SEALED"
+  }
+ ]
+}
+
+###
+# ============================================================
+# 2. IDEMPOTENT REPLAY
+#
+# Gửi lại đúng External Request ID.
+# Expected:
+# - HTTP 200 OK
+# - Cùng requestNumber của lần đầu
+# - Không tạo Return Request thứ hai
+# ============================================================
+# @name replayReturn
+POST {{instanceUrl}}/services/apexrest/smartreturn/v1/return-requests
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+ "externalRequestId": "{{externalRequestId}}",
+ "channel": "POS",
+ "orderNumber": "{{orderNumber}}",
+ "customerPhone": "{{customerPhone}}",
+ "storeCode": "{{storeCode}}",
+ "lines": [
+  {
+   "sku": "{{sku}}",
+   "quantity": 5,
+   "reason": "DEFECT",
+   "condition": "SEALED"
+  }
+ ]
+}
+
+
+###
+# ============================================================
+# 3. LOOKUP BY RETURN REQUEST NUMBER
+#
+# BRD E.2:
+# GET /return-requests/RR-xxxx
+#
+# Expected:
+# - HTTP 200 OK
+# - Header
+# - Lines
+# - Inspection result
+# - Status history
+# ============================================================
+
+# @name lookupByRequestNumber
+GET {{instanceUrl}}/services/apexrest/smartreturn/v1/return-requests/{{requestNumber}}
+Authorization: Bearer {{accessToken}}
+Accept: application/json
+
+###
+# ============================================================
+# 4. LOOKUP NOT FOUND
+#
+# Expected:
+# - HTTP 404 Not Found
+# - errorCode = REQUEST_NOT_FOUND
+# ============================================================
+ "externalRequestId": "WEB-REQ16-INVALID-CHANNEL-001",
+ "channel": "WEB",
+ "orderNumber": "{{orderNumber}}",
+ "customerPhone": "{{customerPhone}}",
+ "storeCode": "{{storeCode}}",
+ "lines": [
+  {
+   "sku": "{{sku}}",
+   "quantity": 1,
+   "reason": "DEFECT",
+   "condition": "SEALED"
+  }
+ ]
+}
+
+###
+# ============================================================
+# 9. BRD REASON CUSTOMER_DAMAGE
+#
+# API nhận CUSTOMER_DAMAGE và map nội bộ thành CUSTOMER_DAMAGED.
+#
+# Với policy hiện tại có thể trả validation business tùy condition.
+# Mục tiêu chính: không trả "Invalid reason".
+# ============================================================
+
+# @name customerDamageMapping
+POST {{instanceUrl}}/services/apexrest/smartreturn/v1/return-requests
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+ "externalRequestId": "POS-REQ16-CUSTOMER-DAMAGE-001",
+ "channel": "POS",
+ "orderNumber": "{{orderNumber}}",
+ "customerPhone": "{{customerPhone}}",
+ "storeCode": "{{storeCode}}",
+ "lines": [
+  {
+   "sku": "{{sku}}",
+   "quantity": 1,
+   "reason": "CUSTOMER_DAMAGE",
+   "condition": "USED"
+  }
+ ]
+}
