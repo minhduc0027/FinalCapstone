@@ -93,6 +93,12 @@ public with sharing class RefundTestDataFactory {
         ParentId = access.Id,
         SobjectType = 'Order',
         PermissionsRead = true
+      ),
+      new ObjectPermissions(
+        ParentId = access.Id,
+        SobjectType = 'Refund_Notification__e',
+        PermissionsRead = true,
+        PermissionsCreate = true
       )
     };
     insert new List<FieldPermissions>{
@@ -144,8 +150,18 @@ public with sharing class RefundTestDataFactory {
     String status,
     Boolean inspected
   ) {
+    return requests(count, status, inspected, null);
+  }
+
+  public static List<Return_Request__c> requests(
+    Integer count,
+    String status,
+    Boolean inspected,
+    Id storeManagerId
+  ) {
     Store__c store = new Store__c(
       Name = 'Refund test store',
+      Store_Manager__c = storeManagerId,
       Store_Code__c = 'RF-TEST',
       Region__c = 'Nam'
     );

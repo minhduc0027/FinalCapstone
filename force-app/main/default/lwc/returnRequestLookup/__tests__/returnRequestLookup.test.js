@@ -64,6 +64,7 @@ describe("guest return lookup", () => {
       "/smartreturnvforcesite/services/apexrest/smartreturn/v1/portal/lookup"
     );
     expect(url).not.toContain("4567");
+    expect(options.credentials).toBe("omit");
     expect(JSON.parse(options.body)).toEqual({
       requestNumber: "RR-2610-00001",
       phoneSuffix: "4567"

@@ -6,6 +6,29 @@ private class RefundUserModeTest {
   }
 
   @IsTest
+  static void processorCanPublishRefundNotification() {
+    Id requestId = [SELECT Id FROM Return_Request__c LIMIT 1].Id;
+    System.runAs(RefundTestDataFactory.processor()) {
+      Assert.isTrue(
+        Schema.SObjectType.Refund_Notification__e.isCreateable(),
+        'The worker fixture must have permission to publish refund notifications.'
+      );
+      Test.startTest();
+      Database.SaveResult published = EventBus.publish(
+        new Refund_Notification__e(
+          Request_Id__c = requestId,
+          Outcome__c = SmartReturnConstants.STATUS_COMPLETED
+        )
+      );
+      Test.stopTest();
+      Assert.isTrue(
+        published.isSuccess(),
+        'Publish the internal outcome: ' + JSON.serialize(published.getErrors())
+      );
+    }
+  }
+
+  @IsTest
   static void processorCompletesRequestOwnedByAnotherUser() {
     Return_Request__c request = [
       SELECT Id, OwnerId

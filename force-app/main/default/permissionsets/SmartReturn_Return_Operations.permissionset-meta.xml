@@ -4,6 +4,10 @@
         <application>SmartReturn</application>
         <visible>true</visible>
     </applicationVisibilities>
+    <classAccesses>
+        <apexClass>ReturnRequestController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
     <description
   >Store staff and managers work on return requests within the records shared to their store or region.</description>
     <fieldPermissions>
