@@ -150,8 +150,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -186,8 +187,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -223,8 +225,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -257,8 +260,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -305,8 +309,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -340,8 +345,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -391,8 +397,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    firstPage = CustomerService
-      .getReturnRequestsForCustomerService(firstPageFilter);
+    firstPage = CustomerService.getReturnRequestsForCustomerService(
+      firstPageFilter
+    );
 
     /*
      * Đặt lại fixed results trước invocation thứ hai
@@ -400,8 +407,9 @@ private class CustomerServiceTests {
      */
     setSearchResults(customerIds);
 
-    secondPage = CustomerService
-      .getReturnRequestsForCustomerService(secondPageFilter);
+    secondPage = CustomerService.getReturnRequestsForCustomerService(
+      secondPageFilter
+    );
 
     Test.stopTest();
 
@@ -447,8 +455,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -480,8 +489,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -513,8 +523,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -551,8 +562,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -580,8 +592,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -630,8 +643,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
@@ -661,8 +675,9 @@ private class CustomerServiceTests {
 
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(filter);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
 
     Test.stopTest();
 
