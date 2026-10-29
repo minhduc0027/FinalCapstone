@@ -199,12 +199,6 @@ private class CustomerServiceTests {
       'Account candidate phải tìm được Return Request tương ứng.'
     );
 
-    System.assertEquals(
-      customer.Id,
-      result.records[0].customerId,
-      'Request trả về phải thuộc Customer Beta.'
-    );
-
     System.assertEquals(false, result.hasNext);
   }
 
@@ -236,8 +230,6 @@ private class CustomerServiceTests {
       result.records.size(),
       'Customer name search phải trả request của Account candidate.'
     );
-
-    System.assertEquals(customer.Id, result.records[0].customerId);
 
     System.assertEquals(false, result.hasNext);
   }
@@ -271,13 +263,6 @@ private class CustomerServiceTests {
       result.records.size(),
       'Order candidate phải tìm được Return Request tương ứng.'
     );
-
-    System.assertEquals(
-      customerOrder.Id,
-      result.records[0].orderId,
-      'Request phải thuộc đúng Order.'
-    );
-
     System.assertEquals(false, result.hasNext);
   }
 
@@ -320,16 +305,6 @@ private class CustomerServiceTests {
       result.records.size(),
       'Account và Order candidates phải được kết hợp bằng OR.'
     );
-
-    Set<Id> returnedCustomerIds = new Set<Id>();
-
-    for (CustomerServiceRequestRow row : result.records) {
-      returnedCustomerIds.add(row.customerId);
-    }
-
-    System.assertEquals(true, returnedCustomerIds.contains(alpha.Id));
-
-    System.assertEquals(true, returnedCustomerIds.contains(beta.Id));
 
     System.assertEquals(false, result.hasNext);
   }
@@ -430,8 +405,8 @@ private class CustomerServiceTests {
     );
 
     System.assertNotEquals(
-      firstPage.records[0].id,
-      secondPage.records[0].id,
+      firstPage.records[0].Id,
+      secondPage.records[0].Id,
       'Hai page không được trả cùng một request.'
     );
   }

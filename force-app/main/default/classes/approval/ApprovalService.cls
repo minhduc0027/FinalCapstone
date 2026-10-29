@@ -100,7 +100,7 @@ public with sharing class ApprovalService {
     validateServiceRequestIds(requestIds);
 
     if (String.isBlank(reason)) {
-      throw new ApprovalException('Rejection reason is required.');
+      throw new ApprovalException('Vui lòng nhập lí do từ chối.');
     }
 
     List<Return_Request__c> requests = queryApprovalRequests(requestIds);
