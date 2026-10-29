@@ -42,6 +42,22 @@ private class RefundNotificationTest {
       routed.Store__r.Store_Manager__c,
       'Resolve the store manager even when another user owns the request.'
     );
+    Assert.areEqual(
+      1992000,
+      routed.Actual_Refund_Amount__c,
+      'Retrieve the actual refund amount used by MSG-30.'
+    );
+    Assert.areEqual(
+      'Yêu cầu ' + routed.Name + ' đã hoàn tiền thành công 1992000 đ.',
+      String.format(
+        Label.SmartReturn_MSG_30,
+        new List<String>{
+          routed.Name,
+          String.valueOf(routed.Actual_Refund_Amount__c.setScale(0))
+        }
+      ),
+      'MSG-30 must include the request number and actual refund amount.'
+    );
     Test.startTest();
     RefundService.notifyStoreManagers(
       new List<Refund_Notification__e>{ outcome(request.Id, 'COMPLETED') }
@@ -62,6 +78,17 @@ private class RefundNotificationTest {
   @IsTest
   static void sendsFinalFailure() {
     Return_Request__c request = requestWithManager();
+    Return_Request__c routed = RefundNotificationSelector.requests(
+        new Set<Id>{ request.Id }
+      )
+      .get(request.Id);
+    Assert.areEqual(
+      'Yêu cầu ' +
+        routed.Name +
+        ' hoàn tiền không thành công, đã chuyển Kế toán xử lý.',
+      String.format(Label.SmartReturn_MSG_31, new List<String>{ routed.Name }),
+      'MSG-31 must direct the failed refund to Accounting.'
+    );
     Test.startTest();
     RefundService.notifyStoreManagers(
       new List<Refund_Notification__e>{ outcome(request.Id, 'REFUND_FAILED') }

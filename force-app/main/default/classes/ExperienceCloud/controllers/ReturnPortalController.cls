@@ -34,9 +34,7 @@ public with sharing class ReturnPortalController {
     );
     LogService.insertLogs();
     return new AuraHandledException(
-      'Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ hỗ trợ (mã lỗi ' +
-        reference +
-        ').'
+      String.format(Label.SmartReturn_MSG_90, new List<String>{ reference })
     );
   }
 }

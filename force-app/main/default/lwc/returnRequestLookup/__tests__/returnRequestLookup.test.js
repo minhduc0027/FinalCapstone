@@ -1,6 +1,30 @@
 import { createElement } from "lwc";
 import ReturnRequestLookup from "c/returnRequestLookup";
 
+jest.mock(
+  "@salesforce/label/c.SmartReturn_MSG_40",
+  () => ({
+    default:
+      "Không tìm thấy yêu cầu phù hợp. Vui lòng kiểm tra lại mã yêu cầu và số điện thoại."
+  }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/label/c.SmartReturn_MSG_41",
+  () => ({
+    default: "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau {0} phút."
+  }),
+  { virtual: true }
+);
+jest.mock(
+  "@salesforce/label/c.SmartReturn_MSG_90",
+  () => ({
+    default:
+      "Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ bộ phận hỗ trợ (mã lỗi {0})."
+  }),
+  { virtual: true }
+);
+
 const flush = async () => {
   await Promise.resolve();
   await Promise.resolve();
@@ -153,9 +177,9 @@ describe("guest return lookup", () => {
     expect(
       element.shadowRoot.querySelector("c-return-request-summary")
     ).toBeNull();
-    expect(
-      element.shadowRoot.querySelector('[role="alert"]').textContent
-    ).toContain("Không tìm thấy yêu cầu phù hợp");
+    expect(element.shadowRoot.querySelector('[role="alert"]').textContent).toBe(
+      "Không tìm thấy yêu cầu phù hợp. Vui lòng kiểm tra lại mã yêu cầu và số điện thoại."
+    );
   });
 
   it("shows the lock state without revealing a customer record", async () => {
@@ -167,12 +191,26 @@ describe("guest return lookup", () => {
     fill(element);
     submit(element);
     await flush();
-    expect(
-      element.shadowRoot.querySelector('[role="alert"]').textContent
-    ).toContain("15 phút");
+    expect(element.shadowRoot.querySelector('[role="alert"]').textContent).toBe(
+      "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút."
+    );
     expect(
       element.shadowRoot.querySelector("c-return-request-summary")
     ).toBeNull();
+  });
+
+  it("shows the BRD error with the existing server reference", async () => {
+    global.fetch.mockResolvedValue({
+      ok: false,
+      json: async () => ({ outcome: "ERROR", reference: "ABC123DEF456" })
+    });
+    const element = render();
+    fill(element);
+    submit(element);
+    await flush();
+    expect(element.shadowRoot.querySelector('[role="alert"]').textContent).toBe(
+      "Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ bộ phận hỗ trợ (mã lỗi ABC123DEF456)."
+    );
   });
 
   it("never posts phone proof to an external configured URL", async () => {
