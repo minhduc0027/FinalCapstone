@@ -81,11 +81,18 @@ public with sharing class RefundNotificationService {
         completed ? 'Hoàn tiền thành công' : 'Hoàn tiền thất bại'
       );
       notification.setBody(
-        'Yêu cầu ' +
-          request.Name +
-          (completed
-            ? ' đã hoàn tiền thành công.'
-            : ' hoàn tiền thất bại. Kế toán cần đối soát.')
+        completed
+          ? String.format(
+              Label.SmartReturn_MSG_30,
+              new List<String>{
+                request.Name,
+                String.valueOf(request.Actual_Refund_Amount__c?.setScale(0))
+              }
+            )
+          : String.format(
+              Label.SmartReturn_MSG_31,
+              new List<String>{ request.Name }
+            )
       );
       try {
         notification.send(

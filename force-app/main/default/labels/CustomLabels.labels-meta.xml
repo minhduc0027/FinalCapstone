@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>SmartReturn_MSG_30</fullName>
+        <categories>SmartReturn</categories>
+        <language>vi</language>
+        <protected>false</protected>
+        <shortDescription>Hoàn tiền thành công</shortDescription>
+        <value>Yêu cầu {0} đã hoàn tiền thành công {1} đ.</value>
+    </labels>
+    <labels>
+        <fullName>SmartReturn_MSG_31</fullName>
+        <categories>SmartReturn</categories>
+        <language>vi</language>
+        <protected>false</protected>
+        <shortDescription>Hoàn tiền lỗi</shortDescription>
+        <value
+    >Yêu cầu {0} hoàn tiền không thành công, đã chuyển Kế toán xử lý.</value>
+    </labels>
+    <labels>
+        <fullName>SmartReturn_MSG_40</fullName>
+        <categories>SmartReturn</categories>
+        <language>vi</language>
+        <protected>false</protected>
+        <shortDescription
+    >Portal không khớp mã hoặc số điện thoại</shortDescription>
+        <value
+    >Không tìm thấy yêu cầu phù hợp. Vui lòng kiểm tra lại mã yêu cầu và số điện thoại.</value>
+    </labels>
+    <labels>
+        <fullName>SmartReturn_MSG_41</fullName>
+        <categories>SmartReturn</categories>
+        <language>vi</language>
+        <protected>false</protected>
+        <shortDescription>Portal tạm khóa tra cứu</shortDescription>
+        <value
+    >Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau {0} phút.</value>
+    </labels>
+    <labels>
+        <fullName>SmartReturn_MSG_90</fullName>
+        <categories>SmartReturn</categories>
+        <language>vi</language>
+        <protected>false</protected>
+        <shortDescription>Lỗi không mong đợi</shortDescription>
+        <value
+    >Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ bộ phận hỗ trợ (mã lỗi {0}).</value>
+    </labels>
+</CustomLabels>

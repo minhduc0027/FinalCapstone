@@ -1,4 +1,7 @@
 import { LightningElement, api } from "lwc";
+import smartReturnMsg40 from "@salesforce/label/c.SmartReturn_MSG_40";
+import smartReturnMsg41 from "@salesforce/label/c.SmartReturn_MSG_41";
+import smartReturnMsg90 from "@salesforce/label/c.SmartReturn_MSG_90";
 
 export default class ReturnRequestLookup extends LightningElement {
   @api heading = "Mã yêu cầu";
@@ -57,8 +60,15 @@ export default class ReturnRequestLookup extends LightningElement {
           })
         }
       );
-      if (!response.ok) throw new Error("LOOKUP_UNAVAILABLE");
-      const result = await response.json();
+      const result =
+        typeof response.json === "function" ? await response.json() : null;
+      if (!response.ok) {
+        if (result?.outcome === "ERROR" && result.reference) {
+          this.message = this.formatMessage(smartReturnMsg90, result.reference);
+          return;
+        }
+        throw new Error("LOOKUP_UNAVAILABLE");
+      }
       if (result.outcome === "FOUND" && result.request) {
         this.request = result.request;
         this.focusResult = true;
@@ -66,11 +76,10 @@ export default class ReturnRequestLookup extends LightningElement {
         const minutes = Number(result.retryAfterMinutes);
         this.message =
           Number.isInteger(minutes) && minutes > 0
-            ? `Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau ${minutes} phút.`
+            ? this.formatMessage(smartReturnMsg41, minutes)
             : "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau.";
       } else if (result.outcome === "NOT_FOUND") {
-        this.message =
-          "Không tìm thấy yêu cầu phù hợp. Vui lòng kiểm tra lại mã yêu cầu và số điện thoại.";
+        this.message = smartReturnMsg40;
       } else {
         throw new Error("LOOKUP_UNAVAILABLE");
       }
@@ -88,5 +97,9 @@ export default class ReturnRequestLookup extends LightningElement {
       this.focusResult = false;
       this.template.querySelector("c-return-request-summary")?.focusHeading();
     }
+  }
+
+  formatMessage(message, value) {
+    return message.replace("{0}", String(value));
   }
 }
