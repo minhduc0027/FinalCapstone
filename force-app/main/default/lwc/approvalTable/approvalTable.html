@@ -3,20 +3,25 @@
     <lightning-datatable
       key-field="requestId"
       data={rows}
-      columns={columns}
+      columns={visibleColumns}
+      hide-checkbox-column={hideCheckboxColumn}
       show-row-number-column
       onrowselection={handleRowSelection}
       onrowaction={handleRowAction}
-    ></lightning-datatable>
+    >
+    </lightning-datatable>
   </template>
+
   <template if:false={hasRows}>
     <div class="empty-state">
       <lightning-icon
-        icon-name="utility:check"
+        icon-name="utility:search"
         size="small"
-        alternative-text="No pending approvals"
-      ></lightning-icon>
-      <p>No approval requests match the current filters.</p>
+        alternative-text="No matching return requests"
+      >
+      </lightning-icon>
+
+      <p>No return requests match the current filters.</p>
     </div>
   </template>
 </template>

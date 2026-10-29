@@ -1,0 +1,38 @@
+<template>
+  <lightning-card title="Return Request Lookup" icon-name="standard:case">
+    <div class="slds-p-around_medium">
+      <c-customer-service-filters onsearch={handleSearch}>
+      </c-customer-service-filters>
+
+      <div class="slds-m-top_medium">
+        <c-approval-table rows={rows} read-only> </c-approval-table>
+      </div>
+
+      <div class="paging-bar slds-m-top_medium">
+        <lightning-button
+          label="Previous"
+          onclick={handlePrevious}
+          disabled={disablePrevious}
+        >
+        </lightning-button>
+
+        <span class="page-label"> {pageLabel} </span>
+
+        <lightning-button
+          label="Next"
+          onclick={handleNext}
+          disabled={disableNext}
+        >
+        </lightning-button>
+      </div>
+    </div>
+
+    <template if:true={isLoading}>
+      <lightning-spinner
+        alternative-text="Loading return requests"
+        size="medium"
+      >
+      </lightning-spinner>
+    </template>
+  </lightning-card>
+</template>

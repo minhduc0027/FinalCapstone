@@ -185,6 +185,7 @@ public with sharing class ApprovalService {
       return 'Only the assigned approver can process this request.';
     }
 
+    // Enforce rule creator cannot approve their own request.
     // if (requestRecord.CreatedById == UserInfo.getUserId()) {
     //   return 'Request creator cannot approve or reject ' + 'their own request.';
     // }
