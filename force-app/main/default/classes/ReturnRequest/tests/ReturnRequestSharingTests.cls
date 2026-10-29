@@ -164,6 +164,88 @@ private class ReturnRequestSharingTests {
     }
   }
 
+  @IsTest
+  static void staffInsertCreatesManagedShares() {
+    Map<String, User> actors = new Map<String, User>();
+    for (User actor : [
+      SELECT Id, LastName
+      FROM User
+      WHERE LastName IN ('STAFFA', 'STAFFB', 'REGION', 'SERVICE')
+    ]) {
+      actors.put(actor.LastName, actor);
+    }
+    List<Return_Request__c> requests = createRequests(actors);
+    Return_Request__c request = requests[0].clone(false, false, false, false);
+    request.OwnerId = actors.get('STAFFA').Id;
+
+    Test.startTest();
+    System.runAs(actors.get('STAFFA')) {
+      insert as system request;
+    }
+    Test.stopTest();
+
+    List<Return_Request__Share> shares = [
+      SELECT UserOrGroupId, AccessLevel
+      FROM Return_Request__Share
+      WHERE ParentId = :request.Id AND RowCause = 'SmartReturn_Access__c'
+    ];
+    Assert.areEqual(1, shares.size(), 'The owner needs no redundant share.');
+    Assert.areEqual(
+      actors.get('REGION').Id,
+      shares[0].UserOrGroupId,
+      'A staff transaction must create the regional manager share.'
+    );
+    Assert.areEqual(
+      'Edit',
+      shares[0].AccessLevel,
+      'Managers need edit access.'
+    );
+  }
+
+  @IsTest
+  static void staffStoreChangeReplacesManagedShares() {
+    Map<String, User> actors = new Map<String, User>();
+    for (User actor : [
+      SELECT Id, LastName
+      FROM User
+      WHERE LastName IN ('STAFFA', 'STAFFB', 'REGION', 'SERVICE')
+    ]) {
+      actors.put(actor.LastName, actor);
+    }
+    List<Return_Request__c> requests = createRequests(actors);
+    Return_Request__c movedRequest = new Return_Request__c(
+      Id = requests[0].Id,
+      Store__c = requests[1].Store__c
+    );
+
+    Test.startTest();
+    System.runAs(actors.get('STAFFA')) {
+      update as system movedRequest;
+    }
+    Test.stopTest();
+
+    Set<Id> recipients = new Set<Id>();
+    for (Return_Request__Share share : [
+      SELECT UserOrGroupId
+      FROM Return_Request__Share
+      WHERE ParentId = :movedRequest.Id AND RowCause = 'SmartReturn_Access__c'
+    ]) {
+      recipients.add(share.UserOrGroupId);
+    }
+    Assert.areEqual(
+      new Set<Id>{ actors.get('STAFFB').Id, actors.get('REGION').Id },
+      recipients,
+      'Moving stores must revoke old staff access and retain the manager.'
+    );
+    System.runAs(actors.get('STAFFA')) {
+      Assert.areEqual(
+        0,
+        [SELECT COUNT() FROM Return_Request__c WHERE Id = :movedRequest.Id],
+        'The previous store staff must lose access to the moved request.'
+      );
+    }
+  }
+
   private static List<Return_Request__c> createRequests(
     Map<String, User> actors
   ) {
