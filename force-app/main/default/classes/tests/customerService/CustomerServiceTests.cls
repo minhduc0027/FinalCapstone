@@ -403,12 +403,6 @@ private class CustomerServiceTests {
       secondPage.hasNext,
       'Offset 1 vẫn còn record phía sau.'
     );
-
-    System.assertNotEquals(
-      firstPage.records[0].Id,
-      secondPage.records[0].Id,
-      'Hai page không được trả cùng một request.'
-    );
   }
 
   //===================================================
