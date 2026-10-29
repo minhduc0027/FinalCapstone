@@ -1,4 +1,5 @@
 public without sharing class ReturnRequestSharingService {
+  // Store membership determines sharing independently of the initiating user's access.
   public static void refresh(List<Return_Request__c> requests) {
     if (requests == null || requests.isEmpty())
       return;
@@ -16,6 +17,7 @@ public without sharing class ReturnRequestSharingService {
         SELECT Id, Store_Code__c, Store_Manager__c, Region_Manager__c
         FROM Store__c
         WHERE Id IN :storeIds
+        WITH SYSTEM_MODE
       ]
     );
     Set<String> storeCodes = new Set<String>();
@@ -42,6 +44,7 @@ public without sharing class ReturnRequestSharingService {
       SELECT Id, ParentId, UserOrGroupId, AccessLevel
       FROM Return_Request__Share
       WHERE ParentId IN :requestIds AND RowCause = 'SmartReturn_Access__c'
+      WITH SYSTEM_MODE
     ]) {
       if (!existingByRequest.containsKey(share.ParentId)) {
         existingByRequest.put(
@@ -92,8 +95,8 @@ public without sharing class ReturnRequestSharingService {
     }
 
     if (!toDelete.isEmpty())
-      delete toDelete;
+      delete as system toDelete;
     if (!toInsert.isEmpty())
-      insert toInsert;
+      insert as system toInsert;
   }
 }
