@@ -9,6 +9,9 @@ public with sharing class ApprovalFilter {
   public Id storeId { get; set; }
 
   @AuraEnabled
+  public Id customerId { get; set; }
+
+  @AuraEnabled
   public Date fromDate { get; set; }
 
   @AuraEnabled

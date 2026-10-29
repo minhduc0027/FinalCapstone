@@ -13,7 +13,7 @@ const LEVEL_OPTIONS = [
   { label: "Store Manager (CHT)", value: "CHT" },
   { label: "Regional Manager (QLV)", value: "QLV" }
 ];
-const SORT_DIRECTION = [
+const SORT_DIRECTION_OPTIONS = [
   { label: "Ascending", value: "ASC" },
   { label: "Descending", value: "DESC" }
 ];
@@ -21,6 +21,7 @@ const SORT_DIRECTION = [
 export default class ApprovalFilters extends LightningElement {
   approvalLevel = "";
   storeId = null;
+  customerId = null;
   fromDate = null;
   toDate = null;
   sortBy = "Approval_Due_At__c";
@@ -34,12 +35,13 @@ export default class ApprovalFilters extends LightningElement {
     return LEVEL_OPTIONS;
   }
   get sortDirections() {
-    return SORT_DIRECTION;
+    return SORT_DIRECTION_OPTIONS;
   }
   get pageSizeOptions() {
     return [
+      { label: "5 rows", value: "5" },
+      { label: "10 rows", value: "10" },
       { label: "20 rows", value: "20" },
-      { label: "30 rows", value: "30" },
       { label: "50 rows", value: "50" }
     ];
   }
@@ -54,6 +56,9 @@ export default class ApprovalFilters extends LightningElement {
 
   handleStoreChange(event) {
     this.storeId = event.detail.recordId || null;
+  }
+  handleCustomerChange(event) {
+    this.customerId = event.detail.recordId || null;
   }
 
   handleApply() {
@@ -74,6 +79,7 @@ export default class ApprovalFilters extends LightningElement {
           fromDate: this.fromDate,
           toDate: this.toDate,
           sortBy: this.sortBy,
+          customerId: this.customerId,
           sortDescending: this.sortDirection === "DESC",
           pageSize: Number(this.pageSize)
         }
@@ -86,6 +92,7 @@ export default class ApprovalFilters extends LightningElement {
     this.storeId = null;
     this.fromDate = null;
     this.toDate = null;
+    this.customerId = null;
     this.sortBy = "Approval_Due_At__c";
     this.sortDirection = "ASC";
     this.pageSize = "20";
