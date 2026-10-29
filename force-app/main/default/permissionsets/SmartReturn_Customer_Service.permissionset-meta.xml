@@ -4,6 +4,10 @@
         <application>SmartReturn</application>
         <visible>true</visible>
     </applicationVisibilities>
+    <classAccesses>
+        <apexClass>CustomerServiceController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
     <description
   >Customer Service can search and read all return requests without editing them.</description>
     <fieldPermissions>
@@ -95,6 +99,10 @@
         <object>Return_Request_Line__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
+    <tabSettings>
+        <tab>Customer_Service</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
     <tabSettings>
         <tab>Return_Request__c</tab>
         <visibility>Visible</visibility>
