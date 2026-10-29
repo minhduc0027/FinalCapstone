@@ -5,6 +5,10 @@
         <visible>true</visible>
     </applicationVisibilities>
     <classAccesses>
+        <apexClass>InspectionController</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>ReturnRequestController</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -12,6 +16,10 @@
         <enabled>true</enabled>
         <name>Return_Refund_Rate__mdt</name>
     </customMetadataTypeAccesses>
+    <customPermissions>
+        <enabled>true</enabled>
+        <name>Refund_Process</name>
+    </customPermissions>
     <description
   >Store staff and managers work on return requests within the records shared to their store or region.</description>
     <fieldPermissions>

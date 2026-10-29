@@ -114,6 +114,10 @@
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <tabSettings>
+        <tab>Approval</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
         <tab>Return_Request__c</tab>
         <visibility>Visible</visibility>
     </tabSettings>
