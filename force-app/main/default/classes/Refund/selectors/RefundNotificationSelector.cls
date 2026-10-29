@@ -19,6 +19,7 @@ public with sharing class RefundNotificationSelector {
     request.fields = new List<String>{
       'Id',
       'Name',
+      'Actual_Refund_Amount__c',
       'Store__r.Store_Manager__c',
       'Store__r.Store_Manager__r.IsActive'
     };
