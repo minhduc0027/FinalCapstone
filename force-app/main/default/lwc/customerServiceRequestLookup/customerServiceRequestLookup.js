@@ -11,9 +11,7 @@ export default class CustomerServiceRequestLookup extends LightningElement {
   currentOffset = 0;
 
   filter = {
-    customerPhone: null,
-    orderNumber: null,
-    customerName: null,
+    searchTerm: null,
     pageSize: PAGE_SIZE,
     page: {
       strategy: "OFFSET",

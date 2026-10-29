@@ -1,13 +1,10 @@
 import { LightningElement } from "lwc";
 
 export default class CustomerServiceFilters extends LightningElement {
-  customerPhone = "";
-  orderNumber = "";
-  customerName = "";
+  searchTerm = "";
 
   handleInputChange(event) {
-    const { name, value } = event.target;
-    this[name] = value;
+    this.searchTerm = event.target.value;
   }
 
   handleKeyUp(event) {
@@ -20,25 +17,19 @@ export default class CustomerServiceFilters extends LightningElement {
     this.dispatchEvent(
       new CustomEvent("search", {
         detail: {
-          customerPhone: this.normalize(this.customerPhone),
-          orderNumber: this.normalize(this.orderNumber),
-          customerName: this.normalize(this.customerName)
+          searchTerm: this.normalize(this.searchTerm)
         }
       })
     );
   }
 
   handleClear() {
-    this.customerPhone = "";
-    this.orderNumber = "";
-    this.customerName = "";
+    this.searchTerm = "";
 
     this.dispatchEvent(
       new CustomEvent("search", {
         detail: {
-          customerPhone: null,
-          orderNumber: null,
-          customerName: null
+          searchTerm: null
         }
       })
     );
@@ -46,6 +37,7 @@ export default class CustomerServiceFilters extends LightningElement {
 
   normalize(value) {
     const normalized = value?.trim();
+
     return normalized || null;
   }
 }

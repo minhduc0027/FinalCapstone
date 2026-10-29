@@ -192,7 +192,7 @@ export default class ApprovalTable extends LightningElement {
       INSPECTION_COMPLETED: "Inspection Completed",
       APPROVED: "Approved",
       REJECTED: "Rejected",
-      REFUND_REFUND_PROCESSING: "Refund Processing",
+      REFUND_PROCESSING: "Refund Processing",
       AWAITING_GOODS: "Awaiting Goods",
       INSPECTING: "Inspecting"
     };
