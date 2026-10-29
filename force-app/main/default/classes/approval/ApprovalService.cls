@@ -100,7 +100,7 @@ public with sharing class ApprovalService {
     validateServiceRequestIds(requestIds);
 
     if (String.isBlank(reason)) {
-      throw new ApprovalException('Rejection reason is required.');
+      throw new ApprovalException('Vui lòng nhập lí do từ chối.');
     }
 
     List<Return_Request__c> requests = queryApprovalRequests(requestIds);
@@ -186,9 +186,9 @@ public with sharing class ApprovalService {
     }
 
     // Enforce rule creator cannot approve their own request.
-    // if (requestRecord.CreatedById == UserInfo.getUserId()) {
-    //   return 'Request creator cannot approve or reject ' + 'their own request.';
-    // }
+    if (requestRecord.CreatedById == UserInfo.getUserId()) {
+      return 'Bạn không thể duyệt yêu cầu do chính mình tạo.';
+    }
 
     return null;
   }

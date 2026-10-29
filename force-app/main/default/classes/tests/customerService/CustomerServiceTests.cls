@@ -57,11 +57,13 @@ private class CustomerServiceTests {
   // Helpers
   //===================================================
   private static CustomerServiceFilter newFilter(
+    String searchTerm,
     Integer pageSize,
     Integer offsetSize
   ) {
     CustomerServiceFilter filter = new CustomerServiceFilter();
 
+    filter.searchTerm = searchTerm;
     filter.pageSize = pageSize;
 
     filter.page = new DbPageRequest();
@@ -89,11 +91,33 @@ private class CustomerServiceTests {
     ];
   }
 
+  private static List<Account> getAllCustomers() {
+    return [
+      SELECT Id, Name, Phone
+      FROM Account
+      WHERE Name LIKE 'Customer Service%'
+      ORDER BY Name
+    ];
+  }
+
+  private static List<Order> getAllOrders() {
+    return [
+      SELECT Id, OrderNumber, AccountId
+      FROM Order
+      WHERE Account.Name LIKE 'Customer Service%'
+      ORDER BY Account.Name
+    ];
+  }
+
+  private static void setSearchResults(List<Id> recordIds) {
+    Test.setFixedSearchResults(recordIds);
+  }
+
   //===================================================
-  // Null filter and defaults
+  // Null filter
   //===================================================
   @IsTest
-  static void getRequests_NullFilter_ShouldUseDefaults() {
+  static void getRequests_NullFilter_ShouldReturnEmptyPage() {
     Test.startTest();
 
     CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
@@ -107,161 +131,22 @@ private class CustomerServiceTests {
     System.assertNotEquals(null, result.records, 'Records không được null.');
 
     System.assertEquals(
-      3,
+      0,
       result.records.size(),
-      'Null filter phải trả về toàn bộ test requests.'
-    );
-
-    System.assertEquals(
-      false,
-      result.hasNext,
-      'Chỉ có 3 requests nên default page size 20 không có next page.'
-    );
-
-    System.assertNotEquals(
-      null,
-      result.bindCount,
-      'Bind count phải được copy từ DbQueryResult.'
-    );
-  }
-
-  //===================================================
-  // Filter by customer phone
-  //===================================================
-  @IsTest
-  static void getRequests_ShouldFilterByCustomerPhone() {
-    CustomerServiceFilter filter = newFilter(20, 0);
-
-    /*
-     * Có khoảng trắng để cover normalizeSearchTerm().
-     * Dùng partial phone để cover LIKE %term%.
-     */
-    filter.customerPhone = '  090200  ';
-
-    Test.startTest();
-
-    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
-      filter
-    );
-
-    Test.stopTest();
-
-    System.assertEquals(
-      1,
-      result.records.size(),
-      'Phone filter phải chỉ tìm thấy Customer Service Beta.'
-    );
-
-    System.assertEquals(false, result.hasNext);
-  }
-
-  //===================================================
-  // Filter by customer name
-  //===================================================
-  @IsTest
-  static void getRequests_ShouldFilterByCustomerName() {
-    CustomerServiceFilter filter = newFilter(20, 0);
-
-    filter.customerName = '  Service Gamma  ';
-
-    Test.startTest();
-
-    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
-      filter
-    );
-
-    Test.stopTest();
-
-    System.assertEquals(
-      1,
-      result.records.size(),
-      'Customer name filter phải hỗ trợ partial LIKE search.'
-    );
-
-    System.assertEquals(false, result.hasNext);
-  }
-
-  //===================================================
-  // Filter by order number
-  //===================================================
-  @IsTest
-  static void getRequests_ShouldFilterByOrderNumber() {
-    Account customer = getCustomer('Customer Service Alpha');
-
-    Order customerOrder = getCustomerOrder(customer.Id);
-
-    CustomerServiceFilter filter = newFilter(20, 0);
-
-    filter.orderNumber = '  ' + customerOrder.OrderNumber + '  ';
-
-    Test.startTest();
-
-    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
-      filter
-    );
-
-    Test.stopTest();
-
-    System.assertEquals(
-      1,
-      result.records.size(),
-      'Order number filter phải tìm đúng request.'
-    );
-
-    System.assertEquals(false, result.hasNext);
-  }
-
-  //===================================================
-  // Combined filters
-  //===================================================
-  @IsTest
-  static void getRequests_ShouldCombineAllFilters() {
-    Account customer = getCustomer('Customer Service Beta');
-
-    Order customerOrder = getCustomerOrder(customer.Id);
-
-    CustomerServiceFilter filter = newFilter(10, 0);
-
-    filter.customerName = ' Service Beta ';
-
-    filter.customerPhone = ' 0902000002 ';
-
-    filter.orderNumber = ' ' + customerOrder.OrderNumber + ' ';
-
-    Test.startTest();
-
-    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
-      filter
-    );
-
-    Test.stopTest();
-
-    System.assertEquals(
-      1,
-      result.records.size(),
-      'Ba filter hợp lệ phải match cùng một request.'
+      'Không có search term phải trả empty page.'
     );
 
     System.assertEquals(false, result.hasNext);
 
-    System.assert(
-      result.bindCount >= 3,
-      'Query phải có bind values cho ba search filters.'
-    );
+    System.assertEquals(0, result.bindCount);
   }
 
   //===================================================
-  // No matching result
+  // Blank search term
   //===================================================
   @IsTest
-  static void getRequests_NoMatch_ShouldReturnEmptyPage() {
-    CustomerServiceFilter filter = newFilter(20, 0);
-
-    filter.customerPhone = 'PHONE_DOES_NOT_EXIST';
-
-    filter.orderNumber = 'ORDER_DOES_NOT_EXIST';
-
-    filter.customerName = 'CUSTOMER_DOES_NOT_EXIST';
+  static void getRequests_BlankSearchTerm_ShouldReturnEmptyPage() {
+    CustomerServiceFilter filter = newFilter('   ', 20, 0);
 
     Test.startTest();
 
@@ -272,27 +157,33 @@ private class CustomerServiceTests {
     Test.stopTest();
 
     System.assertNotEquals(null, result);
+
     System.assertNotEquals(null, result.records);
 
     System.assertEquals(
       0,
       result.records.size(),
-      'Không có record phù hợp phải trả empty list.'
+      'Blank search term không được trả toàn bộ requests.'
     );
 
     System.assertEquals(false, result.hasNext);
+
+    System.assertEquals(0, result.bindCount);
   }
 
   //===================================================
-  // Blank filters
+  // Customer candidate
   //===================================================
   @IsTest
-  static void getRequests_BlankSearchTerms_ShouldBeIgnored() {
-    CustomerServiceFilter filter = newFilter(20, 0);
+  static void getRequests_ShouldReturnRequestForCustomerCandidate() {
+    Account customer = getCustomer('Customer Service Beta');
 
-    filter.customerPhone = '   ';
-    filter.orderNumber = '';
-    filter.customerName = null;
+    CustomerServiceFilter filter = newFilter('090200', 20, 0);
+
+    /*
+     * Mock SOSL tìm thấy Account Beta.
+     */
+    setSearchResults(new List<Id>{ customer.Id });
 
     Test.startTest();
 
@@ -303,12 +194,151 @@ private class CustomerServiceTests {
     Test.stopTest();
 
     System.assertEquals(
-      3,
+      1,
       result.records.size(),
-      'Blank search terms không được tạo query filter.'
+      'Account candidate phải tìm được Return Request tương ứng.'
     );
 
     System.assertEquals(false, result.hasNext);
+  }
+
+  //===================================================
+  // Customer name search candidate
+  //===================================================
+  @IsTest
+  static void getRequests_ShouldSupportCustomerNameSearch() {
+    Account customer = getCustomer('Customer Service Gamma');
+
+    CustomerServiceFilter filter = newFilter(
+      '  Customer Service Gamma  ',
+      20,
+      0
+    );
+
+    setSearchResults(new List<Id>{ customer.Id });
+
+    Test.startTest();
+
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
+
+    Test.stopTest();
+
+    System.assertEquals(
+      1,
+      result.records.size(),
+      'Customer name search phải trả request của Account candidate.'
+    );
+
+    System.assertEquals(false, result.hasNext);
+  }
+
+  //===================================================
+  // Order candidate
+  //===================================================
+  @IsTest
+  static void getRequests_ShouldReturnRequestForOrderCandidate() {
+    Account customer = getCustomer('Customer Service Alpha');
+
+    Order customerOrder = getCustomerOrder(customer.Id);
+
+    CustomerServiceFilter filter = newFilter(customerOrder.OrderNumber, 20, 0);
+
+    /*
+     * Mock SOSL tìm thấy Order thay vì Account.
+     */
+    setSearchResults(new List<Id>{ customerOrder.Id });
+
+    Test.startTest();
+
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
+
+    Test.stopTest();
+
+    System.assertEquals(
+      1,
+      result.records.size(),
+      'Order candidate phải tìm được Return Request tương ứng.'
+    );
+    System.assertEquals(false, result.hasNext);
+  }
+
+  //===================================================
+  // Account + Order candidates
+  //===================================================
+  @IsTest
+  static void getRequests_ShouldSupportCustomerOrOrderCandidates() {
+    Account alpha = getCustomer('Customer Service Alpha');
+
+    Account beta = getCustomer('Customer Service Beta');
+
+    Order betaOrder = getCustomerOrder(beta.Id);
+
+    CustomerServiceFilter filter = newFilter('Customer', 20, 0);
+
+    /*
+     * Search candidate chứa:
+     * - Account Alpha
+     * - Order của Beta
+     *
+     * Backend phải query:
+     *
+     * Customer__c IN :customerIds
+     * OR
+     * Order__c IN :orderIds
+     */
+    setSearchResults(new List<Id>{ alpha.Id, betaOrder.Id });
+
+    Test.startTest();
+
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
+
+    Test.stopTest();
+
+    System.assertEquals(
+      2,
+      result.records.size(),
+      'Account và Order candidates phải được kết hợp bằng OR.'
+    );
+
+    System.assertEquals(false, result.hasNext);
+  }
+
+  //===================================================
+  // No matching SOSL result
+  //===================================================
+  @IsTest
+  static void getRequests_NoMatch_ShouldReturnEmptyPage() {
+    CustomerServiceFilter filter = newFilter('DOES_NOT_EXIST', 20, 0);
+
+    setSearchResults(new List<Id>());
+
+    Test.startTest();
+
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
+
+    Test.stopTest();
+
+    System.assertNotEquals(null, result);
+
+    System.assertNotEquals(null, result.records);
+
+    System.assertEquals(
+      0,
+      result.records.size(),
+      'Không có SOSL candidates phải trả empty list.'
+    );
+
+    System.assertEquals(false, result.hasNext);
+
+    System.assertEquals(0, result.bindCount);
   }
 
   //===================================================
@@ -316,9 +346,26 @@ private class CustomerServiceTests {
   //===================================================
   @IsTest
   static void getRequests_ShouldSupportOffsetPagination() {
-    CustomerServiceFilter firstPageFilter = newFilter(1, 0);
+    List<Account> customers = getAllCustomers();
 
-    CustomerServiceFilter secondPageFilter = newFilter(1, 1);
+    List<Id> customerIds = new List<Id>();
+
+    for (Account customer : customers) {
+      customerIds.add(customer.Id);
+    }
+
+    CustomerServiceFilter firstPageFilter = newFilter('Customer Service', 1, 0);
+
+    CustomerServiceFilter secondPageFilter = newFilter(
+      'Customer Service',
+      1,
+      1
+    );
+
+    /*
+     * Cả hai invocation đều sử dụng cùng candidate set.
+     */
+    setSearchResults(customerIds);
 
     CustomerServicePageResult firstPage;
     CustomerServicePageResult secondPage;
@@ -328,6 +375,12 @@ private class CustomerServiceTests {
     firstPage = CustomerService.getReturnRequestsForCustomerService(
       firstPageFilter
     );
+
+    /*
+     * Đặt lại fixed results trước invocation thứ hai
+     * để intent của test rõ ràng.
+     */
+    setSearchResults(customerIds);
 
     secondPage = CustomerService.getReturnRequestsForCustomerService(
       secondPageFilter
@@ -340,7 +393,7 @@ private class CustomerServiceTests {
     System.assertEquals(
       true,
       firstPage.hasNext,
-      'Page size 1 với 3 records phải có next page.'
+      'Page size 1 với 3 matching requests phải có next page.'
     );
 
     System.assertEquals(1, secondPage.records.size());
@@ -348,7 +401,7 @@ private class CustomerServiceTests {
     System.assertEquals(
       true,
       secondPage.hasNext,
-      'Offset 1 vẫn còn record sau page hiện tại.'
+      'Offset 1 vẫn còn record phía sau.'
     );
   }
 
@@ -357,7 +410,17 @@ private class CustomerServiceTests {
   //===================================================
   @IsTest
   static void getRequests_LastPage_ShouldNotHaveNext() {
-    CustomerServiceFilter filter = newFilter(1, 2);
+    List<Account> customers = getAllCustomers();
+
+    List<Id> customerIds = new List<Id>();
+
+    for (Account customer : customers) {
+      customerIds.add(customer.Id);
+    }
+
+    CustomerServiceFilter filter = newFilter('Customer Service', 1, 2);
+
+    setSearchResults(customerIds);
 
     Test.startTest();
 
@@ -381,7 +444,17 @@ private class CustomerServiceTests {
   //===================================================
   @IsTest
   static void getRequests_InvalidPageSize_ShouldUseDefault() {
-    CustomerServiceFilter filter = newFilter(0, 0);
+    List<Account> customers = getAllCustomers();
+
+    List<Id> customerIds = new List<Id>();
+
+    for (Account customer : customers) {
+      customerIds.add(customer.Id);
+    }
+
+    CustomerServiceFilter filter = newFilter('Customer Service', 0, 0);
+
+    setSearchResults(customerIds);
 
     Test.startTest();
 
@@ -405,7 +478,17 @@ private class CustomerServiceTests {
   //===================================================
   @IsTest
   static void getRequests_ExcessivePageSize_ShouldBeCapped() {
-    CustomerServiceFilter filter = newFilter(999, 0);
+    List<Account> customers = getAllCustomers();
+
+    List<Id> customerIds = new List<Id>();
+
+    for (Account customer : customers) {
+      customerIds.add(customer.Id);
+    }
+
+    CustomerServiceFilter filter = newFilter('Customer Service', 999, 0);
+
+    setSearchResults(customerIds);
 
     Test.startTest();
 
@@ -429,10 +512,22 @@ private class CustomerServiceTests {
   //===================================================
   @IsTest
   static void getRequests_NullPage_ShouldUseOffsetZero() {
+    List<Account> customers = getAllCustomers();
+
+    List<Id> customerIds = new List<Id>();
+
+    for (Account customer : customers) {
+      customerIds.add(customer.Id);
+    }
+
     CustomerServiceFilter filter = new CustomerServiceFilter();
+
+    filter.searchTerm = 'Customer Service';
 
     filter.pageSize = 1;
     filter.page = null;
+
+    setSearchResults(customerIds);
 
     Test.startTest();
 
@@ -452,7 +547,17 @@ private class CustomerServiceTests {
   //===================================================
   @IsTest
   static void getRequests_NegativeOffset_ShouldUseZero() {
-    CustomerServiceFilter filter = newFilter(1, -10);
+    List<Account> customers = getAllCustomers();
+
+    List<Id> customerIds = new List<Id>();
+
+    for (Account customer : customers) {
+      customerIds.add(customer.Id);
+    }
+
+    CustomerServiceFilter filter = newFilter('Customer Service', 1, -10);
+
+    setSearchResults(customerIds);
 
     Test.startTest();
 
@@ -476,18 +581,34 @@ private class CustomerServiceTests {
   //===================================================
   @IsTest
   static void getRequests_ShouldForceOffsetStrategy() {
+    List<Account> customers = getAllCustomers();
+
+    List<Id> customerIds = new List<Id>();
+
+    for (Account customer : customers) {
+      customerIds.add(customer.Id);
+    }
+
     CustomerServiceFilter filter = new CustomerServiceFilter();
 
+    filter.searchTerm = 'Customer Service';
+
     filter.pageSize = 1;
+
     filter.page = new DbPageRequest();
 
     /*
-     * Service phải bỏ qua strategy mà client gửi và tự ép OFFSET.
+     * Service phải bỏ qua strategy mà client gửi
+     * và tự ép OFFSET.
      */
     filter.page.strategy = 'KEYSET';
     filter.page.offsetSize = 1;
+
     filter.page.afterId = UserInfo.getUserId();
+
     filter.page.afterValue = 'client-controlled-value';
+
+    setSearchResults(customerIds);
 
     Test.startTest();
 
@@ -504,5 +625,66 @@ private class CustomerServiceTests {
     );
 
     System.assertEquals(true, result.hasNext);
+  }
+
+  //===================================================
+  // Special SOSL characters
+  //===================================================
+  @IsTest
+  static void getRequests_SpecialCharacters_ShouldBeSanitized() {
+    Account customer = getCustomer('Customer Service Alpha');
+
+    CustomerServiceFilter filter = newFilter(
+      '  Customer* Service? Alpha  ',
+      20,
+      0
+    );
+
+    setSearchResults(new List<Id>{ customer.Id });
+
+    Test.startTest();
+
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      filter
+    );
+
+    Test.stopTest();
+
+    System.assertEquals(
+      1,
+      result.records.size(),
+      'SOSL special characters phải được sanitize mà không làm query fail.'
+    );
+  }
+
+  //===================================================
+  // Invalid search term
+  //===================================================
+  @IsTest
+  static void getRequests_OnlySpecialCharacters_ShouldThrow() {
+    CustomerServiceFilter filter = newFilter('***???', 20, 0);
+
+    Boolean exceptionThrown = false;
+
+    Test.startTest();
+
+    try {
+      CustomerService.getReturnRequestsForCustomerService(filter);
+    } catch (CustomerService.CustomerServiceException e) {
+      exceptionThrown = true;
+
+      System.assert(
+        e.getMessage().contains('không chứa ký tự tìm kiếm hợp lệ'),
+        'Phải trả đúng validation message cho invalid search term.'
+      );
+    }
+
+    Test.stopTest();
+
+    System.assertEquals(
+      true,
+      exceptionThrown,
+      'Search chỉ chứa SOSL special characters phải bị reject.'
+    );
   }
 }

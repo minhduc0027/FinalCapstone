@@ -7,6 +7,17 @@ public with sharing class InspectionService {
     'Estimated_Refund_Amount__c',
     'Source_Channel__c'
   };
+
+  /*
+   * Thứ tự authority:
+   * AUTO < CHT < QLV
+   */
+  private static final Map<String, Integer> APPROVAL_LEVEL_RANK = new Map<String, Integer>{
+    SmartReturnConstants.APPROVAL_AUTO => 0,
+    SmartReturnConstants.APPROVAL_CHT => 1,
+    SmartReturnConstants.APPROVAL_QLV => 2
+  };
+
   //===================================================
   // Inspection Worklist
   //===================================================
@@ -16,8 +27,11 @@ public with sharing class InspectionService {
       : filter;
 
     DbQueryRequest request = buildWorklistQuery(safeFilter);
+
     DbQueryResult result = DbQueryService.execute(request, MAX_PAGE_SIZE);
+
     InspectionPageResult pageResult = new InspectionPageResult();
+
     pageResult.hasNext = result.hasNext;
     pageResult.bindCount = result.bindCount;
 
@@ -74,6 +88,7 @@ public with sharing class InspectionService {
 
     return request;
   }
+
   private static List<FilterCondition> buildWorklistFilters(
     InspectionFilter filter
   ) {
@@ -143,7 +158,6 @@ public with sharing class InspectionService {
     DbPageRequest page = new DbPageRequest();
 
     page.strategy = DbPageRequest.OFFSET;
-
     page.offsetSize = 0;
 
     return page;
@@ -205,9 +219,13 @@ public with sharing class InspectionService {
       SELECT
         Id,
         Status__c,
+        Store__c,
         Required_Approval_Level__c,
+        ApproverId__c,
         Actual_Refund_Amount__c,
-        Inspection_Completed_At__c
+        Inspection_Completed_At__c,
+        Store__r.Store_Manager__c,
+        Store__r.Region_Manager__c
       FROM Return_Request__c
       WHERE Id = :requestId
       LIMIT 1
@@ -252,40 +270,17 @@ public with sharing class InspectionService {
 
     totalActualRefund = applyRefundRounding(totalActualRefund);
 
-    String previousApprovalLevel = requestRecord.Required_Approval_Level__c;
-
-    String requiredApprovalLevel = determineRequiredApprovalLevel(
-      previousApprovalLevel,
-      totalActualRefund
-    );
-
-    Boolean approvalLevelEscalated =
-      previousApprovalLevel != requiredApprovalLevel;
-
     requestRecord.Actual_Refund_Amount__c = totalActualRefund;
-
-    requestRecord.Required_Approval_Level__c = requiredApprovalLevel;
 
     requestRecord.Inspection_Completed_At__c = System.now();
 
-    /*
-     * TODO khi field và resolver sẵn sàng:
-     *
-     * if (approvalLevelEscalated) {
-     *     requestRecord.ApproverId__c =
-     *         ApproverResolver.resolve(
-     *             requestRecord,
-     *             requiredApprovalLevel
-     *         );
-     * }
-     */
-
-    update requestRecord;
-
     //===================================================
     // All lines rejected
+    // Không cần evaluate approval routing.
     //===================================================
     if (passedLineCount == 0) {
+      update requestRecord;
+
       StateTransitionService.transition(
         requestId,
         SmartReturnConstants.STATUS_REJECTED,
@@ -303,19 +298,45 @@ public with sharing class InspectionService {
     }
 
     //===================================================
+    // Approval-level re-evaluation
+    //===================================================
+    String previousApprovalLevel = requestRecord.Required_Approval_Level__c;
+
+    String requiredApprovalLevel = determineRequiredApprovalLevel(
+      previousApprovalLevel,
+      totalActualRefund
+    );
+
+    Boolean approvalLevelEscalated = isApprovalLevelEscalated(
+      previousApprovalLevel,
+      requiredApprovalLevel
+    );
+
+    requestRecord.Required_Approval_Level__c = requiredApprovalLevel;
+
+    if (approvalLevelEscalated) {
+      requestRecord.ApproverId__c = resolveEscalatedApproverId(
+        requestRecord,
+        requiredApprovalLevel
+      );
+    }
+
+    update requestRecord;
+
+    //===================================================
     // Actual amount requires higher approval authority
     //===================================================
     if (approvalLevelEscalated) {
       StateTransitionService.transition(
         requestId,
-        'RE_CONFIRMING',
+        SmartReturnConstants.STATUS_RE_CONFIRMING,
         requiredApprovalLevel
       );
 
       logInspection(
         linesToUpdate,
         'Inspection completed. Approval level changed from ' +
-          previousApprovalLevel +
+          normalizeApprovalLevelForLog(previousApprovalLevel) +
           ' to ' +
           requiredApprovalLevel +
           '.',
@@ -329,11 +350,6 @@ public with sharing class InspectionService {
     // Ready for PayHub
     //===================================================
     if (SmartReturnConfigService.isFeatureEnabled('Send_PayHub')) {
-      // StateTransitionService.transition(
-      //   requestId,
-      //   SmartReturnConstants.STATUS_REFUND_PROCESSING,
-      //   null
-      // );
       RefundService.startRefund(requestId);
 
       logInspection(
@@ -395,7 +411,7 @@ public with sharing class InspectionService {
     Decimal refundableQuantity = getRefundableQuantity(requestLine);
 
     /*
-     * refund matrix:
+     * Refund matrix:
      * - Reported_Condition__c
      * - Return_Reason__c
      */
@@ -412,6 +428,7 @@ public with sharing class InspectionService {
 
     Decimal baseAmount =
       requestLine.Order_Item__r.UnitPrice * refundableQuantity;
+
     Decimal actualRefund = baseAmount * refundRate / 100;
 
     return actualRefund;
@@ -430,6 +447,20 @@ public with sharing class InspectionService {
 
     Decimal storeApprovalLimit = SmartReturnConfigService.getStoreApprovalLimit();
 
+    if (autoApprovalLimit == null || autoApprovalLimit < 0) {
+      throw new InspectionException('Auto Approval Limit không hợp lệ.');
+    }
+
+    if (storeApprovalLimit == null || storeApprovalLimit < 0) {
+      throw new InspectionException('Store Approval Limit không hợp lệ.');
+    }
+
+    if (storeApprovalLimit < autoApprovalLimit) {
+      throw new InspectionException(
+        'Store Approval Limit không được nhỏ hơn ' + 'Auto Approval Limit.'
+      );
+    }
+
     /*
      * Vượt Store Approval Limit luôn cần QLV.
      */
@@ -438,17 +469,8 @@ public with sharing class InspectionService {
     }
 
     /*
-     * AUTO chỉ được tăng lên CHT nếu vượt Auto Approval Limit.
-     */
-    if (
-      currentApprovalLevel == SmartReturnConstants.APPROVAL_AUTO &&
-      amount > autoApprovalLimit
-    ) {
-      return SmartReturnConstants.APPROVAL_CHT;
-    }
-
-    /*
-     * Defensive fallback khi dữ liệu cũ không có approval level.
+     * Defensive fallback khi dữ liệu cũ không có
+     * approval level.
      */
     if (String.isBlank(currentApprovalLevel)) {
       if (amount <= autoApprovalLimit) {
@@ -458,12 +480,113 @@ public with sharing class InspectionService {
       return SmartReturnConstants.APPROVAL_CHT;
     }
 
+    validateSupportedApprovalLevel(currentApprovalLevel);
+
+    /*
+     * AUTO chỉ được tăng lên CHT nếu vượt
+     * Auto Approval Limit.
+     */
+    if (
+      currentApprovalLevel == SmartReturnConstants.APPROVAL_AUTO &&
+      amount > autoApprovalLimit
+    ) {
+      return SmartReturnConstants.APPROVAL_CHT;
+    }
+
     /*
      * Không downgrade authority:
      * - CHT vẫn là CHT nếu amount giảm.
      * - QLV vẫn là QLV.
      */
     return currentApprovalLevel;
+  }
+
+  private static Boolean isApprovalLevelEscalated(
+    String previousLevel,
+    String requiredLevel
+  ) {
+    validateSupportedApprovalLevel(requiredLevel);
+
+    /*
+     * Dữ liệu legacy không có approval level được xem
+     * là authority AUTO.
+     *
+     * null -> AUTO không phải escalation.
+     * null -> CHT hoặc QLV là escalation.
+     */
+    String normalizedPreviousLevel = String.isBlank(previousLevel)
+      ? SmartReturnConstants.APPROVAL_AUTO
+      : previousLevel;
+
+    validateSupportedApprovalLevel(normalizedPreviousLevel);
+
+    Integer previousRank = APPROVAL_LEVEL_RANK.get(normalizedPreviousLevel);
+
+    Integer requiredRank = APPROVAL_LEVEL_RANK.get(requiredLevel);
+
+    return requiredRank > previousRank;
+  }
+
+  private static void validateSupportedApprovalLevel(String approvalLevel) {
+    if (
+      String.isBlank(approvalLevel) ||
+      !APPROVAL_LEVEL_RANK.containsKey(approvalLevel)
+    ) {
+      throw new InspectionException(
+        'Approval Level không hợp lệ: ' + String.valueOf(approvalLevel) + '.'
+      );
+    }
+  }
+
+  private static Id resolveEscalatedApproverId(
+    Return_Request__c requestRecord,
+    String requiredApprovalLevel
+  ) {
+    if (requestRecord.Store__c == null) {
+      throw new InspectionException(
+        'Store không được để trống khi xác định approver.'
+      );
+    }
+
+    if (requiredApprovalLevel == SmartReturnConstants.APPROVAL_CHT) {
+      Id storeManagerId = requestRecord.Store__r == null
+        ? null
+        : requestRecord.Store__r.Store_Manager__c;
+
+      if (storeManagerId == null) {
+        throw new InspectionException(
+          'Store chưa được cấu hình Store Manager ' + 'cho approval level CHT.'
+        );
+      }
+
+      return storeManagerId;
+    }
+
+    if (requiredApprovalLevel == SmartReturnConstants.APPROVAL_QLV) {
+      Id regionManagerId = requestRecord.Store__r == null
+        ? null
+        : requestRecord.Store__r.Region_Manager__c;
+
+      if (regionManagerId == null) {
+        throw new InspectionException(
+          'Store chưa được cấu hình Region Manager ' + 'cho approval level QLV.'
+        );
+      }
+
+      return regionManagerId;
+    }
+
+    throw new InspectionException(
+      'Không thể xác định approver cho approval level ' +
+        requiredApprovalLevel +
+        '.'
+    );
+  }
+
+  private static String normalizeApprovalLevelForLog(String approvalLevel) {
+    return String.isBlank(approvalLevel)
+      ? SmartReturnConstants.APPROVAL_AUTO
+      : approvalLevel;
   }
 
   //===================================================
