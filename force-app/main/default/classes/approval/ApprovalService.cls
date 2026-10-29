@@ -186,9 +186,9 @@ public with sharing class ApprovalService {
     }
 
     // Enforce rule creator cannot approve their own request.
-    // if (requestRecord.CreatedById == UserInfo.getUserId()) {
-    //   return 'Request creator cannot approve or reject ' + 'their own request.';
-    // }
+    if (requestRecord.CreatedById == UserInfo.getUserId()) {
+      return 'Bạn không thể duyệt yêu cầu do chính mình tạo.';
+    }
 
     return null;
   }

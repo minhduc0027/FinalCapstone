@@ -120,8 +120,9 @@ private class CustomerServiceTests {
   static void getRequests_NullFilter_ShouldReturnEmptyPage() {
     Test.startTest();
 
-    CustomerServicePageResult result = CustomerService
-      .getReturnRequestsForCustomerService(null);
+    CustomerServicePageResult result = CustomerService.getReturnRequestsForCustomerService(
+      null
+    );
 
     Test.stopTest();
 
