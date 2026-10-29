@@ -397,6 +397,10 @@ public with sharing class ApprovalService {
       filters.add(new FilterCondition('Store__c', '=', filter.storeId));
     }
 
+    if (filter.customerId != null) {
+      filters.add(new FilterCondition('Customer__c', '=', filter.customerId));
+    }
+
     if (filter.fromDate != null) {
       filters.add(
         new FilterCondition(
