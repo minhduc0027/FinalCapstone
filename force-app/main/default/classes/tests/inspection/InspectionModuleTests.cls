@@ -95,6 +95,7 @@ private class InspectionModuleTests {
   private static Return_Request_Line__c buildRejectedInput(Id lineId) {
     return new Return_Request_Line__c(
       Id = lineId,
+      Reported_Condition__c = 'SEALED',
       Is_Eligible__c = false,
       Eligibility_Code__c = 'CATEGORY_NOT_RETURNABLE',
       Eligibility_Reason__c = 'DAMAGED',

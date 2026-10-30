@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>My_Store_Awaiting_Goods</fullName>
+    <columns>NAME</columns>
+    <columns>Return_Request__c.Status__c</columns>
+    <columns>Return_Request__c.Customer__c</columns>
+    <columns>Return_Request__c.Order__c</columns>
+    <columns>Return_Request__c.Estimated_Refund_Amount__c</columns>
+    <columns>Return_Request__c.Goods_Deadline__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Is_My_Store__c</field>
+        <operation>equals</operation>
+        <value>1</value>
+    </filters>
+    <filters>
+        <field>Status__c</field>
+        <operation>equals</operation>
+        <value>AWAITING_GOODS</value>
+    </filters>
+    <label>Cửa hàng - Chờ nhận hàng</label>
+</ListView>

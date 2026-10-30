@@ -1,0 +1,41 @@
+<template>
+  <lightning-quick-action-panel header="Xác nhận nhận hàng">
+    <template lwc:if={request}>
+      <p>Yêu cầu: <strong>{name}</strong></p>
+      <template lwc:if={canReceive}>
+        <p class="slds-m-top_small">
+          Xác nhận cửa hàng đã nhận hàng để bắt đầu kiểm định.
+        </p>
+      </template>
+      <template lwc:if={unavailable}>
+        <p role="status" class="slds-m-top_small">
+          Chỉ có thể nhận hàng cho yêu cầu đang chờ nhận hàng tại cửa hàng của
+          bạn.
+        </p>
+      </template>
+    </template>
+    <template lwc:if={loading}>
+      <lightning-spinner
+        alternative-text="Đang xử lý yêu cầu"
+        size="small"
+      ></lightning-spinner>
+    </template>
+    <template lwc:if={error}>
+      <p role="alert" class="slds-m-top_small">{error}</p>
+    </template>
+    <div slot="footer">
+      <lightning-button
+        label="Hủy"
+        onclick={handleCancel}
+        disabled={saving}
+      ></lightning-button>
+      <lightning-button
+        class="slds-m-left_x-small"
+        label="Xác nhận nhận hàng"
+        variant="brand"
+        onclick={handleReceive}
+        disabled={disabled}
+      ></lightning-button>
+    </div>
+  </lightning-quick-action-panel>
+</template>

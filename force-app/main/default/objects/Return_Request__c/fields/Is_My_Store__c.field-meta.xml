@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_My_Store__c</fullName>
+    <description
+  >Filters store worklists for the current staff member or assigned store manager. Record access remains governed by sharing.</description>
+    <formula
+  >OR(AND(NOT(ISBLANK($User.Store_Code__c)), Store__r.Store_Code__c = $User.Store_Code__c), Store__r.Store_Manager__c = $User.Id)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <inlineHelpText
+  >Được chọn khi yêu cầu thuộc cửa hàng của bạn hoặc cửa hàng bạn quản lý.</inlineHelpText>
+    <label>Thuộc cửa hàng của tôi</label>
+    <type>Checkbox</type>
+</CustomField>

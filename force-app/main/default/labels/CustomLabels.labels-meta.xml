@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
     <labels>
+        <fullName>SmartReturn_MSG_13</fullName>
+        <categories>SmartReturn</categories>
+        <language>vi</language>
+        <protected>false</protected>
+        <shortDescription
+    >Yêu cầu vừa được người khác cập nhật</shortDescription>
+        <value
+    >Yêu cầu {0} vừa được người khác cập nhật. Vui lòng tải lại.</value>
+    </labels>
+    <labels>
         <fullName>SmartReturn_MSG_30</fullName>
         <categories>SmartReturn</categories>
         <language>vi</language>

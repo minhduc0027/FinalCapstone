@@ -202,6 +202,11 @@
         <field>User.Store_Code__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Return_Request__c.Is_My_Store__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
     <label>SmartReturn Return Operations</label>
     <objectPermissions>
