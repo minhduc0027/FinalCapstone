@@ -176,6 +176,7 @@ public with sharing class InspectionService {
     /*
      * Input từ LWC chỉ được tin cậy ở:
      * - Id
+     * - Reported_Condition__c
      * - Inspection_Result__c
      * - Eligibility_Code__c
      * - Eligibility_Reason__c
@@ -228,6 +229,7 @@ public with sharing class InspectionService {
         Store__r.Region_Manager__c
       FROM Return_Request__c
       WHERE Id = :requestId
+      WITH USER_MODE
       LIMIT 1
       FOR UPDATE
     ];
@@ -259,6 +261,7 @@ public with sharing class InspectionService {
       linesToUpdate.add(
         new Return_Request_Line__c(
           Id = storedLine.Id,
+          Reported_Condition__c = storedLine.Reported_Condition__c,
           Inspection_Result__c = storedLine.Inspection_Result__c,
           Eligibility_Code__c = storedLine.Eligibility_Code__c,
           Eligibility_Reason__c = storedLine.Eligibility_Reason__c
@@ -266,7 +269,7 @@ public with sharing class InspectionService {
       );
     }
 
-    update linesToUpdate;
+    update as user linesToUpdate;
 
     totalActualRefund = applyRefundRounding(totalActualRefund);
 
@@ -279,7 +282,7 @@ public with sharing class InspectionService {
     // Không cần evaluate approval routing.
     //===================================================
     if (passedLineCount == 0) {
-      update requestRecord;
+      update as system requestRecord;
 
       StateTransitionService.transition(
         requestId,
@@ -321,7 +324,8 @@ public with sharing class InspectionService {
       );
     }
 
-    update requestRecord;
+    // Persist computed workflow fields without granting direct status editing.
+    update as system requestRecord;
 
     //===================================================
     // Actual amount requires higher approval authority
@@ -350,14 +354,11 @@ public with sharing class InspectionService {
     // Ready for PayHub
     //===================================================
     if (SmartReturnConfigService.isFeatureEnabled('Send_PayHub')) {
-      RefundService.startRefund(requestId);
-
       logInspection(
         linesToUpdate,
-        'Inspection completed. Request moved to refund processing.',
+        'Inspection completed. Awaiting automatic refund dispatch.',
         'COMPLETE_INSPECTION'
       );
-
       return;
     }
 
@@ -665,14 +666,23 @@ public with sharing class InspectionService {
     Return_Request_Line__c storedLine,
     Return_Request_Line__c inputLine
   ) {
+    storedLine.Reported_Condition__c = inputLine.Reported_Condition__c;
     storedLine.Inspection_Result__c = inputLine.Inspection_Result__c;
-
     storedLine.Eligibility_Code__c = inputLine.Eligibility_Code__c;
-
     storedLine.Eligibility_Reason__c = inputLine.Eligibility_Reason__c;
   }
 
   private static void validateInspectionResult(Return_Request_Line__c line) {
+    if (
+      String.isBlank(line.Reported_Condition__c) ||
+      !SmartReturnConstants.GOODS_CONDITIONS.contains(
+        line.Reported_Condition__c
+      )
+    ) {
+      throw new InspectionException(
+        'Actual Condition không hợp lệ cho line ' + line.Id + '.'
+      );
+    }
     if (
       line.Inspection_Result__c != 'PASSED' &&
       line.Inspection_Result__c != 'FAILED'

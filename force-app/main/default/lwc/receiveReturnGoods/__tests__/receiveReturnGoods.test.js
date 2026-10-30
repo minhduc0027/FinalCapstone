@@ -1,6 +1,12 @@
 import { createElement } from "lwc";
 import ReceiveReturnGoods from "c/receiveReturnGoods";
-import { getRecord, updateRecord } from "lightning/uiRecordApi";
+import { getRecord, notifyRecordUpdateAvailable } from "lightning/uiRecordApi";
+import receiveGoods from "@salesforce/apex/ReturnRequestController.receiveGoods";
+jest.mock(
+  "@salesforce/apex/ReturnRequestController.receiveGoods",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
 const ShowToastEventName = "lightning__showtoast";
 
 jest.mock(
@@ -63,12 +69,13 @@ describe("c-receive-return-goods", () => {
 
   it("confirms receipt only after persistence and sends the version read from LDS", async () => {
     let resolveSave;
-    updateRecord.mockImplementation(
+    receiveGoods.mockImplementation(
       () =>
         new Promise((resolve) => {
           resolveSave = resolve;
         })
     );
+    notifyRecordUpdateAvailable.mockResolvedValue(undefined);
     const element = await mount();
     const toast = jest.fn();
     const close = jest.fn();
@@ -78,10 +85,10 @@ describe("c-receive-return-goods", () => {
     expect(element.shadowRoot.textContent).toContain("RR-2610-00001");
     confirm(element).click();
     await flush();
-    expect(updateRecord).toHaveBeenCalledWith(
-      { fields: { Id: RECORD_ID, Status__c: "INSPECTING" } },
-      { ifUnmodifiedSince: MODIFIED }
-    );
+    expect(receiveGoods).toHaveBeenCalledWith({
+      requestId: RECORD_ID,
+      lastModifiedAt: MODIFIED
+    });
     expect(confirm(element).disabled).toBe(true);
     expect(toast).not.toHaveBeenCalled();
     expect(close).not.toHaveBeenCalled();
@@ -102,7 +109,7 @@ describe("c-receive-return-goods", () => {
       const element = await mount(status, myStore);
       expect(confirm(element).disabled).toBe(true);
       confirm(element).click();
-      expect(updateRecord).not.toHaveBeenCalled();
+      expect(receiveGoods).not.toHaveBeenCalled();
       expect(
         element.shadowRoot.querySelector('[role="status"]')
       ).not.toBeNull();
@@ -110,7 +117,12 @@ describe("c-receive-return-goods", () => {
   );
 
   it("keeps the dialog open and explains a conflicting update", async () => {
-    updateRecord.mockRejectedValue({ status: 412 });
+    receiveGoods.mockRejectedValue({
+      body: {
+        message:
+          "Yêu cầu RR-2610-00001 vừa được người khác cập nhật. Vui lòng tải lại."
+      }
+    });
     const element = await mount();
     const close = jest.fn();
     element.addEventListener("lightning__actionsclosescreen", close);
@@ -123,7 +135,7 @@ describe("c-receive-return-goods", () => {
   });
 
   it("displays the save error without reporting success", async () => {
-    updateRecord.mockRejectedValue({
+    receiveGoods.mockRejectedValue({
       body: { message: "Không có quyền cập nhật." }
     });
     const element = await mount();
@@ -139,7 +151,7 @@ describe("c-receive-return-goods", () => {
 
   it("preserves MSG-20 from the status field validation", async () => {
     const message = "Không thể chuyển yêu cầu từ CANCELLED sang INSPECTING.";
-    updateRecord.mockRejectedValue({
+    receiveGoods.mockRejectedValue({
       body: {
         message: "An error occurred while trying to update the record.",
         output: { fieldErrors: { Status__c: [{ message }] } }

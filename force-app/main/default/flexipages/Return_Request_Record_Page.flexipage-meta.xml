@@ -38,7 +38,7 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>force:detailPanel</componentName>
+                <componentName>c:returnRequestReadOnlyDetails</componentName>
                 <identifier>returnRequestDetails</identifier>
             </componentInstance>
         </itemInstances>

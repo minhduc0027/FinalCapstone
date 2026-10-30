@@ -1,12 +1,16 @@
 import { LightningElement, api, wire } from "lwc";
-import { getRecord, getFieldValue, updateRecord } from "lightning/uiRecordApi";
+import {
+  getRecord,
+  getFieldValue,
+  notifyRecordUpdateAvailable
+} from "lightning/uiRecordApi";
 import { CloseActionScreenEvent } from "lightning/actions";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import { RefreshEvent } from "lightning/refresh";
 import STATUS from "@salesforce/schema/Return_Request__c.Status__c";
 import MY_STORE from "@salesforce/schema/Return_Request__c.Is_My_Store__c";
 import MODIFIED from "@salesforce/schema/Return_Request__c.LastModifiedDate";
-import MSG_13 from "@salesforce/label/c.SmartReturn_MSG_13";
+import receiveGoods from "@salesforce/apex/ReturnRequestController.receiveGoods";
 import NAME from "@salesforce/schema/Return_Request__c.Name";
 
 export default class ReceiveReturnGoods extends LightningElement {
@@ -63,10 +67,11 @@ export default class ReceiveReturnGoods extends LightningElement {
     this.saving = true;
     this.error = undefined;
     try {
-      await updateRecord(
-        { fields: { Id: this.recordId, [STATUS.fieldApiName]: "INSPECTING" } },
-        { ifUnmodifiedSince: getFieldValue(this.request, MODIFIED) }
-      );
+      await receiveGoods({
+        requestId: this.recordId,
+        lastModifiedAt: getFieldValue(this.request, MODIFIED)
+      });
+      await notifyRecordUpdateAvailable([{ recordId: this.recordId }]);
       this.dispatchEvent(
         new ShowToastEvent({
           title: "Đã nhận hàng",
@@ -78,14 +83,11 @@ export default class ReceiveReturnGoods extends LightningElement {
       this.dispatchEvent(new CloseActionScreenEvent());
     } catch (error) {
       this.error =
-        error.status === 412
-          ? MSG_13.replace("{0}", this.name)
-          : error.body?.output?.fieldErrors?.[STATUS.fieldApiName]?.[0]
-              ?.message ||
-            error.body?.output?.errors?.[0]?.message ||
-            error.body?.message ||
-            error.message ||
-            "Không thể xác nhận nhận hàng. Hãy thử lại.";
+        error.body?.output?.fieldErrors?.[STATUS.fieldApiName]?.[0]?.message ||
+        error.body?.output?.errors?.[0]?.message ||
+        error.body?.message ||
+        error.message ||
+        "Không thể xác nhận nhận hàng. Hãy thử lại.";
     } finally {
       this.saving = false;
     }

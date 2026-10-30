@@ -67,6 +67,16 @@ public with sharing class ReturnRequestController {
     return ReturnIntakeService.createReturn(input);
   }
 
+  /** Confirms receipt using the store-scoped lifecycle operation. */
+  @AuraEnabled
+  public static void receiveGoods(Id requestId, Datetime lastModifiedAt) {
+    try {
+      ReturnRequestLifecycleService.receiveGoods(requestId, lastModifiedAt);
+    } catch (Exception e) {
+      throw new AuraHandledException(e.getMessage());
+    }
+  }
+
   @AuraEnabled
   public static List<ReturnRequestStatusTimelineService.StatusTimelineItem> getStatusTimeline(
     Id requestId

@@ -227,8 +227,13 @@ public with sharing class RefundTestDataFactory {
 
   public class Mock implements HttpCalloutMock {
     public String scenario;
+    private Decimal expectedAmount;
     public Mock(String scenario) {
+      this(scenario, 1992000);
+    }
+    public Mock(String scenario, Decimal expectedAmount) {
       this.scenario = scenario;
+      this.expectedAmount = expectedAmount;
     }
     public HttpResponse respond(HttpRequest request) {
       Map<String, Object> payload = (Map<String, Object>) JSON.deserializeUntyped(
@@ -240,7 +245,7 @@ public with sharing class RefundTestDataFactory {
         'BRD uses stable request number for the key.'
       );
       Assert.areEqual(
-        Decimal.valueOf('1992000'),
+        expectedAmount,
         payload.get('amount'),
         'Never send the initial estimate.'
       );
