@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Refunds_In_Progress</fullName>
+    <columns>NAME</columns>
+    <columns>Refund_Transaction__c.Merchant_Reference__c</columns>
+    <columns>Refund_Transaction__c.Status__c</columns>
+    <columns>Refund_Transaction__c.Refund_Amount__c</columns>
+    <columns>Refund_Transaction__c.Attempt_Count__c</columns>
+    <columns>Refund_Transaction__c.Last_Error_Code__c</columns>
+    <columns>Refund_Transaction__c.Next_Retry_At__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Status__c</field>
+        <operation>equals</operation>
+        <value>QUEUED,PROCESSING,PENDING</value>
+    </filters>
+    <label>Refunds In Progress</label>
+</ListView>
