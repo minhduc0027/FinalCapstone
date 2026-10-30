@@ -134,7 +134,7 @@ public with sharing class RefundSelector {
 
   public static List<Refund_Transaction__c> due(
     Datetime nowValue,
-    Integer intervalMinutes,
+    Integer intervalSeconds,
     Integer size
   ) {
     DbQueryPlan plan = new DbQueryPlan();
@@ -153,7 +153,7 @@ public with sharing class RefundSelector {
     plan.binds.put('queuedStatus', RefundDomain.Status.QUEUED.name());
     plan.binds.put('processingStatus', RefundDomain.Status.PROCESSING.name());
     plan.binds.put('nowValue', nowValue);
-    plan.binds.put('expired', nowValue.addMinutes(-intervalMinutes));
+    plan.binds.put('expired', nowValue.addSeconds(-intervalSeconds));
     plan.binds.put('rowLimit', size + 1);
 
     return (List<Refund_Transaction__c>) DbQueryService.queryPage(

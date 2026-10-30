@@ -18,7 +18,7 @@ public with sharing class RefundService {
   private static RefundDomain.Policy policy() {
     return new RefundDomain.Policy(
       SmartReturnConfigService.getPayHubMaxRetries(),
-      SmartReturnConfigService.getPayHubRetryInterval()
+      SmartReturnConfigService.getPayHubRetryIntervalSeconds()
     );
   }
 
@@ -298,7 +298,7 @@ public with sharing class RefundService {
       row.Status__c = RefundDomain.Status.QUEUED.name();
       row.Worker_Job_Id__c = null;
       row.Attempt_Count__c--;
-      row.Next_Retry_At__c = System.now().addMinutes(policy().intervalMinutes);
+      row.Next_Retry_At__c = System.now().addSeconds(policy().intervalSeconds);
       update as user row;
     }
   }
@@ -342,8 +342,8 @@ public with sharing class RefundService {
       row.Last_Error_Message__c = decision.errorCode;
       if (decision.retryable && row.Attempt_Count__c < current.maxAttempts) {
         row.Status__c = RefundDomain.Status.QUEUED.name();
-        row.Next_Retry_At__c = response.occurredAt.addMinutes(
-          current.intervalMinutes
+        row.Next_Retry_At__c = response.occurredAt.addSeconds(
+          current.intervalSeconds
         );
       } else {
         row.Status__c = decision.status;
@@ -397,7 +397,7 @@ public with sharing class RefundService {
       return;
     }
     Set<Id> ids = new Map<Id, Refund_Transaction__c>(
-        RefundSelector.due(System.now(), current.intervalMinutes, room)
+        RefundSelector.due(System.now(), current.intervalSeconds, room)
       )
       .keySet();
     claimRefunds(ids);
