@@ -678,7 +678,7 @@ public with sharing class InspectionService {
       line.Inspection_Result__c != 'FAILED'
     ) {
       throw new InspectionException(
-        'Phải chọn chấp nhận hoặc từ chối cho line ' + line.Id + '.'
+        'Vui lòng ghi kết quả kiểm định cho tất cả sản phẩm.'
       );
     }
 
@@ -688,9 +688,12 @@ public with sharing class InspectionService {
       );
     }
 
-    if (String.isBlank(line.Eligibility_Reason__c)) {
+    if (
+      line.Inspection_Result__c == 'FAILED' &&
+      String.isBlank(line.Eligibility_Reason__c)
+    ) {
       throw new InspectionException(
-        'Eligibility Reason không được để trống cho line ' + line.Id + '.'
+        'Vui lòng nhập ghi chú cho sản phẩm không đạt kiểm định.'
       );
     }
   }
