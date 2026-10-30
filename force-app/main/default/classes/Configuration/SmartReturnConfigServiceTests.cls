@@ -22,7 +22,7 @@ private class SmartReturnConfigServiceTests {
 
     Integer payhubRetry = SmartReturnConfigService.getPayHubMaxRetries();
 
-    Integer retryInterval = SmartReturnConfigService.getPayHubRetryInterval();
+    Integer retryInterval = SmartReturnConfigService.getPayHubRetryIntervalSeconds();
 
     Integer scanInterval = SmartReturnConfigService.getRefundScanIntervalMinutes();
 

@@ -9,15 +9,15 @@ private class RefundRetryTest {
   }
   private static Refund_Transaction__c priorAttempt(
     Integer count,
-    Integer minutes
+    Integer seconds
   ) {
     Refund_Transaction__c row = RefundTestDataFactory.refund(
       [SELECT Id FROM Return_Request__c LIMIT 1].Id,
       'QUEUED'
     );
     row.Attempt_Count__c = count;
-    row.Last_Attempt_At__c = System.now().addMinutes(-minutes);
-    row.Next_Retry_At__c = row.Last_Attempt_At__c.addMinutes(15);
+    row.Last_Attempt_At__c = System.now().addSeconds(-seconds);
+    row.Next_Retry_At__c = row.Last_Attempt_At__c.addSeconds(5);
     row.Last_Error_Code__c = 'OUTCOME_UNCERTAIN';
     update as system row;
     return row;
@@ -25,7 +25,7 @@ private class RefundRetryTest {
   @IsTest
   static void http500SchedulesRetry() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(0, 16);
+      Refund_Transaction__c row = priorAttempt(0, 6);
       Test.setMock(
         HttpCalloutMock.class,
         new RefundTestDataFactory.Mock('HTTP_500')
@@ -40,16 +40,16 @@ private class RefundRetryTest {
         'System failure schedules retry.'
       );
       Assert.areEqual(
-        row.Last_Attempt_At__c.addMinutes(15),
+        row.Last_Attempt_At__c.addSeconds(5),
         row.Next_Retry_At__c,
-        'Enforce 15-minute interval.'
+        'Enforce 5-second interval.'
       );
     }
   }
   @IsTest
   static void http503SchedulesRetry() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(0, 16);
+      Refund_Transaction__c row = priorAttempt(0, 6);
       Test.setMock(
         HttpCalloutMock.class,
         new RefundTestDataFactory.Mock('HTTP_503')
@@ -67,7 +67,7 @@ private class RefundRetryTest {
   @IsTest
   static void timeoutIsLogged() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(0, 16);
+      Refund_Transaction__c row = priorAttempt(0, 6);
       Test.setMock(
         HttpCalloutMock.class,
         new RefundTestDataFactory.Mock('TIMEOUT')
@@ -97,7 +97,7 @@ private class RefundRetryTest {
   @IsTest
   static void exhaustedRetryCreatesOneTask() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(2, 16);
+      Refund_Transaction__c row = priorAttempt(2, 6);
       Test.setMock(
         HttpCalloutMock.class,
         new RefundTestDataFactory.Mock('HTTP_503')
@@ -123,7 +123,7 @@ private class RefundRetryTest {
   @IsTest
   static void successThenTimeoutRetryUsesSameKey() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(1, 16);
+      Refund_Transaction__c row = priorAttempt(1, 6);
       String key = row.Idempotency_Key__c;
       insert as system new Integration_Log__c(
         Refund_Transaction__c = row.Id,
@@ -168,7 +168,10 @@ private class RefundRetryTest {
   @IsTest
   static void tooEarlyRetryDoesNotDispatch() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(1, 14);
+      Refund_Transaction__c row = priorAttempt(1, 6);
+      // Keep the retry pending regardless of org execution speed.
+      row.Next_Retry_At__c = System.now().addHours(1);
+      update as system row;
       Test.startTest();
       RefundService.claimRefunds(new Set<Id>{ row.Id });
       Test.stopTest();
@@ -188,7 +191,7 @@ private class RefundRetryTest {
   @IsTest
   static void invalidTimeoutDoesNotClaimRefund() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(0, 16);
+      Refund_Transaction__c row = priorAttempt(0, 6);
       PayHubClient.timeoutSecondsOverride = 0;
 
       Test.startTest();
@@ -225,7 +228,7 @@ private class RefundRetryTest {
   @IsTest
   static void invalidTimeoutDoesNotBlockCompletedRefund() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(1, 16);
+      Refund_Transaction__c row = priorAttempt(1, 6);
       row.Status__c = 'SUCCEEDED';
       update as system row;
       PayHubClient.timeoutSecondsOverride = 0;
@@ -243,7 +246,7 @@ private class RefundRetryTest {
   @IsTest
   static void invalidTimeoutAfterClaimReleasesRefund() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(1, 16);
+      Refund_Transaction__c row = priorAttempt(1, 6);
       row.Status__c = 'PROCESSING';
       row.Worker_Job_Id__c = '707000000000001AAA';
       update as system row;
@@ -275,7 +278,7 @@ private class RefundRetryTest {
   @IsTest
   static void staleWorkerDoesNotSend() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(1, 16);
+      Refund_Transaction__c row = priorAttempt(1, 6);
       row.Status__c = 'PROCESSING';
       row.Worker_Job_Id__c = '707000000000001';
       update as system row;
@@ -297,7 +300,7 @@ private class RefundRetryTest {
   @IsTest
   static void schedulerDispatchesDueWork() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(1, 16);
+      Refund_Transaction__c row = priorAttempt(1, 6);
       Test.setMock(
         HttpCalloutMock.class,
         new RefundTestDataFactory.Mock('SUCCESS')
@@ -373,7 +376,7 @@ private class RefundRetryTest {
   @IsTest
   static void threeConsecutiveFailuresKeepThreeAudits() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(0, 16);
+      Refund_Transaction__c row = priorAttempt(0, 6);
       String key = row.Idempotency_Key__c;
       Test.startTest();
       for (Integer attempt = 1; attempt <= 3; attempt++) {
@@ -384,7 +387,7 @@ private class RefundRetryTest {
         update as system row;
         PayHubClient.Result response = new PayHubClient.Result();
         response.httpStatus = 503;
-        response.occurredAt = System.now().addMinutes((attempt - 1) * 15);
+        response.occurredAt = System.now().addSeconds((attempt - 1) * 5);
         response.durationMs = 1;
         response.responseBody = '{}';
         response.requestBody = JSON.serialize(
@@ -428,7 +431,7 @@ private class RefundRetryTest {
   @IsTest
   static void supersededWorkerResultIsAuditedWithoutApplying() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(1, 16);
+      Refund_Transaction__c row = priorAttempt(1, 6);
       row.Status__c = 'PROCESSING';
       row.Worker_Job_Id__c = '707000000000002AAA';
       update as system row;

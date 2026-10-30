@@ -55,6 +55,41 @@ public with sharing class RefundTestDataFactory {
     );
     return actor;
   }
+  public static void setupAccountingRefunds() {
+    grantProcessor();
+    User actor = accountant();
+    actor.ProfileId = [
+      SELECT Id
+      FROM Profile
+      WHERE Name = 'Minimum Access - Salesforce'
+      LIMIT 1
+    ]
+    .Id;
+    update actor;
+    Group queue = [
+      SELECT Id
+      FROM Group
+      WHERE DeveloperName = 'SmartReturn_Accounting' AND Type = 'Queue'
+      LIMIT 1
+    ];
+    insert new GroupMember(GroupId = queue.Id, UserOrGroupId = actor.Id);
+
+    System.runAs(new User(Id = UserInfo.getUserId())) {
+      Return_Request__c request = requests(1, 'REFUND_FAILED', true)[0];
+      Refund_Transaction__c refund = refund(request.Id, 'FAILED');
+      Task work = new Task(
+        OwnerId = queue.Id,
+        WhatId = refund.Id,
+        Subject = 'Reconcile failed refund',
+        Status = 'Not Started',
+        Priority = 'High'
+      );
+      insert as system work;
+      refund.Accounting_Task_Id__c = work.Id;
+      update as system refund;
+    }
+  }
+
   public static void setupUserModeRefunds() {
     User actor = grantProcessor();
     actor.ProfileId = [
@@ -227,8 +262,13 @@ public with sharing class RefundTestDataFactory {
 
   public class Mock implements HttpCalloutMock {
     public String scenario;
+    private Decimal expectedAmount;
     public Mock(String scenario) {
+      this(scenario, 1992000);
+    }
+    public Mock(String scenario, Decimal expectedAmount) {
       this.scenario = scenario;
+      this.expectedAmount = expectedAmount;
     }
     public HttpResponse respond(HttpRequest request) {
       Map<String, Object> payload = (Map<String, Object>) JSON.deserializeUntyped(
@@ -240,7 +280,7 @@ public with sharing class RefundTestDataFactory {
         'BRD uses stable request number for the key.'
       );
       Assert.areEqual(
-        Decimal.valueOf('1992000'),
+        expectedAmount,
         payload.get('amount'),
         'Never send the initial estimate.'
       );

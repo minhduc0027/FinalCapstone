@@ -11,8 +11,8 @@ private class RefundDomainTest {
     return new Refund_Transaction__c(
       Status__c = 'QUEUED',
       Attempt_Count__c = 1,
-      Last_Attempt_At__c = System.now().addMinutes(-15),
-      Next_Retry_At__c = System.now().addMinutes(-1)
+      Last_Attempt_At__c = System.now().addSeconds(-5),
+      Next_Retry_At__c = System.now().addSeconds(-1)
     );
   }
   @IsTest
@@ -130,15 +130,15 @@ private class RefundDomainTest {
     System.runAs(RefundTestDataFactory.processor()) {
       Refund_Transaction__c refund = queued();
       Datetime nowValue = System.now();
-      refund.Last_Attempt_At__c = nowValue.addMinutes(-14);
+      refund.Last_Attempt_At__c = nowValue.addSeconds(-4);
       Test.startTest();
       Boolean allowed = RefundDomain.canClaim(
         refund,
-        new RefundDomain.Policy(3, 15),
+        new RefundDomain.Policy(3, 5),
         nowValue
       );
       Test.stopTest();
-      Assert.isFalse(allowed, 'Never retry earlier than 15 minutes.');
+      Assert.isFalse(allowed, 'Never retry earlier than 5 seconds.');
     }
   }
   @IsTest
@@ -146,11 +146,11 @@ private class RefundDomainTest {
     System.runAs(RefundTestDataFactory.processor()) {
       Datetime nowValue = System.now();
       Refund_Transaction__c refund = queued();
-      refund.Last_Attempt_At__c = nowValue.addMinutes(-15);
+      refund.Last_Attempt_At__c = nowValue.addSeconds(-5);
       Test.startTest();
       Boolean allowed = RefundDomain.canClaim(
         refund,
-        new RefundDomain.Policy(5, 15),
+        new RefundDomain.Policy(5, 5),
         nowValue
       );
       Test.stopTest();
@@ -165,7 +165,7 @@ private class RefundDomainTest {
       Test.startTest();
       Boolean allowed = RefundDomain.canClaim(
         refund,
-        new RefundDomain.Policy(3, 15),
+        new RefundDomain.Policy(3, 5),
         System.now()
       );
       Test.stopTest();
@@ -249,10 +249,10 @@ private class RefundDomainTest {
     System.runAs(RefundTestDataFactory.processor()) {
       Test.startTest();
       try {
-        new RefundDomain.Policy(3, 14);
+        new RefundDomain.Policy(3, 4);
         Assert.fail('Reject too-short intervals.');
       } catch (RefundDomain.RuleException e) {
-        Assert.isTrue(e.getMessage().contains('15'), 'Explain minimum.');
+        Assert.isTrue(e.getMessage().contains('5'), 'Explain minimum.');
       }
       Test.stopTest();
     }
@@ -370,11 +370,11 @@ private class RefundDomainTest {
       Refund_Transaction__c refund = queued();
       refund.Status__c = 'PROCESSING';
       Datetime nowValue = System.now();
-      refund.Last_Attempt_At__c = nowValue.addMinutes(-15);
+      refund.Last_Attempt_At__c = nowValue.addSeconds(-5);
       Test.startTest();
       Boolean eligible = RefundDomain.canClaim(
         refund,
-        new RefundDomain.Policy(3, 15),
+        new RefundDomain.Policy(3, 5),
         nowValue
       );
       Test.stopTest();

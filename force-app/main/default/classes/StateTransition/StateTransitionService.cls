@@ -46,6 +46,7 @@ public inherited sharing class StateTransitionService {
       SELECT Id, Status__c
       FROM Return_Request__c
       WHERE Id = :requestId
+      WITH USER_MODE
       LIMIT 1
       FOR UPDATE
     ];
@@ -60,7 +61,8 @@ public inherited sharing class StateTransitionService {
       requestRecord.Rejection_Reason__c = rejectionReason;
 
     try {
-      update requestRecord;
+      // Entry-point services authorize the workflow; status remains read-only in user APIs.
+      update as system requestRecord;
       LogService.info(
         new List<Return_Request__c>{ requestRecord },
         'Status updated from ' + oldStatus + ' to ' + targetStatus,
@@ -109,6 +111,7 @@ public inherited sharing class StateTransitionService {
         SELECT Id, Status__c, Required_Approval_Level__c
         FROM Return_Request__c
         WHERE Id IN :requestIds
+        WITH USER_MODE
         FOR UPDATE
       ]
     );
@@ -161,7 +164,8 @@ public inherited sharing class StateTransitionService {
       try {
         Database.SaveResult[] saveResults = Database.update(
           requestsToUpdate,
-          allOrNone
+          allOrNone,
+          AccessLevel.SYSTEM_MODE
         );
 
         for (Integer index = 0; index < saveResults.size(); index++) {
@@ -247,6 +251,7 @@ public inherited sharing class StateTransitionService {
         SELECT Id, Status__c, Required_Approval_Level__c
         FROM Return_Request__c
         WHERE Id IN :requestIds
+        WITH USER_MODE
         FOR UPDATE
       ]
     );
@@ -308,7 +313,11 @@ public inherited sharing class StateTransitionService {
       return results;
     }
 
-    Database.SaveResult[] saveResults = Database.update(recordsToUpdate, false);
+    Database.SaveResult[] saveResults = Database.update(
+      recordsToUpdate,
+      false,
+      AccessLevel.SYSTEM_MODE
+    );
 
     List<SObject> successfulRecords = new List<SObject>();
 

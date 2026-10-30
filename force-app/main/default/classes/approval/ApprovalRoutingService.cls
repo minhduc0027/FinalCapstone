@@ -21,8 +21,6 @@ public with sharing class ApprovalRoutingService {
         approvalLevel
       );
 
-      notifyApprover(returnRequest.Id, approvalLevel);
-
       return;
     }
 
@@ -31,8 +29,6 @@ public with sharing class ApprovalRoutingService {
       SmartReturnConstants.STATUS_PENDING_APPROVAL,
       approvalLevel
     );
-
-    notifyApprover(returnRequest.Id, approvalLevel);
   }
 
   public static String determineRequiredApprovalLevel(
@@ -79,51 +75,13 @@ public with sharing class ApprovalRoutingService {
     ];
 
     Integer requestCount = (Integer) result.get('requestCount');
+
     Decimal totalAmount = (Decimal) result.get('totalRefundAmount');
+
     totalAmount = totalAmount == null ? 0 : totalAmount;
 
     return requestCount >= SmartReturnConfigService.getRiskRequestCount() ||
       totalAmount >= SmartReturnConfigService.getRiskRefundAmount();
-  }
-
-  //===================================================
-  // Approval notification
-  //===================================================
-  @TestVisible
-  private static void notifyApprover(Id returnRequestId, String approvalLevel) {
-    Return_Request__c returnRequest = [
-      SELECT
-        Id,
-        Name,
-        Store__c,
-        Store__r.Store_Manager__c,
-        Store__r.Region_Manager__c
-      FROM Return_Request__c
-      WHERE Id = :returnRequestId
-      LIMIT 1
-    ];
-
-    Set<Id> recipientIds = new Set<Id>();
-
-    if (
-      approvalLevel == SmartReturnConstants.APPROVAL_AUTO ||
-      approvalLevel == SmartReturnConstants.APPROVAL_CHT
-    ) {
-      recipientIds.add(returnRequest.Store__r.Store_Manager__c);
-    } else if (approvalLevel == SmartReturnConstants.APPROVAL_QLV) {
-      recipientIds.add(returnRequest.Store__r.Region_Manager__c);
-    }
-
-    NotificationService.trySend(
-      recipientIds,
-      returnRequest.Id,
-      'Yêu cầu hoàn tiền cần phê duyệt',
-      'Yêu cầu ' +
-        returnRequest.Name +
-        ' đang chờ phê duyệt ở cấp ' +
-        approvalLevel +
-        '.'
-    );
   }
 
   public class ApprovalRoutingException extends Exception {

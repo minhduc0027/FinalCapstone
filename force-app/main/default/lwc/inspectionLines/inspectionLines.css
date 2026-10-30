@@ -45,9 +45,10 @@
 
   /*
    * Giới hạn chiều cao dựa trên viewport.
-   * Có thể chỉnh 24rem nếu muốn vùng scroll cao/thấp hơn.
+   * chỉnh 12+rem nếu muốn vùng scroll thấp hơn.
    */
   max-height: calc(100vh - 24rem);
+  min-height: 18rem;
 
   overflow-y: auto;
   overflow-x: hidden;

@@ -44,7 +44,7 @@ public inherited sharing class SmartReturnConfigService {
     return Integer.valueOf(getSettings().PayHub_Max_Retry__c);
   }
 
-  public static Integer getPayHubRetryInterval() {
+  public static Integer getPayHubRetryIntervalSeconds() {
     return Integer.valueOf(getSettings().PayHub_Retry_Interval__c);
   }
 

@@ -229,6 +229,7 @@ public with sharing class InspectionService {
         Store__r.Region_Manager__c
       FROM Return_Request__c
       WHERE Id = :requestId
+      WITH USER_MODE
       LIMIT 1
       FOR UPDATE
     ];
@@ -268,7 +269,7 @@ public with sharing class InspectionService {
       );
     }
 
-    update linesToUpdate;
+    update as user linesToUpdate;
 
     totalActualRefund = applyRefundRounding(totalActualRefund);
 
@@ -281,7 +282,7 @@ public with sharing class InspectionService {
     // Không cần evaluate approval routing.
     //===================================================
     if (passedLineCount == 0) {
-      update requestRecord;
+      update as system requestRecord;
 
       StateTransitionService.transition(
         requestId,
@@ -323,7 +324,8 @@ public with sharing class InspectionService {
       );
     }
 
-    update requestRecord;
+    // Persist computed workflow fields without granting direct status editing.
+    update as system requestRecord;
 
     //===================================================
     // Actual amount requires higher approval authority
@@ -359,7 +361,6 @@ public with sharing class InspectionService {
         'Inspection completed. Request moved to refund processing.',
         'COMPLETE_INSPECTION'
       );
-
       return;
     }
 
@@ -699,12 +700,9 @@ public with sharing class InspectionService {
       );
     }
 
-    if (
-      String.isBlank(line.Eligibility_Reason__c) &&
-      line.Inspection_Result__c == 'FAILED'
-    ) {
+    if (String.isBlank(line.Eligibility_Reason__c)) {
       throw new InspectionException(
-        'Vui lòng nhập ghi chú cho sản phẩm không đạt kiểm định'
+        'Eligibility Reason không được để trống cho line ' + line.Id + '.'
       );
     }
   }

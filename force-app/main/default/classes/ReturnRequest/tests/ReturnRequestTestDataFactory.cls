@@ -3,6 +3,46 @@
 public with sharing class ReturnRequestTestDataFactory {
   private static Integer storeSequence = 0;
 
+  /** Creates a store actor with workflow actions but no refund or activity access. */
+  public static void createStoreOperator() {
+    User actor = new User(
+      Alias = 'rrstore',
+      Restrict_Store_UI__c = true,
+      LastName = 'Store Goods Receiver',
+      Email = 'store.receiver@example.invalid',
+      Username = 'store.receiver.' +
+        Crypto.getRandomLong() +
+        '@example.invalid',
+      ProfileId = [
+        SELECT Id
+        FROM Profile
+        WHERE Name = 'SmartReturn Store Staff'
+        LIMIT 1
+      ]
+      .Id,
+      TimeZoneSidKey = 'Asia/Ho_Chi_Minh',
+      LocaleSidKey = 'en_US',
+      EmailEncodingKey = 'UTF-8',
+      LanguageLocaleKey = 'en_US'
+    );
+    insert as system actor;
+    List<PermissionSetAssignment> assignments = new List<PermissionSetAssignment>();
+    for (PermissionSet permissions : [
+      SELECT Id
+      FROM PermissionSet
+      WHERE
+        Name IN ('SmartReturn_Return_Operations', 'SmartReturn_Approval_Access')
+    ]) {
+      assignments.add(
+        new PermissionSetAssignment(
+          AssigneeId = actor.Id,
+          PermissionSetId = permissions.Id
+        )
+      );
+    }
+    insert as system assignments;
+  }
+
   /** Creates a test actor explicitly permitted to persist a rejection reason. */
   public static void createApprover() {
     User actor = new User(

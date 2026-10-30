@@ -41,6 +41,25 @@ public with sharing class ReturnRequestSelector {
     'Estimated_Refund_Amount__c'
   };
 
+  /** Locks the visible request used by the goods receipt action. */
+  public static List<Return_Request__c> forGoodsReceipt(Id requestId) {
+    return (List<Return_Request__c>) selectRows(
+      RETURN_REQUEST_OBJECT,
+      new List<String>{
+        'Id',
+        'Name',
+        'Status__c',
+        'Is_My_Store__c',
+        'LastModifiedDate'
+      },
+      'Id = :requestId',
+      new Map<String, Object>{ 'requestId' => requestId },
+      true,
+      1,
+      'Id'
+    );
+  }
+
   public static List<Return_Request_Line__c> getReturnRequestLines(
     Id returnRequestId,
     Boolean lockRows

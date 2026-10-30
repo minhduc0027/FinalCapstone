@@ -1,5 +1,11 @@
 @IsTest
 private class InspectionModuleTests {
+  @TestSetup
+  static void setupActors() {
+    ReturnRequestTestDataFactory.createStoreOperator();
+    RefundTestDataFactory.grantProcessor();
+  }
+
   private class TestData {
     public Account customer;
     public Store__c store;
@@ -95,6 +101,7 @@ private class InspectionModuleTests {
   private static Return_Request_Line__c buildRejectedInput(Id lineId) {
     return new Return_Request_Line__c(
       Id = lineId,
+      Reported_Condition__c = 'SEALED',
       Is_Eligible__c = false,
       Eligibility_Code__c = 'CATEGORY_NOT_RETURNABLE',
       Eligibility_Reason__c = 'DAMAGED',
@@ -188,6 +195,90 @@ private class InspectionModuleTests {
   //===================================================
   // Service success path without refund metadata
   //===================================================
+  @IsTest
+  static void passedInspectionWaitsForDispatcherWithoutRefundAccess() {
+    TestData data = createInspectionData(1);
+    User receiver = [SELECT Id FROM User WHERE Alias = 'rrstore' LIMIT 1];
+    User processor = RefundTestDataFactory.processor();
+    data.customer.OwnerId = receiver.Id;
+    update as system data.customer;
+    data.orderRecord.OwnerId = receiver.Id;
+    update as system data.orderRecord;
+    data.requestRecord.OwnerId = receiver.Id;
+    update as system data.requestRecord;
+    data.store.Store_Manager__c = receiver.Id;
+    update as system data.store;
+    insert as system new Return_Request__Share(
+      ParentId = data.requestRecord.Id,
+      UserOrGroupId = processor.Id,
+      AccessLevel = 'Edit',
+      RowCause = Schema.Return_Request__Share.RowCause.Manual
+    );
+    Return_Request_Line__c input = new Return_Request_Line__c(
+      Id = data.lines[0].Id,
+      Reported_Condition__c = 'SEALED',
+      Inspection_Result__c = 'PASSED',
+      Eligibility_Code__c = 'ELIGIBLE',
+      Eligibility_Reason__c = 'Inspection passed'
+    );
+    System.runAs(receiver) {
+      Assert.isFalse(
+        Refund_Transaction__c.SObjectType.getDescribe().isAccessible(),
+        'Inspection must not require refund read access.'
+      );
+      InspectionController.submitInspection(
+        new List<Return_Request_Line__c>{ input }
+      );
+      Return_Request__c inspected = [
+        SELECT Status__c, Inspection_Completed_At__c
+        FROM Return_Request__c
+        WHERE Id = :data.requestRecord.Id
+      ];
+      Assert.areEqual(
+        'INSPECTING',
+        inspected.Status__c,
+        'The dispatcher owns the refund handoff.'
+      );
+      Assert.isNotNull(
+        inspected.Inspection_Completed_At__c,
+        'Persist completed inspection before dispatch.'
+      );
+    }
+    Assert.areEqual(
+      0,
+      [SELECT COUNT() FROM Refund_Transaction__c],
+      'Store submission does not create financial records.'
+    );
+    System.runAs(processor) {
+      Test.setMock(
+        HttpCalloutMock.class,
+        new RefundTestDataFactory.Mock('SUCCESS', 1000000)
+      );
+      Test.startTest();
+      RefundService.dispatchDue();
+      Test.stopTest();
+    }
+    Assert.areEqual(
+      'COMPLETED',
+      [
+        SELECT Status__c
+        FROM Return_Request__c
+        WHERE Id = :data.requestRecord.Id
+      ]
+      .Status__c,
+      'The authorized dispatcher finishes the refund.'
+    );
+    Assert.areEqual(
+      1,
+      [
+        SELECT COUNT()
+        FROM Refund_Transaction__c
+        WHERE Return_Request__c = :data.requestRecord.Id
+      ],
+      'Create exactly one refund.'
+    );
+  }
+
   @IsTest
   static void submitInspection_ShouldRejectAllLines() {
     TestData data = createInspectionData(2);

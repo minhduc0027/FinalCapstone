@@ -134,7 +134,7 @@ public with sharing class RefundSelector {
 
   public static List<Refund_Transaction__c> due(
     Datetime nowValue,
-    Integer intervalMinutes,
+    Integer intervalSeconds,
     Integer size
   ) {
     DbQueryPlan plan = new DbQueryPlan();
@@ -153,7 +153,7 @@ public with sharing class RefundSelector {
     plan.binds.put('queuedStatus', RefundDomain.Status.QUEUED.name());
     plan.binds.put('processingStatus', RefundDomain.Status.PROCESSING.name());
     plan.binds.put('nowValue', nowValue);
-    plan.binds.put('expired', nowValue.addMinutes(-intervalMinutes));
+    plan.binds.put('expired', nowValue.addSeconds(-intervalSeconds));
     plan.binds.put('rowLimit', size + 1);
 
     return (List<Refund_Transaction__c>) DbQueryService.queryPage(
@@ -183,6 +183,30 @@ public with sharing class RefundSelector {
     }
 
     return rows[0].Id;
+  }
+
+  /** Locks the request fields needed for manual completion without requiring Order access. */
+  public static Map<Id, Return_Request__c> requestsForManualCompletion(
+    Set<Id> ids
+  ) {
+    if (ids == null || ids.isEmpty())
+      return new Map<Id, Return_Request__c>();
+
+    List<Return_Request__c> rows = (List<Return_Request__c>) selectRows(
+      'Return_Request__c',
+      new List<String>{
+        'Id',
+        'Status__c',
+        'Store__c',
+        'Store__r.Store_Code__c'
+      },
+      'Id IN :ids',
+      new Map<String, Object>{ 'ids' => ids },
+      true,
+      ids.size(),
+      'Id'
+    );
+    return new Map<Id, Return_Request__c>(rows);
   }
 
   public static List<Task> tasks(Set<Id> ids) {

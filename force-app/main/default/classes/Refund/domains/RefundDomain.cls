@@ -9,7 +9,7 @@ public with sharing class RefundDomain {
 
   private static final Integer MIN_ATTEMPTS = 1;
   private static final Integer MAX_STORED_ATTEMPTS = 999;
-  private static final Integer MIN_RETRY_INTERVAL_MINUTES = 15;
+  private static final Integer MIN_RETRY_INTERVAL_SECONDS = 5;
   private static final Integer MIN_PAYHUB_TIMEOUT_SECONDS = 1;
   private static final Integer MAX_PAYHUB_TIMEOUT_SECONDS = 120;
   private static final Integer NO_ATTEMPTS = 0;
@@ -42,7 +42,7 @@ public with sharing class RefundDomain {
 
   public class Policy {
     public Integer maxAttempts;
-    public Integer intervalMinutes;
+    public Integer intervalSeconds;
 
     public Policy(Integer maximum, Integer interval) {
       if (
@@ -50,22 +50,22 @@ public with sharing class RefundDomain {
         maximum < MIN_ATTEMPTS ||
         maximum > MAX_STORED_ATTEMPTS ||
         interval == null ||
-        interval < MIN_RETRY_INTERVAL_MINUTES
+        interval < MIN_RETRY_INTERVAL_SECONDS
       ) {
         throw new RuleException(
           String.format(
-            'Invalid policy: maxAttempts must be {0}-{1}, intervalMinutes must be >= {2}',
+            'Invalid policy: maxAttempts must be {0}-{1}, intervalSeconds must be >= {2}',
             new List<String>{
               String.valueOf(MIN_ATTEMPTS),
               String.valueOf(MAX_STORED_ATTEMPTS),
-              String.valueOf(MIN_RETRY_INTERVAL_MINUTES)
+              String.valueOf(MIN_RETRY_INTERVAL_SECONDS)
             }
           )
         );
       }
 
       maxAttempts = maximum;
-      intervalMinutes = interval;
+      intervalSeconds = interval;
     }
   }
 
@@ -196,7 +196,7 @@ public with sharing class RefundDomain {
 
     if (refund.Status__c == Status.PROCESSING.name()) {
       return refund.Last_Attempt_At__c != null &&
-        refund.Last_Attempt_At__c.addMinutes(policy.intervalMinutes) <=
+        refund.Last_Attempt_At__c.addSeconds(policy.intervalSeconds) <=
         nowValue;
     }
 
@@ -204,7 +204,7 @@ public with sharing class RefundDomain {
       (refund.Next_Retry_At__c == null ||
       refund.Next_Retry_At__c <= nowValue) &&
       (refund.Last_Attempt_At__c == null ||
-      refund.Last_Attempt_At__c.addMinutes(policy.intervalMinutes) <= nowValue);
+      refund.Last_Attempt_At__c.addSeconds(policy.intervalSeconds) <= nowValue);
   }
 
   public static Boolean ownsClaim(
