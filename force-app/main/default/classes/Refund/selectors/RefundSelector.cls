@@ -185,6 +185,30 @@ public with sharing class RefundSelector {
     return rows[0].Id;
   }
 
+  /** Locks the request fields needed for manual completion without requiring Order access. */
+  public static Map<Id, Return_Request__c> requestsForManualCompletion(
+    Set<Id> ids
+  ) {
+    if (ids == null || ids.isEmpty())
+      return new Map<Id, Return_Request__c>();
+
+    List<Return_Request__c> rows = (List<Return_Request__c>) selectRows(
+      'Return_Request__c',
+      new List<String>{
+        'Id',
+        'Status__c',
+        'Store__c',
+        'Store__r.Store_Code__c'
+      },
+      'Id IN :ids',
+      new Map<String, Object>{ 'ids' => ids },
+      true,
+      ids.size(),
+      'Id'
+    );
+    return new Map<Id, Return_Request__c>(rows);
+  }
+
   public static List<Task> tasks(Set<Id> ids) {
     return (List<Task>) selectRows(
       'Task',

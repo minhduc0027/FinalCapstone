@@ -586,9 +586,8 @@ public with sharing class RefundService {
     if (found.isEmpty()) {
       throw new RefundException('Refund transaction not found.');
     }
-    Map<Id, Return_Request__c> requests = ReturnRequestSelector.byIds(
-      new Set<Id>{ found[0].Return_Request__c },
-      true
+    Map<Id, Return_Request__c> requests = RefundSelector.requestsForManualCompletion(
+      new Set<Id>{ found[0].Return_Request__c }
     );
     Refund_Transaction__c row = RefundSelector.byIds(
       new Set<Id>{ refundId },
@@ -612,24 +611,16 @@ public with sharing class RefundService {
 
     Savepoint checkpoint = Database.setSavepoint();
     try {
-      row.Manual_Reference__c = externalReference;
-      row.Manual_Completed_At__c = System.now();
-      row.Manual_Completed_By__c = UserInfo.getUserId();
-      finish(
+      RefundManualCompletionService.complete(
         row,
         requests.get(row.Return_Request__c),
+        externalReference
+      );
+      notifyOutcomes(
+        new List<Refund_Transaction__c>{ row },
+        requests,
         SmartReturnConstants.STATUS_COMPLETED
       );
-      update as system row;
-      if (row.Accounting_Task_Id__c != null) {
-        List<Task> tasks = RefundSelector.tasks(
-          new Set<Id>{ (Id) row.Accounting_Task_Id__c }
-        );
-        for (Task task : tasks) {
-          task.Status = 'Completed';
-        }
-        update as system tasks;
-      }
     } catch (Exception e) {
       Database.rollback(checkpoint);
       throw new RefundException(
