@@ -130,7 +130,9 @@ public inherited sharing class ReturnIntakeService {
 
       Id customerId = firstOrderItem.Order.AccountId;
 
-      Id storeId = firstOrderItem.Order.Store__c;
+      Id orderStoreId = firstOrderItem.Order.Store__c;
+
+      Id storeId = resolveStoreId(input.sourceChannel, orderStoreId);
 
       /*
        * Preview Approval Level:
@@ -357,5 +359,26 @@ public inherited sharing class ReturnIntakeService {
     );
 
     return CreateReturnResult.failure(code, message);
+  }
+
+  private static Id resolveStoreId(String sourceChannel, Id orderStoreId) {
+    String normalizedSource = normalizeSourceChannel(sourceChannel);
+
+    /*
+     * Requests created by store staff use the Store
+     * assigned to the current User.
+     *
+     * If the User has no configured Store, the service
+     * falls back to the Store from the original Order.
+     */
+    if (normalizedSource == SmartReturnConstants.SOURCE_STORE) {
+      Id userStoreId = ReturnIntakeSelector.selectCurrentUserStoreId();
+
+      if (userStoreId != null) {
+        return userStoreId;
+      }
+    }
+
+    return orderStoreId;
   }
 }

@@ -17,6 +17,20 @@ const RESULT_PASSED = "PASSED";
 const RESULT_FAILED = "FAILED";
 //const RESULT_NOT_INSPECTED = "NOT_INSPECTED";
 const CODE_ELIGIBLE = "ELIGIBLE";
+const ACTUAL_CONDITION = [
+  {
+    label: "Opened",
+    value: "OPENED"
+  },
+  {
+    label: "Sealed",
+    value: "SEALED"
+  },
+  {
+    label: "Used",
+    value: "USED"
+  }
+];
 
 export default class InspectionLines extends LightningElement {
   recordId;
@@ -55,6 +69,9 @@ export default class InspectionLines extends LightningElement {
         scope: APPLICATION_SCOPE
       }
     );
+  }
+  get actualConditionOptions() {
+    return ACTUAL_CONDITION;
   }
 
   get inspectionResultOptions() {
@@ -138,6 +155,7 @@ export default class InspectionLines extends LightningElement {
 
         return {
           id: line.Id,
+          reasonRequired: false,
 
           productName: line.Product__r?.Name || "Product not available",
 
@@ -156,6 +174,10 @@ export default class InspectionLines extends LightningElement {
           returnReason: line.Return_Reason__c || "—",
 
           reportedCondition: line.Reported_Condition__c || "—",
+
+          actualCondition: this.normalizeActualCondition(
+            line.Reported_Condition__c
+          ),
 
           inspectionResult: this.normalizeInspectionResult(
             line.Inspection_Result__c
@@ -189,9 +211,12 @@ export default class InspectionLines extends LightningElement {
     if (value === RESULT_PASSED || value === RESULT_FAILED) {
       return value;
     }
-
     // NOT_INSPECTED và null đều hiển thị chưa chọn.
     return "";
+  }
+  normalizeActualCondition(value) {
+    const allowedValues = new Set(["OPENED", "SEALED", "USED"]);
+    return allowedValues.has(value) ? value : "";
   }
 
   handleFieldChange(event) {
@@ -224,7 +249,8 @@ export default class InspectionLines extends LightningElement {
       return {
         ...row,
         inspectionResult: RESULT_PASSED,
-        eligibilityCode: CODE_ELIGIBLE
+        eligibilityCode: CODE_ELIGIBLE,
+        reasonRequired: false
       };
     }
 
@@ -233,7 +259,8 @@ export default class InspectionLines extends LightningElement {
         ...row,
         inspectionResult: RESULT_FAILED,
         eligibilityCode:
-          row.eligibilityCode === CODE_ELIGIBLE ? "" : row.eligibilityCode
+          row.eligibilityCode === CODE_ELIGIBLE ? "" : row.eligibilityCode,
+        reasonRequired: true
       };
     }
 
@@ -259,14 +286,18 @@ export default class InspectionLines extends LightningElement {
       });
 
     for (const row of this.rows) {
+      const validActualCondition = ["OPENED", "SEALED", "USED"].includes(
+        row.actualCondition
+      );
       const validResult =
         row.inspectionResult === RESULT_PASSED ||
         row.inspectionResult === RESULT_FAILED;
 
       const hasCode = Boolean(row.eligibilityCode?.trim());
 
-      const hasReason = Boolean(row.eligibilityReason?.trim());
-
+      const validReason =
+        row.inspectionResult !== RESULT_FAILED ||
+        Boolean(row.eligibilityReason?.trim());
       const validPassedCode =
         row.inspectionResult !== RESULT_PASSED ||
         row.eligibilityCode === CODE_ELIGIBLE;
@@ -276,9 +307,10 @@ export default class InspectionLines extends LightningElement {
         row.eligibilityCode !== CODE_ELIGIBLE;
 
       if (
+        !validActualCondition ||
         !validResult ||
         !hasCode ||
-        !hasReason ||
+        !validReason ||
         !validPassedCode ||
         !validFailedCode
       ) {
@@ -289,7 +321,7 @@ export default class InspectionLines extends LightningElement {
     if (!valid) {
       this.toast(
         "Complete all inspection results",
-        "Every line requires PASSED or FAILED, a compatible eligibility code, and a reason.",
+        "Every line requires an actual condition, PASSED or FAILED, a compatible eligibility code, and a reason.",
         "error"
       );
     }
@@ -306,6 +338,8 @@ export default class InspectionLines extends LightningElement {
 
     const requestLines = this.rows.map((row) => ({
       Id: row.id,
+
+      Reported_Condition__c: row.actualCondition,
 
       Inspection_Result__c: row.inspectionResult,
 

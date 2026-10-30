@@ -64,4 +64,26 @@ public inherited sharing class ReturnIntakeSelector {
 
     return itemsById;
   }
+
+  public static Id selectCurrentUserStoreId() {
+    User currentUser = [
+      SELECT Id, Store_Code__c
+      FROM User
+      WHERE Id = :UserInfo.getUserId()
+      LIMIT 1
+    ];
+
+    if (String.isBlank(currentUser.Store_Code__c)) {
+      return null;
+    }
+
+    List<Store__c> stores = [
+      SELECT Id, Store_Code__c
+      FROM Store__c
+      WHERE Store_Code__c = :currentUser.Store_Code__c
+      LIMIT 1
+    ];
+
+    return stores.isEmpty() ? null : stores[0].Id;
+  }
 }
