@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Failed_Exchanges</fullName>
+    <columns>NAME</columns>
+    <columns>Integration_Log__c.Refund_Transaction__c</columns>
+    <columns>Integration_Log__c.Occurred_At__c</columns>
+    <columns>Integration_Log__c.Attempt_Number__c</columns>
+    <columns>Integration_Log__c.Direction__c</columns>
+    <columns>Integration_Log__c.Http_Status__c</columns>
+    <columns>Integration_Log__c.Result__c</columns>
+    <columns>Integration_Log__c.Error_Code__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Result__c</field>
+        <operation>equals</operation>
+        <value>FAILED,TIMEOUT</value>
+    </filters>
+    <label>Failed Exchanges</label>
+</ListView>

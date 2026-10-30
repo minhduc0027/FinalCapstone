@@ -200,8 +200,8 @@ def main():
         """
         if args.fast:
             source += """
-              refund.Last_Attempt_At__c = System.now().addMinutes(-SmartReturnConfigService.getPayHubRetryInterval() - 1);
-              refund.Next_Retry_At__c = System.now().addMinutes(-1);
+              refund.Last_Attempt_At__c = System.now().addSeconds(-SmartReturnConfigService.getPayHubRetryIntervalSeconds() - 1);
+              refund.Next_Retry_At__c = System.now().addSeconds(-1);
               update as user refund;
             """
         result = apex(args.org, source + """

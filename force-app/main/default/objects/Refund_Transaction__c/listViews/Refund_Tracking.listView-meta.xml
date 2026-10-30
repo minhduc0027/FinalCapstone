@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Refund_Tracking</fullName>
+    <columns>NAME</columns>
+    <columns>Refund_Transaction__c.Merchant_Reference__c</columns>
+    <columns>Refund_Transaction__c.Status__c</columns>
+    <columns>Refund_Transaction__c.Refund_Amount__c</columns>
+    <columns>Refund_Transaction__c.Attempt_Count__c</columns>
+    <columns>Refund_Transaction__c.Last_Error_Code__c</columns>
+    <columns>Refund_Transaction__c.Next_Retry_At__c</columns>
+    <filterScope>Everything</filterScope>
+    <label>Refund Tracking</label>
+</ListView>

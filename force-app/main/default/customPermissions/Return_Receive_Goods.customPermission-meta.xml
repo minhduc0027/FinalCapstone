@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomPermission xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description
+  >Confirms goods receipt for an awaiting-goods request at the user's store.</description>
+    <isLicensed>false</isLicensed>
+    <label>Receive Return Goods</label>
+</CustomPermission>

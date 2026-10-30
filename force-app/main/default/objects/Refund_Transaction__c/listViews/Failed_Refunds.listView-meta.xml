@@ -3,8 +3,9 @@
     <fullName>Failed_Refunds</fullName>
     <columns>NAME</columns>
     <columns>Refund_Transaction__c.Merchant_Reference__c</columns>
-    <columns>Refund_Transaction__c.Order_Number__c</columns>
+    <columns>Refund_Transaction__c.Status__c</columns>
     <columns>Refund_Transaction__c.Refund_Amount__c</columns>
+    <columns>Refund_Transaction__c.Attempt_Count__c</columns>
     <columns>Refund_Transaction__c.Last_Error_Code__c</columns>
     <columns>Refund_Transaction__c.Last_Attempt_At__c</columns>
     <filterScope>Everything</filterScope>

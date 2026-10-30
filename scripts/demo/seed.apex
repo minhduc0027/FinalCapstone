@@ -372,7 +372,7 @@ try {
         'requests' => requestManifest,
         'refundPolicy' => new Map<String, Object>{
           'maxAttempts' => SmartReturnConfigService.getPayHubMaxRetries(),
-          'retryMinutes' => SmartReturnConfigService.getPayHubRetryInterval(),
+          'retrySeconds' => SmartReturnConfigService.getPayHubRetryIntervalSeconds(),
           'timeoutSeconds' => SmartReturnConfigService.getPayHubMaxTimeoutSecond(),
           'sendingEnabled' => SmartReturnConfigService.isFeatureEnabled(
             'Send_PayHub'

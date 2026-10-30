@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Restrict_Store_UI__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description
+  >Applies store-persona task restrictions to NV and CHT users.</description>
+    <inlineHelpText
+  >Enable for store staff and managers who must not access Tasks.</inlineHelpText>
+    <label>Restrict Store UI</label>
+    <type>Checkbox</type>
+</CustomField>

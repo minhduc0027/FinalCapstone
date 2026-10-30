@@ -354,11 +354,9 @@ public with sharing class InspectionService {
     // Ready for PayHub
     //===================================================
     if (SmartReturnConfigService.isFeatureEnabled('Send_PayHub')) {
-      RefundService.startRefund(requestId);
-
       logInspection(
         linesToUpdate,
-        'Inspection completed. Request moved to refund processing.',
+        'Inspection completed. Awaiting automatic refund dispatch.',
         'COMPLETE_INSPECTION'
       );
       return;
