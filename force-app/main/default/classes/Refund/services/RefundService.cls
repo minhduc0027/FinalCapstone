@@ -18,7 +18,7 @@ public with sharing class RefundService {
   private static RefundDomain.Policy policy() {
     return new RefundDomain.Policy(
       SmartReturnConfigService.getPayHubMaxRetries(),
-      SmartReturnConfigService.getPayHubRetryInterval()
+      SmartReturnConfigService.getPayHubRetryIntervalSeconds()
     );
   }
 
@@ -298,7 +298,7 @@ public with sharing class RefundService {
       row.Status__c = RefundDomain.Status.QUEUED.name();
       row.Worker_Job_Id__c = null;
       row.Attempt_Count__c--;
-      row.Next_Retry_At__c = System.now().addMinutes(policy().intervalMinutes);
+      row.Next_Retry_At__c = System.now().addSeconds(policy().intervalSeconds);
       update as user row;
     }
   }
@@ -342,8 +342,8 @@ public with sharing class RefundService {
       row.Last_Error_Message__c = decision.errorCode;
       if (decision.retryable && row.Attempt_Count__c < current.maxAttempts) {
         row.Status__c = RefundDomain.Status.QUEUED.name();
-        row.Next_Retry_At__c = response.occurredAt.addMinutes(
-          current.intervalMinutes
+        row.Next_Retry_At__c = response.occurredAt.addSeconds(
+          current.intervalSeconds
         );
       } else {
         row.Status__c = decision.status;
@@ -397,7 +397,7 @@ public with sharing class RefundService {
       return;
     }
     Set<Id> ids = new Map<Id, Refund_Transaction__c>(
-        RefundSelector.due(System.now(), current.intervalMinutes, room)
+        RefundSelector.due(System.now(), current.intervalSeconds, room)
       )
       .keySet();
     claimRefunds(ids);
@@ -586,9 +586,8 @@ public with sharing class RefundService {
     if (found.isEmpty()) {
       throw new RefundException('Refund transaction not found.');
     }
-    Map<Id, Return_Request__c> requests = ReturnRequestSelector.byIds(
-      new Set<Id>{ found[0].Return_Request__c },
-      true
+    Map<Id, Return_Request__c> requests = RefundSelector.requestsForManualCompletion(
+      new Set<Id>{ found[0].Return_Request__c }
     );
     Refund_Transaction__c row = RefundSelector.byIds(
       new Set<Id>{ refundId },
@@ -612,24 +611,16 @@ public with sharing class RefundService {
 
     Savepoint checkpoint = Database.setSavepoint();
     try {
-      row.Manual_Reference__c = externalReference;
-      row.Manual_Completed_At__c = System.now();
-      row.Manual_Completed_By__c = UserInfo.getUserId();
-      finish(
+      RefundManualCompletionService.complete(
         row,
         requests.get(row.Return_Request__c),
+        externalReference
+      );
+      notifyOutcomes(
+        new List<Refund_Transaction__c>{ row },
+        requests,
         SmartReturnConstants.STATUS_COMPLETED
       );
-      update as system row;
-      if (row.Accounting_Task_Id__c != null) {
-        List<Task> tasks = RefundSelector.tasks(
-          new Set<Id>{ (Id) row.Accounting_Task_Id__c }
-        );
-        for (Task task : tasks) {
-          task.Status = 'Completed';
-        }
-        update as system tasks;
-      }
     } catch (Exception e) {
       Database.rollback(checkpoint);
       throw new RefundException(
