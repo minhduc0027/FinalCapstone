@@ -113,7 +113,31 @@
     </miniLayout>
     <relatedLists>
         <fields>NAME</fields>
+        <fields>Attempt_Number__c</fields>
+        <fields>Occurred_At__c</fields>
+        <fields>Direction__c</fields>
+        <fields>Http_Status__c</fields>
+        <fields>Result__c</fields>
+        <fields>Error_Code__c</fields>
+        <fields>Duration_Ms__c</fields>
         <relatedList>Integration_Log__c.Refund_Transaction__c</relatedList>
+        <sortField>Occurred_At__c</sortField>
+        <sortOrder>Asc</sortOrder>
+    </relatedLists>
+    <relatedLists>
+        <fields>TASK.SUBJECT</fields>
+        <fields>TASK.STATUS</fields>
+        <fields>TASK.PRIORITY</fields>
+        <fields>TASK.DUE_DATE</fields>
+        <fields>CORE.USERS.FULL_NAME</fields>
+        <relatedList>RelatedActivityList</relatedList>
+    </relatedLists>
+    <relatedLists>
+        <fields>TASK.SUBJECT</fields>
+        <fields>TASK.DUE_DATE</fields>
+        <fields>CORE.USERS.FULL_NAME</fields>
+        <fields>TASK.LAST_UPDATE</fields>
+        <relatedList>RelatedHistoryList</relatedList>
     </relatedLists>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>
