@@ -168,7 +168,10 @@ private class RefundRetryTest {
   @IsTest
   static void tooEarlyRetryDoesNotDispatch() {
     System.runAs(RefundTestDataFactory.processor()) {
-      Refund_Transaction__c row = priorAttempt(1, 4);
+      Refund_Transaction__c row = priorAttempt(1, 6);
+      // Keep the retry pending regardless of org execution speed.
+      row.Next_Retry_At__c = System.now().addHours(1);
+      update as system row;
       Test.startTest();
       RefundService.claimRefunds(new Set<Id>{ row.Id });
       Test.stopTest();
