@@ -63,6 +63,19 @@
               </section>
 
               <section class="fields" aria-label="Inspection input">
+                <div class="field field-condition">
+                  <lightning-combobox
+                    required
+                    label="Actual condition"
+                    placeholder="Select actual condition"
+                    value={row.actualCondition}
+                    options={actualConditionOptions}
+                    data-id={row.id}
+                    data-field="actualCondition"
+                    onchange={handleFieldChange}
+                  >
+                  </lightning-combobox>
+                </div>
                 <div class="field field-result">
                   <lightning-combobox
                     required
@@ -92,7 +105,7 @@
 
                 <div class="field field-reason">
                   <lightning-textarea
-                    required
+                    required={row.reasonRequired}
                     label="Eligibility reason"
                     value={row.eligibilityReason}
                     data-id={row.id}

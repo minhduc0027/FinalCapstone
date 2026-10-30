@@ -176,6 +176,7 @@ public with sharing class InspectionService {
     /*
      * Input từ LWC chỉ được tin cậy ở:
      * - Id
+     * - Reported_Condition__c
      * - Inspection_Result__c
      * - Eligibility_Code__c
      * - Eligibility_Reason__c
@@ -259,6 +260,7 @@ public with sharing class InspectionService {
       linesToUpdate.add(
         new Return_Request_Line__c(
           Id = storedLine.Id,
+          Reported_Condition__c = storedLine.Reported_Condition__c,
           Inspection_Result__c = storedLine.Inspection_Result__c,
           Eligibility_Code__c = storedLine.Eligibility_Code__c,
           Eligibility_Reason__c = storedLine.Eligibility_Reason__c
@@ -665,20 +667,29 @@ public with sharing class InspectionService {
     Return_Request_Line__c storedLine,
     Return_Request_Line__c inputLine
   ) {
+    storedLine.Reported_Condition__c = inputLine.Reported_Condition__c;
     storedLine.Inspection_Result__c = inputLine.Inspection_Result__c;
-
     storedLine.Eligibility_Code__c = inputLine.Eligibility_Code__c;
-
     storedLine.Eligibility_Reason__c = inputLine.Eligibility_Reason__c;
   }
 
   private static void validateInspectionResult(Return_Request_Line__c line) {
     if (
+      String.isBlank(line.Reported_Condition__c) ||
+      !SmartReturnConstants.GOODS_CONDITIONS.contains(
+        line.Reported_Condition__c
+      )
+    ) {
+      throw new InspectionException(
+        'Actual Condition không hợp lệ cho line ' + line.Id + '.'
+      );
+    }
+    if (
       line.Inspection_Result__c != 'PASSED' &&
       line.Inspection_Result__c != 'FAILED'
     ) {
       throw new InspectionException(
-        'Vui lòng ghi kết quả kiểm định cho tất cả sản phẩm.'
+        'Phải chọn chấp nhận hoặc từ chối cho line ' + line.Id + '.'
       );
     }
 
@@ -689,11 +700,11 @@ public with sharing class InspectionService {
     }
 
     if (
-      line.Inspection_Result__c == 'FAILED' &&
-      String.isBlank(line.Eligibility_Reason__c)
+      String.isBlank(line.Eligibility_Reason__c) &&
+      line.Inspection_Result__c == 'FAILED'
     ) {
       throw new InspectionException(
-        'Vui lòng nhập ghi chú cho sản phẩm không đạt kiểm định.'
+        'Vui lòng nhập ghi chú cho sản phẩm không đạt kiểm định'
       );
     }
   }

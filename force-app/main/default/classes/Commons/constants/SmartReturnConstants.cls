@@ -37,6 +37,12 @@ public with sharing class SmartReturnConstants {
   public static final String GOODS_CONDITION_SEALED = 'SEALED';
   public static final String GOODS_CONDITION_OPENED = 'OPENED';
 
+  public static final List<String> GOODS_CONDITIONS = new List<String>{
+    SmartReturnConstants.GOODS_CONDITION_USED,
+    SmartReturnConstants.GOODS_CONDITION_SEALED,
+    SmartReturnConstants.GOODS_CONDITION_OPENED
+  };
+
   //========================================================
   // Source Channels
   //========================================================
