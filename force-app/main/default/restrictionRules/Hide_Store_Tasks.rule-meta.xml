@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<RestrictionRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <active>true</active>
+    <description
+  >Store staff and managers must not see Task records, including tasks they own.</description>
+    <enforcementType>Restrict</enforcementType>
+    <masterLabel>Hide store user tasks</masterLabel>
+    <!-- Task IDs cannot equal User IDs, so this rule grants no Task records. -->
+    <recordFilter>Id = $User.Id</recordFilter>
+    <targetEntity>Task</targetEntity>
+    <userCriteria>$User.Restrict_Store_UI__c = true</userCriteria>
+    <version>1</version>
+</RestrictionRule>

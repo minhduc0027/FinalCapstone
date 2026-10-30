@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
     <description
-  >Allows SmartReturn administrators to assign the store code used for request access.</description>
+  >Allows SmartReturn administrators to manage store membership and the store task-access restriction flag.</description>
     <fieldPermissions>
         <editable>true</editable>
         <field>User.Store_Code__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>User.Restrict_Store_UI__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <label>SmartReturn User Store Administration</label>

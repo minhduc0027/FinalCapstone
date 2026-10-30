@@ -18,7 +18,7 @@
     </customMetadataTypeAccesses>
     <customPermissions>
         <enabled>true</enabled>
-        <name>Refund_Process</name>
+        <name>Return_Receive_Goods</name>
     </customPermissions>
     <description
   >Store staff and managers work on return requests within the records shared to their store or region.</description>
@@ -183,7 +183,7 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>true</editable>
+        <editable>false</editable>
         <field>Return_Request__c.Status__c</field>
         <readable>true</readable>
     </fieldPermissions>

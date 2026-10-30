@@ -1,4 +1,49 @@
 public inherited sharing class ReturnRequestLifecycleService {
+  /** Receives goods without granting direct workflow-state editing to store users. */
+  public static void receiveGoods(Id requestId, Datetime lastModifiedAt) {
+    if (
+      !FeatureManagement.checkPermission('Return_Receive_Goods') ||
+      !Return_Request__c.SObjectType.getDescribe(
+          SObjectDescribeOptions.DEFERRED
+        )
+        .isUpdateable()
+    ) {
+      throw new LifecycleException('Bạn không có quyền xác nhận nhận hàng.');
+    }
+    if (requestId == null || lastModifiedAt == null) {
+      throw new LifecycleException(
+        'Vui lòng tải lại yêu cầu trước khi xác nhận nhận hàng.'
+      );
+    }
+    List<Return_Request__c> requests = ReturnRequestSelector.forGoodsReceipt(
+      requestId
+    );
+    if (requests.isEmpty() || !requests[0].Is_My_Store__c) {
+      throw new LifecycleException(
+        'Chỉ có thể nhận hàng cho yêu cầu thuộc cửa hàng của bạn.'
+      );
+    }
+    Return_Request__c request = requests[0];
+    if (request.LastModifiedDate != lastModifiedAt) {
+      throw new LifecycleException(
+        Label.SmartReturn_MSG_13.replace('{0}', request.Name)
+      );
+    }
+    if (request.Status__c != SmartReturnConstants.STATUS_AWAITING_GOODS) {
+      throw new LifecycleException(
+        'Không thể chuyển yêu cầu từ ' + request.Status__c + ' sang INSPECTING.'
+      );
+    }
+    // The permission and store checks authorize this single field update; FLS stays read-only.
+    update as system new Return_Request__c(
+      Id = request.Id,
+      Status__c = SmartReturnConstants.STATUS_INSPECTING
+    );
+  }
+
+  public class LifecycleException extends Exception {
+  }
+
   public static void beforeInsert(List<Return_Request__c> requests) {
     List<Return_Request__c> awaitingApproval = new List<Return_Request__c>();
     for (Return_Request__c request : requests) {
@@ -95,6 +140,7 @@ public inherited sharing class ReturnRequestLifecycleService {
         SELECT Id, Store_Manager__c, Region_Manager__c
         FROM Store__c
         WHERE Id IN :storeIds
+        WITH SYSTEM_MODE
       ]
     );
 
